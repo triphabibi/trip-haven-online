@@ -141,7 +141,7 @@ const BookingPage = () => {
       const discountAmount = (totalAmount * promoDiscount) / 100;
       const finalAmount = totalAmount - discountAmount;
 
-      // Create booking
+      // Create booking - let the database generate the booking_reference via trigger
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
@@ -160,12 +160,14 @@ const BookingPage = () => {
 
       if (bookingError) throw bookingError;
 
-      // Add travelers
+      // Add travelers with correct field names
       if (bookingData.travelers.length > 0) {
         const travelersData = bookingData.travelers.map(traveler => ({
           booking_id: booking.id,
-          ...traveler,
+          full_name: traveler.fullName, // Map fullName to full_name
           age: traveler.age ? parseInt(traveler.age) : null,
+          passport_number: traveler.passportNumber, // Map passportNumber to passport_number
+          nationality: traveler.nationality,
         }));
 
         const { error: travelersError } = await supabase
