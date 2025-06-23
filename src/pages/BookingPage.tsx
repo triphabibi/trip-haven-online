@@ -9,30 +9,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarDays, Users, CreditCard, Tag } from 'lucide-react';
+import { CalendarDays, Users, DollarSign, MapPin, Clock, Minus, Plus, X } from 'lucide-react';
 import Navigation from '@/components/Navigation';
+
+interface Traveler {
+  fullName: string;
+  age: number;
+  passportNumber: string;
+  nationality: string;
+}
 
 const BookingPage = () => {
   const { serviceId } = useParams();
   const { user } = useAuth();
-  const { selectedGateway, setSelectedGateway, processPayment } = usePayment();
-  const navigate = useNavigate();
+  const { selectedGateway } = usePayment();
   const { toast } = useToast();
-  
+  const navigate = useNavigate();
+
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Booking form state
+  const [travelerCount, setTravelerCount] = useState(1);
+  const [travelDate, setTravelDate] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
   const [promoCode, setPromoCode] = useState('');
-  const [promoDiscount, setPromoDiscount] = useState(0);
-  const [bookingData, setBookingData] = useState({
-    travelerCount: 1,
-    travelDate: '',
-    specialRequests: '',
-    travelers: [{ fullName: '', age: '', passportNumber: '', nationality: '' }],
-  });
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [travelers, setTravelers] = useState<Traveler[]>([
+    { fullName: '', age: 25, passportNumber: '', nationality: '' }
+  ]);
+
+  // Pricing state
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
 
   useEffect(() => {
     if (serviceId) {
@@ -40,12 +53,30 @@ const BookingPage = () => {
     }
   }, [serviceId]);
 
+  useEffect(() => {
+    calculatePricing();
+  }, [service, travelerCount, appliedPromo]);
+
+  useEffect(() => {
+    // Update travelers array when count changes
+    const newTravelers = [...travelers];
+    if (travelerCount > travelers.length) {
+      for (let i = travelers.length; i < travelerCount; i++) {
+        newTravelers.push({ fullName: '', age: 25, passportNumber: '', nationality: '' });
+      }
+    } else {
+      newTravelers.splice(travelerCount);
+    }
+    setTravelers(newTravelers);
+  }, [travelerCount]);
+
   const fetchService = async () => {
     try {
       const { data, error } = await supabase
         .from('services')
         .select('*')
         .eq('id', serviceId)
+        .eq('is_active', true)
         .single();
 
       if (error) throw error;
@@ -54,102 +85,123 @@ const BookingPage = () => {
       console.error('Error fetching service:', error);
       toast({
         title: "Error",
-        description: "Failed to load service details",
+        description: "Service not found",
         variant: "destructive",
       });
+      navigate('/services');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setBookingData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const calculatePricing = () => {
+    if (!service) return;
 
-  const handleTravelerChange = (index: number, field: string, value: string) => {
-    const newTravelers = [...bookingData.travelers];
-    newTravelers[index] = { ...newTravelers[index], [field]: value };
-    setBookingData(prev => ({
-      ...prev,
-      travelers: newTravelers,
-    }));
-  };
+    const total = service.price * travelerCount;
+    let discount = 0;
 
-  const addTraveler = () => {
-    setBookingData(prev => ({
-      ...prev,
-      travelers: [...prev.travelers, { fullName: '', age: '', passportNumber: '', nationality: '' }],
-    }));
-  };
+    if (appliedPromo) {
+      if (appliedPromo.discount_percentage) {
+        discount = (total * appliedPromo.discount_percentage) / 100;
+      } else if (appliedPromo.discount_amount) {
+        discount = appliedPromo.discount_amount;
+      }
+    }
 
-  const removeTraveler = (index: number) => {
-    setBookingData(prev => ({
-      ...prev,
-      travelers: prev.travelers.filter((_, i) => i !== index),
-    }));
+    setTotalAmount(total);
+    setDiscountAmount(discount);
+    setFinalAmount(total - discount);
   };
 
   const applyPromoCode = async () => {
     if (!promoCode.trim()) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
         .eq('code', promoCode.toUpperCase())
         .eq('is_active', true)
+        .gte('valid_until', new Date().toISOString())
         .single();
 
-      if (error || !data) {
+      if (error) {
         toast({
           title: "Invalid Promo Code",
-          description: "The promo code you entered is not valid or has expired.",
+          description: "The promo code is not valid or has expired",
           variant: "destructive",
         });
         return;
       }
 
-      const discount = data.discount_percentage || 0;
-      setPromoDiscount(discount);
+      if (data.current_uses >= data.max_uses) {
+        toast({
+          title: "Promo Code Exhausted",
+          description: "This promo code has reached its usage limit",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setAppliedPromo(data);
       toast({
-        title: "Promo Code Applied!",
-        description: `You saved ${discount}% on your booking!`,
+        title: "Promo Code Applied",
+        description: `${data.discount_percentage || data.discount_amount}% discount applied!`,
       });
     } catch (error) {
       console.error('Error applying promo code:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply promo code",
+        variant: "destructive",
+      });
     }
   };
 
-  const calculateTotal = () => {
-    if (!service) return 0;
-    const baseAmount = service.price * bookingData.travelerCount;
-    const discountAmount = (baseAmount * promoDiscount) / 100;
-    return baseAmount - discountAmount;
+  const removePromoCode = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    toast({
+      title: "Promo Code Removed",
+      description: "Promo code has been removed from your booking",
+    });
+  };
+
+  const updateTraveler = (index: number, field: keyof Traveler, value: string | number) => {
+    const newTravelers = [...travelers];
+    newTravelers[index] = { ...newTravelers[index], [field]: value };
+    setTravelers(newTravelers);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !service) return;
+    if (!user) return;
+
+    // Validate travelers
+    for (let i = 0; i < travelerCount; i++) {
+      if (!travelers[i]?.fullName.trim()) {
+        toast({
+          title: "Missing Information",
+          description: `Please fill in traveler ${i + 1} details`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
 
     setSubmitting(true);
-    
-    try {
-      const totalAmount = service.price * bookingData.travelerCount;
-      const discountAmount = (totalAmount * promoDiscount) / 100;
-      const finalAmount = totalAmount - discountAmount;
 
-      // Create booking - let the database generate the booking_reference via trigger
+    try {
+      // Create booking without booking_reference (auto-generated by trigger)
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
           user_id: user.id,
-          service_id: service.id,
-          traveler_count: bookingData.travelerCount,
-          travel_date: bookingData.travelDate || null,
-          special_requests: bookingData.specialRequests || null,
+          service_id: serviceId,
+          promo_code_id: appliedPromo?.id || null,
+          traveler_count: travelerCount,
+          travel_date: travelDate || null,
+          special_requests: specialRequests,
           total_amount: totalAmount,
           discount_amount: discountAmount,
           final_amount: finalAmount,
@@ -160,63 +212,40 @@ const BookingPage = () => {
 
       if (bookingError) throw bookingError;
 
-      // Add travelers with correct field names
-      if (bookingData.travelers.length > 0) {
-        const travelersData = bookingData.travelers.map(traveler => ({
-          booking_id: booking.id,
-          full_name: traveler.fullName, // Map fullName to full_name
-          age: traveler.age ? parseInt(traveler.age) : null,
-          passport_number: traveler.passportNumber, // Map passportNumber to passport_number
-          nationality: traveler.nationality,
-        }));
+      // Insert traveler details
+      const travelerData = travelers.slice(0, travelerCount).map(traveler => ({
+        booking_id: booking.id,
+        full_name: traveler.fullName,
+        age: traveler.age,
+        passport_number: traveler.passportNumber,
+        nationality: traveler.nationality,
+      }));
 
-        const { error: travelersError } = await supabase
-          .from('booking_travelers')
-          .insert(travelersData);
+      const { error: travelerError } = await supabase
+        .from('booking_travelers')
+        .insert(travelerData);
 
-        if (travelersError) throw travelersError;
+      if (travelerError) throw travelerError;
+
+      // Update promo code usage
+      if (appliedPromo) {
+        await supabase
+          .from('promo_codes')
+          .update({ current_uses: appliedPromo.current_uses + 1 })
+          .eq('id', appliedPromo.id);
       }
 
-      // Process payment
-      const paymentResult = await processPayment(finalAmount, booking.id);
-      
-      if (paymentResult.success) {
-        // Update booking with payment details
-        await supabase
-          .from('bookings')
-          .update({
-            payment_status: 'completed',
-            booking_status: 'confirmed',
-            payment_reference: paymentResult.paymentId,
-          })
-          .eq('id', booking.id);
+      toast({
+        title: "Booking Successful",
+        description: `Your booking reference is ${booking.booking_reference}`,
+      });
 
-        toast({
-          title: "Booking Confirmed!",
-          description: `Your booking has been confirmed. Reference: ${booking.booking_reference}`,
-        });
-
-        navigate('/my-bookings');
-      } else {
-        // Update booking with failed payment
-        await supabase
-          .from('bookings')
-          .update({
-            payment_status: 'failed',
-          })
-          .eq('id', booking.id);
-
-        toast({
-          title: "Payment Failed",
-          description: "Your booking was created but payment failed. Please try again.",
-          variant: "destructive",
-        });
-      }
+      navigate('/my-bookings');
     } catch (error) {
       console.error('Error creating booking:', error);
       toast({
-        title: "Error",
-        description: "Failed to create booking. Please try again.",
+        title: "Booking Failed",
+        description: "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -228,8 +257,8 @@ const BookingPage = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
-          <div className="text-center">Loading...</div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">Loading service details...</div>
         </div>
       </div>
     );
@@ -239,7 +268,7 @@ const BookingPage = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">Service not found</div>
         </div>
       </div>
@@ -251,43 +280,56 @@ const BookingPage = () => {
       <Navigation />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Service Details */}
           <Card>
+            <div className="aspect-video relative overflow-hidden rounded-t-lg">
+              <img
+                src={service.image_url}
+                alt={service.title}
+                className="w-full h-full object-cover"
+              />
+              <Badge className="absolute top-4 right-4 capitalize">
+                {service.service_type}
+              </Badge>
+            </div>
             <CardHeader>
-              <div className="aspect-video relative overflow-hidden rounded-lg mb-4">
-                <img
-                  src={service.image_url}
-                  alt={service.title}
-                  className="w-full h-full object-cover"
-                />
-                <Badge className="absolute top-2 right-2 capitalize">
-                  {service.service_type}
-                </Badge>
-              </div>
               <CardTitle>{service.title}</CardTitle>
               <CardDescription>{service.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="text-2xl font-bold text-green-600">
-                  ${service.price} per person
-                </div>
-                
-                {service.features && (
-                  <div>
-                    <h4 className="font-medium mb-2">Included Features:</h4>
-                    <div className="space-y-1">
-                      {service.features.map((feature: string, index: number) => (
-                        <div key={index} className="flex items-center text-sm text-gray-600">
-                          <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
+              <div className="space-y-3">
+                {service.location && (
+                  <div className="flex items-center text-gray-600">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    <span>{service.location}</span>
                   </div>
                 )}
+                {service.duration && (
+                  <div className="flex items-center text-gray-600">
+                    <Clock className="h-4 w-4 mr-2" />
+                    <span>{service.duration}</span>
+                  </div>
+                )}
+                <div className="flex items-center text-2xl font-bold text-green-600">
+                  <DollarSign className="h-6 w-6 mr-1" />
+                  <span>${service.price} per person</span>
+                </div>
               </div>
+              
+              {service.features && service.features.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="font-medium mb-3">What's Included:</h4>
+                  <div className="space-y-1">
+                    {service.features.map((feature: string, index: number) => (
+                      <div key={index} className="flex items-center text-sm text-gray-600">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -295,108 +337,105 @@ const BookingPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Book This Service</CardTitle>
-              <CardDescription>Fill in your details to proceed</CardDescription>
+              <CardDescription>
+                Fill in your details to complete the booking
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Traveler Count */}
                 <div>
-                  <Label htmlFor="travelerCount">Number of Travelers</Label>
-                  <Select
-                    value={bookingData.travelerCount.toString()}
-                    onValueChange={(value) => {
-                      const count = parseInt(value);
-                      handleInputChange('travelerCount', count);
-                      // Adjust travelers array
-                      const newTravelers = Array.from({ length: count }, (_, i) => 
-                        bookingData.travelers[i] || { fullName: '', age: '', passportNumber: '', nationality: '' }
-                      );
-                      setBookingData(prev => ({ ...prev, travelers: newTravelers }));
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                        <SelectItem key={num} value={num.toString()}>
-                          {num} {num === 1 ? 'Traveler' : 'Travelers'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="flex items-center mb-2">
+                    <Users className="h-4 w-4 mr-2" />
+                    Number of Travelers
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTravelerCount(Math.max(1, travelerCount - 1))}
+                      disabled={travelerCount <= 1}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="px-4 py-2 border rounded text-center min-w-[60px]">
+                      {travelerCount}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTravelerCount(travelerCount + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Travel Date */}
                 <div>
-                  <Label htmlFor="travelDate">Travel Date</Label>
+                  <Label htmlFor="travelDate" className="flex items-center mb-2">
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Travel Date (Optional)
+                  </Label>
                   <Input
                     id="travelDate"
                     type="date"
-                    value={bookingData.travelDate}
-                    onChange={(e) => handleInputChange('travelDate', e.target.value)}
+                    value={travelDate}
+                    onChange={(e) => setTravelDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </div>
 
                 {/* Traveler Details */}
                 <div>
-                  <Label>Traveler Details</Label>
-                  {bookingData.travelers.map((traveler, index) => (
-                    <Card key={index} className="mt-2">
-                      <CardContent className="pt-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="font-medium">Traveler {index + 1}</h4>
-                          {bookingData.travelers.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeTraveler(index)}
-                            >
-                              Remove
-                            </Button>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+                  <Label className="mb-3 block">Traveler Details</Label>
+                  <div className="space-y-4">
+                    {travelers.slice(0, travelerCount).map((traveler, index) => (
+                      <div key={index} className="p-4 border rounded-lg space-y-3">
+                        <h4 className="font-medium">Traveler {index + 1}</h4>
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <Label htmlFor={`traveler-${index}-name`}>Full Name</Label>
+                            <Label htmlFor={`fullName-${index}`}>Full Name *</Label>
                             <Input
-                              id={`traveler-${index}-name`}
+                              id={`fullName-${index}`}
                               value={traveler.fullName}
-                              onChange={(e) => handleTravelerChange(index, 'fullName', e.target.value)}
+                              onChange={(e) => updateTraveler(index, 'fullName', e.target.value)}
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor={`traveler-${index}-age`}>Age</Label>
+                            <Label htmlFor={`age-${index}`}>Age</Label>
                             <Input
-                              id={`traveler-${index}-age`}
+                              id={`age-${index}`}
                               type="number"
+                              min="1"
+                              max="120"
                               value={traveler.age}
-                              onChange={(e) => handleTravelerChange(index, 'age', e.target.value)}
+                              onChange={(e) => updateTraveler(index, 'age', parseInt(e.target.value) || 0)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor={`traveler-${index}-passport`}>Passport Number</Label>
+                            <Label htmlFor={`passport-${index}`}>Passport Number</Label>
                             <Input
-                              id={`traveler-${index}-passport`}
+                              id={`passport-${index}`}
                               value={traveler.passportNumber}
-                              onChange={(e) => handleTravelerChange(index, 'passportNumber', e.target.value)}
+                              onChange={(e) => updateTraveler(index, 'passportNumber', e.target.value)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor={`traveler-${index}-nationality`}>Nationality</Label>
+                            <Label htmlFor={`nationality-${index}`}>Nationality</Label>
                             <Input
-                              id={`traveler-${index}-nationality`}
+                              id={`nationality-${index}`}
                               value={traveler.nationality}
-                              onChange={(e) => handleTravelerChange(index, 'nationality', e.target.value)}
+                              onChange={(e) => updateTraveler(index, 'nationality', e.target.value)}
                             />
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Special Requests */}
@@ -404,72 +443,74 @@ const BookingPage = () => {
                   <Label htmlFor="specialRequests">Special Requests</Label>
                   <Textarea
                     id="specialRequests"
-                    value={bookingData.specialRequests}
-                    onChange={(e) => handleInputChange('specialRequests', e.target.value)}
+                    value={specialRequests}
+                    onChange={(e) => setSpecialRequests(e.target.value)}
                     placeholder="Any special requirements or requests..."
+                    rows={3}
                   />
                 </div>
 
                 {/* Promo Code */}
                 <div>
-                  <Label htmlFor="promoCode">Promo Code</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="promoCode"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      placeholder="Enter promo code"
-                    />
-                    <Button type="button" onClick={applyPromoCode} variant="outline">
-                      Apply
-                    </Button>
-                  </div>
-                  {promoDiscount > 0 && (
-                    <p className="text-sm text-green-600 mt-1">
-                      Promo code applied! {promoDiscount}% discount
-                    </p>
+                  <Label className="mb-2 block">Promo Code</Label>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded">
+                      <div>
+                        <Badge className="bg-green-600 text-white">{appliedPromo.code}</Badge>
+                        <span className="ml-2 text-sm text-green-700">
+                          {appliedPromo.discount_percentage}% discount applied
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removePromoCode}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <Input
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                      />
+                      <Button type="button" variant="outline" onClick={applyPromoCode}>
+                        Apply
+                      </Button>
+                    </div>
                   )}
                 </div>
 
-                {/* Payment Gateway Selection */}
-                <div>
-                  <Label>Payment Gateway</Label>
-                  <Select value={selectedGateway} onValueChange={setSelectedGateway}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stripe">Stripe</SelectItem>
-                      <SelectItem value="razorpay">Razorpay</SelectItem>
-                      <SelectItem value="payu">PayU</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Price Summary */}
+                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal ({travelerCount} travelers)</span>
+                    <span>${totalAmount.toFixed(2)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                    <span>Total</span>
+                    <span>${finalAmount.toFixed(2)}</span>
+                  </div>
                 </div>
 
-                {/* Price Summary */}
-                <Card>
-                  <CardContent className="pt-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Subtotal ({bookingData.travelerCount} travelers)</span>
-                        <span>${(service.price * bookingData.travelerCount).toFixed(2)}</span>
-                      </div>
-                      {promoDiscount > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Discount ({promoDiscount}%)</span>
-                          <span>-${((service.price * bookingData.travelerCount * promoDiscount) / 100).toFixed(2)}</span>
-                        </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                        <span>Total</span>
-                        <span>${calculateTotal().toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Payment Gateway Info */}
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-700">
+                    Payment will be processed via {selectedGateway}
+                  </p>
+                </div>
 
                 <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Processing...' : `Pay $${calculateTotal().toFixed(2)}`}
+                  {submitting ? 'Processing...' : `Book Now - $${finalAmount.toFixed(2)}`}
                 </Button>
               </form>
             </CardContent>
