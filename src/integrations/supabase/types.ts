@@ -9,7 +9,233 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      booking_travelers: {
+        Row: {
+          age: number | null
+          booking_id: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          nationality: string | null
+          passport_number: string | null
+        }
+        Insert: {
+          age?: number | null
+          booking_id?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Update: {
+          age?: number | null
+          booking_id?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_travelers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          booking_reference: string
+          booking_status: Database["public"]["Enums"]["booking_status"] | null
+          created_at: string | null
+          discount_amount: number | null
+          final_amount: number
+          id: string
+          payment_gateway: string | null
+          payment_reference: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id: string | null
+          service_id: string | null
+          special_requests: string | null
+          total_amount: number
+          travel_date: string | null
+          traveler_count: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_reference: string
+          booking_status?: Database["public"]["Enums"]["booking_status"] | null
+          created_at?: string | null
+          discount_amount?: number | null
+          final_amount: number
+          id?: string
+          payment_gateway?: string | null
+          payment_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id?: string | null
+          service_id?: string | null
+          special_requests?: string | null
+          total_amount: number
+          travel_date?: string | null
+          traveler_count?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_reference?: string
+          booking_status?: Database["public"]["Enums"]["booking_status"] | null
+          created_at?: string | null
+          discount_amount?: number | null
+          final_amount?: number
+          id?: string
+          payment_gateway?: string | null
+          payment_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id?: string | null
+          service_id?: string | null
+          special_requests?: string | null
+          total_amount?: number
+          travel_date?: string | null
+          traveler_count?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration: string | null
+          features: string[] | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          location: string | null
+          price: number
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          price: number
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          price?: number
+          service_type?: Database["public"]["Enums"]["service_type"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +244,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "pending" | "confirmed" | "cancelled" | "completed"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
+      service_type: "tour" | "ticket" | "visa"
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +362,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: ["pending", "confirmed", "cancelled", "completed"],
+      payment_status: ["pending", "completed", "failed", "refunded"],
+      service_type: ["tour", "ticket", "visa"],
+      user_role: ["user", "admin"],
+    },
   },
 } as const
