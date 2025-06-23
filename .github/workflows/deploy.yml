@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: write  # Needed to push to gh-pages branch
+  contents: write  # Allows push to gh-pages branch using GITHUB_TOKEN
 
 jobs:
   build:
