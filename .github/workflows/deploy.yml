@@ -31,3 +31,4 @@ jobs:
           publish_dir: ./dist
           user_name: triphabibi
           user_email: triphabibi@users.noreply.github.com
+          force_orphan: true
