@@ -2,7 +2,7 @@
   "name": "trip-haven-online",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://noorulainlari.github.io/trip-haven-online",
+  "homepage": "https://triphabibi.github.io/trip-haven-online",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
