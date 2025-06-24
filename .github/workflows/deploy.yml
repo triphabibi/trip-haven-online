@@ -52,7 +52,3 @@ jobs:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-<<<<<<< HEAD
-=======
-      
->>>>>>> 0918979a96fb26866de93fb78d6900bb560a82c3
