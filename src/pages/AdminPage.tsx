@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,7 +61,7 @@ const AdminPage = () => {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, status: string) => {
+  const updateBookingStatus = async (bookingId: string, status: 'pending' | 'confirmed' | 'cancelled' | 'completed') => {
     try {
       const { error } = await supabase
         .from('bookings')

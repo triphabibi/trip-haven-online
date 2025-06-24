@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -141,10 +140,14 @@ const BookingPage = () => {
       const discountAmount = (totalAmount * promoDiscount) / 100;
       const finalAmount = totalAmount - discountAmount;
 
-      // Create booking - let the database generate the booking_reference via trigger
+      // Generate a booking reference
+      const bookingReference = 'TB' + Date.now().toString().slice(-10) + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+      // Create booking with booking_reference
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
+          booking_reference: bookingReference,
           user_id: user.id,
           service_id: service.id,
           traveler_count: bookingData.travelerCount,
