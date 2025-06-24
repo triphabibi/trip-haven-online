@@ -1,46 +1,55 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Users, Package, Ticket, CreditCard, TrendingUp } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 
-type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
-
 const AdminPage = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    pendingBookings: 0,
+  });
   const [bookings, setBookings] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
-  const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user) {
+      fetchAdminData();
+    }
+  }, [user]);
 
-  const fetchData = async () => {
+  const fetchAdminData = async () => {
     try {
-      const [bookingsRes, servicesRes, promoCodesRes] = await Promise.all([
-        supabase.from('bookings').select(`
-          *,
-          services (title, service_type),
-          profiles (full_name, email)
-        `).order('created_at', { ascending: false }),
+      // Fetch stats
+      const [usersCount, bookingsData, servicesData] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('bookings').select('*, services(title, service_type)').order('created_at', { ascending: false }),
         supabase.from('services').select('*').order('created_at', { ascending: false }),
-        supabase.from('promo_codes').select('*').order('created_at', { ascending: false })
       ]);
 
-      if (bookingsRes.error) throw bookingsRes.error;
-      if (servicesRes.error) throw servicesRes.error;
-      if (promoCodesRes.error) throw promoCodesRes.error;
+      const totalRevenue = bookingsData.data?.reduce((sum, booking) => sum + Number(booking.final_amount || 0), 0) || 0;
+      const pendingBookings = bookingsData.data?.filter(b => b.booking_status === 'pending').length || 0;
 
-      setBookings(bookingsRes.data || []);
-      setServices(servicesRes.data || []);
-      setPromoCodes(promoCodesRes.data || []);
+      setStats({
+        totalUsers: usersCount.count || 0,
+        totalBookings: bookingsData.data?.length || 0,
+        totalRevenue,
+        pendingBookings,
+      });
+
+      setBookings(bookingsData.data || []);
+      setServices(servicesData.data || []);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -53,7 +62,7 @@ const AdminPage = () => {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
+  const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
       const { error } = await supabase
         .from('bookings')
@@ -67,9 +76,9 @@ const AdminPage = () => {
         description: "Booking status updated successfully",
       });
 
-      fetchData();
+      fetchAdminData();
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error('Error updating booking:', error);
       toast({
         title: "Error",
         description: "Failed to update booking status",
@@ -78,26 +87,26 @@ const AdminPage = () => {
     }
   };
 
-  const updatePaymentStatus = async (bookingId: string, status: PaymentStatus) => {
+  const toggleServiceStatus = async (serviceId: string, isActive: boolean) => {
     try {
       const { error } = await supabase
-        .from('bookings')
-        .update({ payment_status: status })
-        .eq('id', bookingId);
+        .from('services')
+        .update({ is_active: !isActive })
+        .eq('id', serviceId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Payment status updated successfully",
+        description: `Service ${!isActive ? 'activated' : 'deactivated'} successfully`,
       });
 
-      fetchData();
+      fetchAdminData();
     } catch (error) {
-      console.error('Error updating payment status:', error);
+      console.error('Error updating service:', error);
       toast({
         title: "Error",
-        description: "Failed to update payment status",
+        description: "Failed to update service status",
         variant: "destructive",
       });
     }
@@ -108,7 +117,7 @@ const AdminPage = () => {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">Loading admin panel...</div>
+          <div className="text-center">Loading admin dashboard...</div>
         </div>
       </div>
     );
@@ -120,138 +129,139 @@ const AdminPage = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-gray-600">Manage bookings, services, and promo codes</p>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage your travel business</p>
         </div>
 
-        <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="bookings">Bookings ({bookings.length})</TabsTrigger>
-            <TabsTrigger value="services">Services ({services.length})</TabsTrigger>
-            <TabsTrigger value="promocodes">Promo Codes ({promoCodes.length})</TabsTrigger>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Package className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <TrendingUp className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <CreditCard className="h-8 w-8 text-orange-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Pending Bookings</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.pendingBookings}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="bookings" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="bookings" className="space-y-4">
-            {bookings.map((booking) => (
-              <Card key={booking.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>
-                        {booking.services?.title} - {booking.booking_reference}
-                      </CardTitle>
-                      <CardDescription>
-                        Customer: {booking.profiles?.full_name} ({booking.profiles?.email})
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600">
-                        ${booking.final_amount}
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <p><strong>Travelers:</strong> {booking.traveler_count}</p>
-                      <p><strong>Travel Date:</strong> {booking.travel_date ? new Date(booking.travel_date).toLocaleDateString() : 'Not specified'}</p>
-                      <p><strong>Created:</strong> {new Date(booking.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <div className="space-y-2">
+
+          <TabsContent value="bookings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Bookings</CardTitle>
+                <CardDescription>Manage customer bookings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bookings.map((booking) => (
+                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Booking Status:</label>
-                        <div className="flex gap-2">
-                          <Badge variant={booking.booking_status === 'confirmed' ? 'default' : 'secondary'}>
-                            {booking.booking_status}
-                          </Badge>
-                          <select 
-                            value={booking.booking_status}
-                            onChange={(e) => updateBookingStatus(booking.id, e.target.value as BookingStatus)}
-                            className="text-sm border rounded px-2 py-1"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="cancelled">Cancelled</option>
-                            <option value="completed">Completed</option>
-                          </select>
-                        </div>
+                        <p className="font-medium">{booking.services?.title}</p>
+                        <p className="text-sm text-gray-600">Ref: {booking.booking_reference}</p>
+                        <p className="text-sm text-gray-600">${booking.final_amount}</p>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={
+                          booking.booking_status === 'confirmed' ? 'bg-green-500' :
+                          booking.booking_status === 'pending' ? 'bg-yellow-500' :
+                          booking.booking_status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
+                        }>
+                          {booking.booking_status}
+                        </Badge>
+                        {booking.booking_status === 'pending' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                          >
+                            Confirm
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="services">
+            <Card>
+              <CardHeader>
+                <CardTitle>Services Management</CardTitle>
+                <CardDescription>Manage your tour packages and services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {services.map((service) => (
+                    <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Payment Status:</label>
-                        <div className="flex gap-2">
-                          <Badge variant={booking.payment_status === 'completed' ? 'default' : 'secondary'}>
-                            {booking.payment_status}
-                          </Badge>
-                          <select 
-                            value={booking.payment_status}
-                            onChange={(e) => updatePaymentStatus(booking.id, e.target.value as PaymentStatus)}
-                            className="text-sm border rounded px-2 py-1"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
-                          </select>
-                        </div>
+                        <p className="font-medium">{service.title}</p>
+                        <p className="text-sm text-gray-600">{service.service_type} - ${service.price}</p>
+                        <p className="text-sm text-gray-600">{service.location}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={service.is_active ? 'bg-green-500' : 'bg-gray-500'}>
+                          {service.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => toggleServiceStatus(service.id, service.is_active)}
+                        >
+                          {service.is_active ? 'Deactivate' : 'Activate'}
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                  {booking.special_requests && (
-                    <div className="mt-4 pt-4 border-t">
-                      <h4 className="font-medium mb-2">Special Requests:</h4>
-                      <p className="text-gray-600">{booking.special_requests}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-          
-          <TabsContent value="services" className="space-y-4">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((service) => (
-                <Card key={service.id}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{service.title}</CardTitle>
-                    <CardDescription>{service.service_type}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold text-green-600 mb-2">${service.price}</p>
-                    <p className="text-sm text-gray-600 mb-2">{service.location}</p>
-                    <Badge variant={service.is_active ? 'default' : 'secondary'}>
-                      {service.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="promocodes" className="space-y-4">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {promoCodes.map((promo) => (
-                <Card key={promo.id}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{promo.code}</CardTitle>
-                    <CardDescription>
-                      {promo.discount_percentage}% discount
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Uses: {promo.current_uses}/{promo.max_uses}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Valid until: {new Date(promo.valid_until).toLocaleDateString()}
-                    </p>
-                    <Badge variant={promo.is_active ? 'default' : 'secondary'}>
-                      {promo.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

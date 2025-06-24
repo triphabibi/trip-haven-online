@@ -5,7 +5,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/trip-haven-online/",
+  base: "/triphabibi/",
   server: {
     host: "::",
     port: 8080,
