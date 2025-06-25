@@ -133,6 +133,7 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
       const { data: booking, error: bookingError } = await supabase
         .from('new_bookings')
         .insert({
+          booking_reference: 'TEMP', // Placeholder - will be overwritten by trigger
           booking_type: 'tour',
           service_id: tour.id,
           customer_name: formData.customerName,
