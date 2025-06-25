@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { Star, MapPin, Ticket, Download, Search, Zap } from 'lucide-react';
+import { Star, MapPin, Zap, Clock, Search } from 'lucide-react';
 
 const TicketsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,8 +18,7 @@ const TicketsPage = () => {
 
   const filteredTickets = tickets?.filter(ticket =>
     ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ticket.location?.toLowerCase().includes(searchTerm.toLowerCase())
+    ticket.description?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   const sortedTickets = [...filteredTickets].sort((a, b) => {
@@ -57,18 +56,18 @@ const TicketsPage = () => {
       <Header />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-16">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Attraction Tickets</h1>
-            <p className="text-xl md:text-2xl mb-8">Skip the line with instant digital tickets</p>
+            <p className="text-xl md:text-2xl mb-8">Explore top attractions with instant ticket delivery</p>
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input
-                  placeholder="Search attractions..."
+                  placeholder="Search tickets..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 py-3 text-lg bg-white text-gray-900"
@@ -142,27 +141,20 @@ const TicketsPage = () => {
                       Featured
                     </Badge>
                   )}
-                  {ticket.instant_delivery && (
-                    <Badge className="absolute top-2 right-2 bg-green-500">
-                      <Zap className="h-3 w-3 mr-1" />
-                      Instant
-                    </Badge>
-                  )}
                 </div>
                 
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-lg mb-2 line-clamp-2">{ticket.title}</h3>
-                  {ticket.location && (
-                    <div className="flex items-center gap-1 mb-2 text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span className="text-sm">{ticket.location}</span>
-                    </div>
-                  )}
                   {ticket.description && (
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">{ticket.description}</p>
                   )}
                   
-                  <div className="flex items-center gap-4 mb-3 text-sm">
+                  <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{ticket.location}</span>
+                    </div>
+                    
                     {ticket.rating && ticket.rating > 0 && (
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -170,13 +162,6 @@ const TicketsPage = () => {
                         {ticket.total_reviews && ticket.total_reviews > 0 && (
                           <span className="text-gray-500">({ticket.total_reviews})</span>
                         )}
-                      </div>
-                    )}
-                    
-                    {ticket.instant_delivery && (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <Download className="h-4 w-4" />
-                        <span>Instant PDF</span>
                       </div>
                     )}
                   </div>
