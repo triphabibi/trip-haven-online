@@ -1,98 +1,143 @@
 
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Phone, Mail, MapPin } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
 
-  const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/tours', label: 'Tours' },
-    { href: '/packages', label: 'Packages' },
-    { href: '/tickets', label: 'Tickets' },
-    { href: '/visas', label: 'Visas' },
-    { href: '/contact', label: 'Contact' },
-  ];
-
-  const isActive = (href: string) => {
-    if (href === '/') return location.pathname === '/';
-    return location.pathname.startsWith(href);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
-      {/* Top Info Bar */}
-      <div className="bg-blue-600 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-sm">
-          <div className="flex items-center gap-4 mb-2 sm:mb-0">
-            <div className="flex items-center gap-1">
-              <Phone className="h-3 w-3" />
-              <span>+91-9876543210</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Mail className="h-3 w-3" />
-              <span>info@triphabibi.in</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            <span>Mumbai, India</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <div className="text-2xl font-bold text-blue-600">TripHabibi</div>
+          <Link to="/" className="text-2xl font-bold text-blue-600">
+            TripHabibi
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                  isActive(item.href) ? 'text-blue-600' : 'text-gray-700'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <Link to="/tours" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Tours
+            </Link>
+            <Link to="/packages" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Packages
+            </Link>
+            <Link to="/tickets" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Tickets
+            </Link>
           </nav>
 
-          {/* Mobile Menu */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <nav className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={`text-lg font-medium transition-colors hover:text-blue-600 ${
-                      isActive(item.href) ? 'text-blue-600' : 'text-gray-700'
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span>{profile?.full_name || user.email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-white border shadow-lg">
+                  {profile?.role === 'admin' && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center space-x-2 cursor-pointer">
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={signOut} className="flex items-center space-x-2 cursor-pointer">
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth">
+                <Button>Sign In</Button>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
+              <Link
+                to="/tours"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Tours
+              </Link>
+              <Link
+                to="/packages"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Packages
+              </Link>
+              <Link
+                to="/tickets"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Tickets
+              </Link>
+              
+              {user ? (
+                <div className="border-t pt-2">
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    {profile?.full_name || user.email}
+                  </div>
+                  {profile?.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                      onClick={toggleMenu}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {signOut(); toggleMenu();}}
+                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  onClick={toggleMenu}
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

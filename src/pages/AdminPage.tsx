@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,11 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Package, Ticket, CreditCard, TrendingUp } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Users, Package, Ticket, CreditCard, TrendingUp, Plus, Edit, Trash } from 'lucide-react';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const AdminPage = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -18,23 +24,34 @@ const AdminPage = () => {
     totalRevenue: 0,
     pendingBookings: 0,
   });
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
+  const [tours, setTours] = useState<any[]>([]);
+  const [packages, setPackages] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [sliders, setSliders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingType, setEditingType] = useState<string>('');
 
   useEffect(() => {
-    if (user) {
-      fetchAdminData();
-    }
-  }, [user]);
+    fetchAdminData();
+  }, []);
 
   const fetchAdminData = async () => {
     try {
-      // Fetch stats
-      const [usersCount, bookingsData, servicesData] = await Promise.all([
+      const [
+        usersCount,
+        bookingsData,
+        toursData,
+        packagesData,
+        ticketsData,
+        slidersData
+      ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact' }),
-        supabase.from('bookings').select('*, services(title, service_type)').order('created_at', { ascending: false }),
-        supabase.from('services').select('*').order('created_at', { ascending: false }),
+        supabase.from('new_bookings').select('*').order('created_at', { ascending: false }),
+        supabase.from('tours').select('*').order('created_at', { ascending: false }),
+        supabase.from('tour_packages').select('*').order('created_at', { ascending: false }),
+        supabase.from('attraction_tickets').select('*').order('created_at', { ascending: false }),
+        supabase.from('homepage_sliders').select('*').order('display_order', { ascending: true }),
       ]);
 
       const totalRevenue = bookingsData.data?.reduce((sum, booking) => sum + Number(booking.final_amount || 0), 0) || 0;
@@ -47,8 +64,10 @@ const AdminPage = () => {
         pendingBookings,
       });
 
-      setBookings(bookingsData.data || []);
-      setServices(servicesData.data || []);
+      setTours(toursData.data || []);
+      setPackages(packagesData.data || []);
+      setTickets(ticketsData.data || []);
+      setSliders(slidersData.data || []);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -61,75 +80,202 @@ const AdminPage = () => {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, status: 'pending' | 'confirmed' | 'cancelled' | 'completed') => {
+  const toggleItemStatus = async (table: string, id: string, currentStatus: boolean, statusField: string = 'status') => {
     try {
+      const updateData = statusField === 'status' 
+        ? { status: currentStatus === true || currentStatus === 'active' ? 'inactive' : 'active' }
+        : { [statusField]: !currentStatus };
+
       const { error } = await supabase
-        .from('bookings')
-        .update({ booking_status: status })
-        .eq('id', bookingId);
+        .from(table)
+        .update(updateData)
+        .eq('id', id);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Booking status updated successfully",
+        description: "Item status updated successfully",
       });
 
       fetchAdminData();
     } catch (error) {
-      console.error('Error updating booking:', error);
+      console.error('Error updating item:', error);
       toast({
         title: "Error",
-        description: "Failed to update booking status",
+        description: "Failed to update item status",
         variant: "destructive",
       });
     }
   };
 
-  const toggleServiceStatus = async (serviceId: string, isActive: boolean) => {
+  const handleEdit = (item: any, type: string) => {
+    setEditingItem(item);
+    setEditingType(type);
+  };
+
+  const handleSave = async () => {
+    if (!editingItem || !editingType) return;
+
     try {
       const { error } = await supabase
-        .from('services')
-        .update({ is_active: !isActive })
-        .eq('id', serviceId);
+        .from(editingType)
+        .update(editingItem)
+        .eq('id', editingItem.id);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Service ${!isActive ? 'activated' : 'deactivated'} successfully`,
+        description: "Item updated successfully",
       });
 
+      setEditingItem(null);
+      setEditingType('');
       fetchAdminData();
     } catch (error) {
-      console.error('Error updating service:', error);
+      console.error('Error updating item:', error);
       toast({
         title: "Error",
-        description: "Failed to update service status",
+        description: "Failed to update item",
         variant: "destructive",
       });
     }
   };
+
+  const renderEditModal = () => {
+    if (!editingItem) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <CardHeader>
+            <CardTitle>Edit {editingType}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={editingItem.title || ''}
+                onChange={(e) => setEditingItem({...editingItem, title: e.target.value})}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={editingItem.description || ''}
+                onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
+              />
+            </div>
+            
+            {editingType !== 'homepage_sliders' && (
+              <div>
+                <Label htmlFor="price">Price (Adult)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={editingItem.price_adult || editingItem.price || ''}
+                  onChange={(e) => setEditingItem({
+                    ...editingItem, 
+                    [editingItem.price_adult !== undefined ? 'price_adult' : 'price']: Number(e.target.value)
+                  })}
+                />
+              </div>
+            )}
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="featured"
+                checked={editingItem.is_featured || false}
+                onCheckedChange={(checked) => setEditingItem({...editingItem, is_featured: checked})}
+              />
+              <Label htmlFor="featured">Featured</Label>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button onClick={handleSave}>Save Changes</Button>
+              <Button variant="outline" onClick={() => {setEditingItem(null); setEditingType('')}}>
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderContentTable = (items: any[], type: string, columns: string[]) => (
+    <div className="space-y-4">
+      {items.map((item) => (
+        <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex-1">
+            <p className="font-medium">{item.title || item.country}</p>
+            <p className="text-sm text-gray-600">
+              {type === 'homepage_sliders' ? `Order: ${item.display_order}` : 
+               `Price: ₹${item.price_adult || item.price || 0}`}
+            </p>
+            {item.location && <p className="text-sm text-gray-500">{item.location}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className={
+              (item.status === 'active' || item.is_active) ? 'bg-green-500' : 'bg-gray-500'
+            }>
+              {(item.status === 'active' || item.is_active) ? 'Active' : 'Inactive'}
+            </Badge>
+            {item.is_featured && <Badge className="bg-yellow-500">Featured</Badge>}
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => handleEdit(item, type)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => toggleItemStatus(
+                type, 
+                item.id, 
+                item.status || item.is_active,
+                type === 'homepage_sliders' ? 'is_active' : 'status'
+              )}
+            >
+              {(item.status === 'active' || item.is_active) ? 'Deactivate' : 'Activate'}
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
+        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">Loading admin dashboard...</div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage your travel business</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage your travel business content</p>
+          </div>
+          <Button onClick={signOut} variant="outline">
+            Sign Out
+          </Button>
         </div>
 
         {/* Stats Cards */}
@@ -164,7 +310,7 @@ const AdminPage = () => {
                 <TrendingUp className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -183,87 +329,67 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="bookings" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
+        {/* Content Management Tabs */}
+        <Tabs defaultValue="tours" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="tours">Tours ({tours.length})</TabsTrigger>
+            <TabsTrigger value="packages">Packages ({packages.length})</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets ({tickets.length})</TabsTrigger>
+            <TabsTrigger value="sliders">Sliders ({sliders.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="bookings">
+          <TabsContent value="tours">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>Manage customer bookings</CardDescription>
+                <CardTitle>Tours Management</CardTitle>
+                <CardDescription>Manage your tour offerings</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {bookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{booking.services?.title}</p>
-                        <p className="text-sm text-gray-600">Ref: {booking.booking_reference}</p>
-                        <p className="text-sm text-gray-600">${booking.final_amount}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={
-                          booking.booking_status === 'confirmed' ? 'bg-green-500' :
-                          booking.booking_status === 'pending' ? 'bg-yellow-500' :
-                          booking.booking_status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
-                        }>
-                          {booking.booking_status}
-                        </Badge>
-                        {booking.booking_status === 'pending' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                          >
-                            Confirm
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {renderContentTable(tours, 'tours', ['title', 'price_adult', 'status'])}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="services">
+          <TabsContent value="packages">
             <Card>
               <CardHeader>
-                <CardTitle>Services Management</CardTitle>
-                <CardDescription>Manage your tour packages and services</CardDescription>
+                <CardTitle>Tour Packages Management</CardTitle>
+                <CardDescription>Manage your tour packages</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {services.map((service) => (
-                    <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{service.title}</p>
-                        <p className="text-sm text-gray-600">{service.service_type} - ${service.price}</p>
-                        <p className="text-sm text-gray-600">{service.location}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={service.is_active ? 'bg-green-500' : 'bg-gray-500'}>
-                          {service.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => toggleServiceStatus(service.id, service.is_active)}
-                        >
-                          {service.is_active ? 'Deactivate' : 'Activate'}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {renderContentTable(packages, 'tour_packages', ['title', 'price_adult', 'status'])}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <Card>
+              <CardHeader>
+                <CardTitle>Attraction Tickets Management</CardTitle>
+                <CardDescription>Manage your attraction tickets</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {renderContentTable(tickets, 'attraction_tickets', ['title', 'price_adult', 'status'])}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sliders">
+            <Card>
+              <CardHeader>
+                <CardTitle>Homepage Sliders Management</CardTitle>
+                <CardDescription>Manage your homepage carousel</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {renderContentTable(sliders, 'homepage_sliders', ['title', 'display_order', 'is_active'])}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
+
+      {renderEditModal()}
+      <Footer />
     </div>
   );
 };
