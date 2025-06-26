@@ -2,8 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Star, Share2, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import type { TourPackage } from '@/types/tourism';
+import GuestBookingForm from '@/components/booking/GuestBookingForm';
 
 interface PackageInfoProps {
   pkg: TourPackage;
@@ -11,6 +12,8 @@ interface PackageInfoProps {
 }
 
 const PackageInfo = ({ pkg, isLoading }: PackageInfoProps) => {
+  const [showBookingForm, setShowBookingForm] = useState(false);
+
   if (isLoading) {
     return (
       <div className="md:w-1/2">
@@ -24,6 +27,26 @@ const PackageInfo = ({ pkg, isLoading }: PackageInfoProps) => {
           <Skeleton className="h-12 w-32" />
           <Skeleton className="h-10 w-24" />
         </div>
+      </div>
+    );
+  }
+
+  if (showBookingForm) {
+    return (
+      <div className="md:w-1/2">
+        <Button 
+          variant="outline" 
+          onClick={() => setShowBookingForm(false)}
+          className="mb-4"
+        >
+          ← Back to Details
+        </Button>
+        <GuestBookingForm
+          serviceId={pkg?.id || ''}
+          serviceType="package"
+          serviceTitle={pkg?.title || ''}
+          priceAdult={pkg?.price_adult || 0}
+        />
       </div>
     );
   }
@@ -60,10 +83,8 @@ const PackageInfo = ({ pkg, isLoading }: PackageInfoProps) => {
           <div className="text-sm text-gray-500">per adult</div>
         </div>
         
-        <Button asChild>
-          <Link to="/booking">
-            Book Now
-          </Link>
+        <Button onClick={() => setShowBookingForm(true)}>
+          Book Now
         </Button>
       </div>
 

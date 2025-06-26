@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Users, Package, Ticket, CreditCard, TrendingUp, Plus, Edit, Trash } from 'lucide-react';
+import { Users, Package, Ticket, CreditCard, TrendingUp, Plus, Edit, Trash, Upload, Settings as SettingsIcon } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import BulkUpload from '@/components/admin/BulkUpload';
+import SystemSettings from '@/components/admin/SystemSettings';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -28,6 +30,7 @@ const AdminPage = () => {
   const [packages, setPackages] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [sliders, setSliders] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editingType, setEditingType] = useState<string>('');
@@ -68,6 +71,7 @@ const AdminPage = () => {
       setPackages(packagesData.data || []);
       setTickets(ticketsData.data || []);
       setSliders(slidersData.data || []);
+      setBookings(bookingsData.data || []);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -85,11 +89,9 @@ const AdminPage = () => {
       let updateData: any;
       
       if (statusField === 'status') {
-        // Handle status field with 'active'/'inactive' values
         const newStatus = (currentStatus === 'active' || currentStatus === true) ? 'inactive' : 'active';
         updateData = { status: newStatus };
       } else {
-        // Handle boolean fields like is_active
         updateData = { [statusField]: !currentStatus };
       }
 
@@ -242,7 +244,7 @@ const AdminPage = () => {
     );
   };
 
-  const renderContentTable = (items: any[], type: string, columns: string[]) => (
+  const renderContentTable = (items: any[], type: string) => (
     <div className="space-y-4">
       {items.map((item) => (
         <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -366,11 +368,14 @@ const AdminPage = () => {
 
         {/* Content Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="tours">Tours ({tours.length})</TabsTrigger>
             <TabsTrigger value="packages">Packages ({packages.length})</TabsTrigger>
             <TabsTrigger value="tickets">Tickets ({tickets.length})</TabsTrigger>
             <TabsTrigger value="sliders">Sliders ({sliders.length})</TabsTrigger>
+            <TabsTrigger value="bookings">Bookings ({bookings.length})</TabsTrigger>
+            <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tours">
@@ -380,7 +385,7 @@ const AdminPage = () => {
                 <CardDescription>Manage your tour offerings</CardDescription>
               </CardHeader>
               <CardContent>
-                {renderContentTable(tours, 'tours', ['title', 'price_adult', 'status'])}
+                {renderContentTable(tours, 'tours')}
               </CardContent>
             </Card>
           </TabsContent>
@@ -392,7 +397,7 @@ const AdminPage = () => {
                 <CardDescription>Manage your tour packages</CardDescription>
               </CardHeader>
               <CardContent>
-                {renderContentTable(packages, 'tour_packages', ['title', 'price_adult', 'status'])}
+                {renderContentTable(packages, 'tour_packages')}
               </CardContent>
             </Card>
           </TabsContent>
@@ -404,7 +409,7 @@ const AdminPage = () => {
                 <CardDescription>Manage your attraction tickets</CardDescription>
               </CardHeader>
               <CardContent>
-                {renderContentTable(tickets, 'attraction_tickets', ['title', 'price_adult', 'status'])}
+                {renderContentTable(tickets, 'attraction_tickets')}
               </CardContent>
             </Card>
           </TabsContent>
@@ -416,9 +421,59 @@ const AdminPage = () => {
                 <CardDescription>Manage your homepage carousel</CardDescription>
               </CardHeader>
               <CardContent>
-                {renderContentTable(sliders, 'homepage_sliders', ['title', 'display_order', 'is_active'])}
+                {renderContentTable(sliders, 'homepage_sliders')}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="bookings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Bookings Management</CardTitle>
+                <CardDescription>Manage customer bookings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bookings.map((booking) => (
+                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium">{booking.customer_name}</p>
+                        <p className="text-sm text-gray-600">
+                          Ref: {booking.booking_reference} | Amount: ₹{booking.final_amount}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {booking.customer_phone} | {booking.customer_email}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={
+                          booking.booking_status === 'confirmed' ? 'bg-green-500' :
+                          booking.booking_status === 'pending' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }>
+                          {booking.booking_status}
+                        </Badge>
+                        <Badge className={
+                          booking.payment_status === 'completed' ? 'bg-green-500' :
+                          booking.payment_status === 'pending' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }>
+                          {booking.payment_status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="bulk">
+            <BulkUpload />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SystemSettings />
           </TabsContent>
         </Tabs>
       </div>
