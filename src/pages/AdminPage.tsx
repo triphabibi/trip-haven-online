@@ -80,17 +80,38 @@ const AdminPage = () => {
     }
   };
 
-  const toggleItemStatus = async (table: string, id: string, currentStatus: boolean, statusField: string = 'status') => {
+  const toggleItemStatus = async (table: string, id: string, currentStatus: boolean | string, statusField: string = 'status') => {
     try {
-      const updateData = statusField === 'status' 
-        ? { status: currentStatus === true || currentStatus === 'active' ? 'inactive' : 'active' }
-        : { [statusField]: !currentStatus };
+      let updateData: any;
+      
+      if (statusField === 'status') {
+        // Handle status field with 'active'/'inactive' values
+        const newStatus = (currentStatus === 'active' || currentStatus === true) ? 'inactive' : 'active';
+        updateData = { status: newStatus };
+      } else {
+        // Handle boolean fields like is_active
+        updateData = { [statusField]: !currentStatus };
+      }
 
-      const { error } = await supabase
-        .from(table)
-        .update(updateData)
-        .eq('id', id);
+      let query;
+      switch (table) {
+        case 'tours':
+          query = supabase.from('tours').update(updateData).eq('id', id);
+          break;
+        case 'tour_packages':
+          query = supabase.from('tour_packages').update(updateData).eq('id', id);
+          break;
+        case 'attraction_tickets':
+          query = supabase.from('attraction_tickets').update(updateData).eq('id', id);
+          break;
+        case 'homepage_sliders':
+          query = supabase.from('homepage_sliders').update(updateData).eq('id', id);
+          break;
+        default:
+          throw new Error('Invalid table name');
+      }
 
+      const { error } = await query;
       if (error) throw error;
 
       toast({
@@ -118,11 +139,25 @@ const AdminPage = () => {
     if (!editingItem || !editingType) return;
 
     try {
-      const { error } = await supabase
-        .from(editingType)
-        .update(editingItem)
-        .eq('id', editingItem.id);
+      let query;
+      switch (editingType) {
+        case 'tours':
+          query = supabase.from('tours').update(editingItem).eq('id', editingItem.id);
+          break;
+        case 'tour_packages':
+          query = supabase.from('tour_packages').update(editingItem).eq('id', editingItem.id);
+          break;
+        case 'attraction_tickets':
+          query = supabase.from('attraction_tickets').update(editingItem).eq('id', editingItem.id);
+          break;
+        case 'homepage_sliders':
+          query = supabase.from('homepage_sliders').update(editingItem).eq('id', editingItem.id);
+          break;
+        default:
+          throw new Error('Invalid table type');
+      }
 
+      const { error } = await query;
       if (error) throw error;
 
       toast({
