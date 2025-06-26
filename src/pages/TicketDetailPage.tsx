@@ -1,5 +1,6 @@
+
 import { useParams, Link } from 'react-router-dom';
-import { useTickets } from '@/hooks/useTickets';
+import { useTicket } from '@/hooks/useTickets';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Star, MapPin, Download, Share2, Heart, Zap, Clock, CheckCircle } from '
 
 const TicketDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: ticket, isLoading, error } = useTickets({ id });
+  const { data: ticket, isLoading, error } = useTicket(id!);
 
   if (isLoading) {
     return (

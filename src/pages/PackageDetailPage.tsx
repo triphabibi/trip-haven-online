@@ -1,5 +1,6 @@
+
 import { useParams, Link } from 'react-router-dom';
-import { usePackages } from '@/hooks/usePackages';
+import { usePackage } from '@/hooks/usePackages';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Star, MapPin, Calendar, Users, Share2, Heart, Clock, CheckCircle } from
 
 const PackageDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: pkg, isLoading, error } = usePackages(id);
+  const { data: pkg, isLoading, error } = usePackage(id!);
 
   if (error) {
     return (
