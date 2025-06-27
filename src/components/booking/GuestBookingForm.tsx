@@ -6,41 +6,60 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Calendar, Users } from 'lucide-react';
+import { Calendar, Users, Phone, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface GuestBookingFormProps {
   serviceId: string;
   serviceType: string;
   serviceTitle: string;
   priceAdult: number;
+  priceChild?: number;
+  priceInfant?: number;
 }
 
-const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: GuestBookingFormProps) => {
+const GuestBookingForm = ({ 
+  serviceId, 
+  serviceType, 
+  serviceTitle, 
+  priceAdult,
+  priceChild = 0,
+  priceInfant = 0 
+}: GuestBookingFormProps) => {
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
     customerEmail: '',
+    travelDate: '',
     adultsCount: 1,
     childrenCount: 0,
     infantsCount: 0,
-    travelDate: '',
     pickupLocation: '',
     specialRequests: '',
     selectedTime: '',
     selectedLanguage: 'English'
   });
+  
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { formatPrice, convertPrice } = useCurrency();
+
+  const calculateTotal = () => {
+    const adultTotal = formData.adultsCount * priceAdult;
+    const childTotal = formData.childrenCount * (priceChild || 0);
+    const infantTotal = formData.infantsCount * (priceInfant || 0);
+    return adultTotal + childTotal + infantTotal;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.customerName || !formData.customerPhone) {
       toast({
-        title: "Error",
-        description: "Name and phone/email are required",
+        title: "Missing Information",
+        description: "Please provide at least your name and phone number",
         variant: "destructive",
       });
       return;
@@ -49,20 +68,20 @@ const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: 
     setLoading(true);
     
     try {
-      const totalAmount = (formData.adultsCount * priceAdult);
+      const totalAmount = calculateTotal();
       
       const { data, error } = await supabase
         .from('new_bookings')
         .insert({
+          service_id: serviceId,
+          booking_type: serviceType,
           customer_name: formData.customerName,
           customer_phone: formData.customerPhone,
           customer_email: formData.customerEmail || null,
-          service_id: serviceId,
-          booking_type: serviceType,
+          travel_date: formData.travelDate || null,
           adults_count: formData.adultsCount,
           children_count: formData.childrenCount,
           infants_count: formData.infantsCount,
-          travel_date: formData.travelDate || null,
           pickup_location: formData.pickupLocation || null,
           special_requests: formData.specialRequests || null,
           selected_time: formData.selectedTime || null,
@@ -78,8 +97,8 @@ const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: 
       if (error) throw error;
 
       toast({
-        title: "Booking Created!",
-        description: `Your booking reference is: ${data.booking_reference}`,
+        title: "Booking Submitted!",
+        description: `Your booking reference is ${data.booking_reference}`,
       });
 
       // Reset form
@@ -87,10 +106,10 @@ const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: 
         customerName: '',
         customerPhone: '',
         customerEmail: '',
+        travelDate: '',
         adultsCount: 1,
         childrenCount: 0,
         infantsCount: 0,
-        travelDate: '',
         pickupLocation: '',
         specialRequests: '',
         selectedTime: '',
@@ -101,7 +120,7 @@ const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: 
       console.error('Booking error:', error);
       toast({
         title: "Error",
-        description: "Failed to create booking. Please try again.",
+        description: "Failed to submit booking. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -110,141 +129,191 @@ const GuestBookingForm = ({ serviceId, serviceType, serviceTitle, priceAdult }: 
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Book {serviceTitle}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Contact Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="customerName">Full Name *</Label>
+            <Input
+              id="customerName"
+              value={formData.customerName}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+              required
+            />
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="customerName">Full Name *</Label>
-              <Input
-                id="customerName"
-                value={formData.customerName}
-                onChange={(e) => setFormData({...formData, customerName: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="customerPhone">Phone *</Label>
+              <Label htmlFor="customerPhone">Phone Number *</Label>
               <Input
                 id="customerPhone"
                 type="tel"
                 value={formData.customerPhone}
-                onChange={(e) => setFormData({...formData, customerPhone: e.target.value})}
+                onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
                 required
               />
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="customerEmail">Email (Optional)</Label>
-            <Input
-              id="customerEmail"
-              type="email"
-              value={formData.customerEmail}
-              onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="adults">Adults</Label>
-              <Select value={formData.adultsCount.toString()} onValueChange={(value) => setFormData({...formData, adultsCount: parseInt(value)})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1,2,3,4,5,6,7,8].map(num => (
-                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="children">Children</Label>
-              <Select value={formData.childrenCount.toString()} onValueChange={(value) => setFormData({...formData, childrenCount: parseInt(value)})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[0,1,2,3,4,5,6].map(num => (
-                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="infants">Infants</Label>
-              <Select value={formData.infantsCount.toString()} onValueChange={(value) => setFormData({...formData, infantsCount: parseInt(value)})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[0,1,2,3,4].map(num => (
-                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="customerEmail">Email (optional)</Label>
+              <Input
+                id="customerEmail"
+                type="email"
+                value={formData.customerEmail}
+                onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
+              />
             </div>
           </div>
+        </CardContent>
+      </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Booking Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div>
             <Label htmlFor="travelDate">Travel Date</Label>
             <Input
               id="travelDate"
               type="date"
               value={formData.travelDate}
-              onChange={(e) => setFormData({...formData, travelDate: e.target.value})}
+              onChange={(e) => setFormData(prev => ({ ...prev, travelDate: e.target.value }))}
             />
           </div>
-
-          <div>
-            <Label htmlFor="pickupLocation">Pickup Location (Optional)</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="adultsCount">Adults</Label>
               <Input
-                id="pickupLocation"
-                className="pl-10"
-                placeholder="Enter pickup location"
-                value={formData.pickupLocation}
-                onChange={(e) => setFormData({...formData, pickupLocation: e.target.value})}
+                id="adultsCount"
+                type="number"
+                min="1"
+                value={formData.adultsCount}
+                onChange={(e) => setFormData(prev => ({ ...prev, adultsCount: parseInt(e.target.value) || 1 }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="childrenCount">Children</Label>
+              <Input
+                id="childrenCount"
+                type="number"
+                min="0"
+                value={formData.childrenCount}
+                onChange={(e) => setFormData(prev => ({ ...prev, childrenCount: parseInt(e.target.value) || 0 }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="infantsCount">Infants</Label>
+              <Input
+                id="infantsCount"
+                type="number"
+                min="0"
+                value={formData.infantsCount}
+                onChange={(e) => setFormData(prev => ({ ...prev, infantsCount: parseInt(e.target.value) || 0 }))}
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="specialRequests">Special Requests (Optional)</Label>
-            <Textarea
-              id="specialRequests"
-              placeholder="Any special requirements or notes..."
-              value={formData.specialRequests}
-              onChange={(e) => setFormData({...formData, specialRequests: e.target.value})}
+            <Label htmlFor="pickupLocation">Pickup Location (optional)</Label>
+            <Input
+              id="pickupLocation"
+              placeholder="Enter pickup address or location"
+              value={formData.pickupLocation}
+              onChange={(e) => setFormData(prev => ({ ...prev, pickupLocation: e.target.value }))}
             />
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Total Amount:</span>
-              <span className="text-xl font-bold text-green-600">
-                ₹{(formData.adultsCount * priceAdult).toLocaleString()}
-              </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="selectedTime">Preferred Time</Label>
+              <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="morning">Morning (8:00 AM - 12:00 PM)</SelectItem>
+                  <SelectItem value="afternoon">Afternoon (12:00 PM - 4:00 PM)</SelectItem>
+                  <SelectItem value="evening">Evening (4:00 PM - 8:00 PM)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="selectedLanguage">Language</Label>
+              <Select value={formData.selectedLanguage} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedLanguage: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="Hindi">Hindi</SelectItem>
+                  <SelectItem value="Arabic">Arabic</SelectItem>
+                  <SelectItem value="French">French</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating Booking...' : 'Book Now'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          <div>
+            <Label htmlFor="specialRequests">Special Requests</Label>
+            <Textarea
+              id="specialRequests"
+              placeholder="Any special requirements or requests..."
+              value={formData.specialRequests}
+              onChange={(e) => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Booking Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Service:</span>
+              <span>{serviceTitle}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Adults ({formData.adultsCount}):</span>
+              <span>{formatPrice(formData.adultsCount * priceAdult)}</span>
+            </div>
+            {formData.childrenCount > 0 && (
+              <div className="flex justify-between">
+                <span>Children ({formData.childrenCount}):</span>
+                <span>{formatPrice(formData.childrenCount * (priceChild || 0))}</span>
+              </div>
+            )}
+            {formData.infantsCount > 0 && (
+              <div className="flex justify-between">
+                <span>Infants ({formData.infantsCount}):</span>
+                <span>{formatPrice(formData.infantsCount * (priceInfant || 0))}</span>
+              </div>
+            )}
+            <hr className="my-2" />
+            <div className="flex justify-between font-bold text-lg">
+              <span>Total:</span>
+              <span>{formatPrice(calculateTotal())}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? 'Submitting...' : 'Submit Booking'}
+      </Button>
+    </form>
   );
 };
 

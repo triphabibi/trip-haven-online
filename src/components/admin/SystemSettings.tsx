@@ -21,8 +21,9 @@ const SystemSettings = () => {
 
   const fetchSettings = async () => {
     try {
+      // Use site_settings table instead of system_settings
       const { data, error } = await supabase
-        .from('system_settings')
+        .from('site_settings')
         .select('*');
       
       if (error) throw error;
@@ -41,7 +42,7 @@ const SystemSettings = () => {
   const updateSetting = async (key: string, value: string) => {
     try {
       const { error } = await supabase
-        .from('system_settings')
+        .from('site_settings')
         .upsert({
           setting_key: key,
           setting_value: value,
@@ -71,7 +72,7 @@ const SystemSettings = () => {
       }));
 
       const { error } = await supabase
-        .from('system_settings')
+        .from('site_settings')
         .upsert(updates);
       
       if (error) throw error;

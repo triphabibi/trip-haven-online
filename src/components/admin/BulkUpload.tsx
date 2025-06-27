@@ -52,19 +52,6 @@ const BulkUpload = () => {
     setLoading(true);
     
     try {
-      // Create upload record
-      const { data: uploadRecord, error: uploadError } = await supabase
-        .from('bulk_uploads')
-        .insert({
-          upload_type: uploadType,
-          file_name: file.name,
-          status: 'processing'
-        })
-        .select()
-        .single();
-
-      if (uploadError) throw uploadError;
-
       // Parse CSV file
       const text = await file.text();
       const lines = text.split('\n').filter(line => line.trim());
@@ -112,8 +99,7 @@ const BulkUpload = () => {
                 days: parseInt(rowData.days) || 1,
                 nights: parseInt(rowData.nights) || 0,
                 highlights: rowData.highlights ? rowData.highlights.split(';') : [],
-                whats_included: rowData.whats_included ? rowData.whats_included.split(';') : [],
-                status: 'active'
+                whats_included: rowData.whats_included ? rowData.whats_included.split(';') : []
               });
               break;
             case 'tickets':
@@ -124,8 +110,7 @@ const BulkUpload = () => {
                 price_child: parseFloat(rowData.price_child) || 0,
                 price_infant: parseFloat(rowData.price_infant) || 0,
                 location: rowData.location,
-                instant_delivery: rowData.instant_delivery === 'true',
-                status: 'active'
+                instant_delivery: rowData.instant_delivery === 'true'
               });
               break;
             case 'visas':
@@ -135,8 +120,7 @@ const BulkUpload = () => {
                 price: parseFloat(rowData.price) || 0,
                 processing_time: rowData.processing_time,
                 description: rowData.description,
-                requirements: rowData.requirements ? rowData.requirements.split(';') : [],
-                status: 'active'
+                requirements: rowData.requirements ? rowData.requirements.split(';') : []
               });
               break;
           }
@@ -146,14 +130,6 @@ const BulkUpload = () => {
           failed++;
         }
       }
-
-      // Update upload record
-      await supabase.from('bulk_uploads').update({
-        status: 'completed',
-        total_records: rows.length,
-        processed_records: processed,
-        failed_records: failed
-      }).eq('id', uploadRecord.id);
 
       toast({
         title: "Upload Complete!",

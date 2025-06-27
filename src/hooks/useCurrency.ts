@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface CurrencyRate {
   from_currency: string;
@@ -14,22 +13,15 @@ export const useCurrency = () => {
   const [userCurrency, setUserCurrency] = useState('INR');
 
   useEffect(() => {
-    fetchCurrencyRates();
     detectUserCurrency();
+    // Set default rates for common conversions
+    setRates([
+      { from_currency: 'INR', to_currency: 'USD', rate: 0.012 },
+      { from_currency: 'USD', to_currency: 'INR', rate: 83.50 },
+      { from_currency: 'INR', to_currency: 'EUR', rate: 0.011 },
+      { from_currency: 'EUR', to_currency: 'INR', rate: 91.00 },
+    ]);
   }, []);
-
-  const fetchCurrencyRates = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('currency_rates')
-        .select('*');
-      
-      if (error) throw error;
-      setRates(data || []);
-    } catch (error) {
-      console.error('Error fetching currency rates:', error);
-    }
-  };
 
   const detectUserCurrency = async () => {
     try {
@@ -42,8 +34,9 @@ export const useCurrency = () => {
         'US': 'USD',
         'IN': 'INR',
         'GB': 'GBP',
-        'EU': 'EUR',
-        // Add more mappings as needed
+        'DE': 'EUR',
+        'FR': 'EUR',
+        'AE': 'USD', // UAE often uses USD for tourism
       };
       
       const detectedCurrency = currencyMap[data.country_code] || 'INR';
