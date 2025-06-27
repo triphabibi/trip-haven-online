@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Users, Phone, Mail } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -44,13 +44,19 @@ const GuestBookingForm = ({
   
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   const calculateTotal = () => {
     const adultTotal = formData.adultsCount * priceAdult;
     const childTotal = formData.childrenCount * (priceChild || 0);
     const infantTotal = formData.infantsCount * (priceInfant || 0);
     return adultTotal + childTotal + infantTotal;
+  };
+
+  const generateBookingReference = () => {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `TH${timestamp.slice(-8)}${random}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,10 +75,12 @@ const GuestBookingForm = ({
     
     try {
       const totalAmount = calculateTotal();
+      const bookingReference = generateBookingReference();
       
       const { data, error } = await supabase
         .from('new_bookings')
         .insert({
+          booking_reference: bookingReference,
           service_id: serviceId,
           booking_type: serviceType,
           customer_name: formData.customerName,
@@ -98,7 +106,7 @@ const GuestBookingForm = ({
 
       toast({
         title: "Booking Submitted!",
-        description: `Your booking reference is ${data.booking_reference}`,
+        description: `Your booking reference is ${bookingReference}`,
       });
 
       // Reset form

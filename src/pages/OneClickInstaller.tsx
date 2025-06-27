@@ -12,7 +12,6 @@ const OneClickInstaller = () => {
   const [progress, setProgress] = useState(0);
   const [steps, setSteps] = useState([
     { name: 'Database Setup', status: 'pending' },
-    { name: 'Admin User Creation', status: 'pending' },
     { name: 'Sample Data Loading', status: 'pending' },
     { name: 'Configuration Setup', status: 'pending' },
   ]);
@@ -47,8 +46,7 @@ const OneClickInstaller = () => {
           whats_included: ['Transportation', 'Tour Guide', 'Entry Tickets', 'Lunch'],
           languages: ['English', 'Hindi', 'Arabic'],
           status: 'active',
-          is_featured: true,
-          currency: 'INR'
+          is_featured: true
         }
       ]);
 
@@ -56,30 +54,8 @@ const OneClickInstaller = () => {
       setProgress(25);
       updateStepStatus(0, 'completed');
 
-      // Step 2: Admin User Creation (Skip since we can't create auth users directly)
+      // Step 2: Sample Data Loading
       updateStepStatus(1, 'running');
-      setProgress(40);
-      
-      // Instead, we'll create pickup locations
-      const { error: pickupError } = await supabase.from('pickup_locations').upsert([
-        {
-          name: 'Dubai International Airport',
-          address: 'Dubai International Airport, Dubai, UAE',
-          is_active: true
-        },
-        {
-          name: 'Dubai Mall',
-          address: 'Downtown Dubai, Dubai, UAE',
-          is_active: true
-        }
-      ]);
-
-      if (pickupError) throw pickupError;
-      setProgress(55);
-      updateStepStatus(1, 'completed');
-
-      // Step 3: Sample Data Loading
-      updateStepStatus(2, 'running');
       
       // Create sample packages
       const { error: packagesError } = await supabase.from('tour_packages').upsert([
@@ -94,17 +70,50 @@ const OneClickInstaller = () => {
           highlights: ['Dubai City Tour', 'Abu Dhabi City Tour', 'Desert Safari', 'Dhow Cruise'],
           whats_included: ['Hotel Accommodation', 'Daily Breakfast', 'Transportation', 'Tour Guide'],
           status: 'active',
-          is_featured: true,
-          currency: 'INR'
+          is_featured: true
         }
       ]);
 
       if (packagesError) throw packagesError;
-      setProgress(70);
-      updateStepStatus(2, 'completed');
 
-      // Step 4: Configuration Setup
-      updateStepStatus(3, 'running');
+      // Create sample attraction tickets
+      const { error: ticketsError } = await supabase.from('attraction_tickets').upsert([
+        {
+          title: 'Burj Khalifa At The Top',
+          description: 'Experience breathtaking views from the world\'s tallest building.',
+          price_adult: 400,
+          price_child: 300,
+          price_infant: 0,
+          location: 'Downtown Dubai',
+          instant_delivery: true,
+          is_featured: true,
+          status: 'active'
+        }
+      ]);
+
+      if (ticketsError) throw ticketsError;
+
+      // Create sample visa services
+      const { error: visasError } = await supabase.from('visa_services').upsert([
+        {
+          country: 'UAE',
+          visa_type: 'Tourist Visa',
+          price: 350,
+          processing_time: '3-5 working days',
+          description: 'Single entry tourist visa valid for 30 days.',
+          requirements: ['Passport copy', 'Photo', 'Flight tickets', 'Hotel booking'],
+          is_featured: true,
+          status: 'active'
+        }
+      ]);
+
+      if (visasError) throw visasError;
+      
+      setProgress(70);
+      updateStepStatus(1, 'completed');
+
+      // Step 3: Configuration Setup
+      updateStepStatus(2, 'running');
       
       // Create homepage sliders
       const { error: slidersError } = await supabase.from('homepage_sliders').upsert([
@@ -120,13 +129,27 @@ const OneClickInstaller = () => {
       ]);
 
       if (slidersError) throw slidersError;
-      setProgress(90);
 
-      // Initialize currency rates
-      await supabase.functions.invoke('currency-converter');
+      // Create sample site settings
+      const { error: settingsError } = await supabase.from('site_settings').upsert([
+        {
+          setting_key: 'default_currency',
+          setting_value: 'INR',
+          setting_type: 'text',
+          description: 'Default currency for the application'
+        },
+        {
+          setting_key: 'auto_currency_conversion',
+          setting_value: 'true',
+          setting_type: 'boolean',
+          description: 'Enable automatic currency conversion'
+        }
+      ]);
+
+      if (settingsError) throw settingsError;
       
       setProgress(100);
-      updateStepStatus(3, 'completed');
+      updateStepStatus(2, 'completed');
 
       toast({
         title: "Installation Complete!",
