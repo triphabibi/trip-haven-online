@@ -29,6 +29,8 @@ const Footer = () => {
               <li><Link to="/packages" className="text-gray-300 hover:text-white">Packages</Link></li>
               <li><Link to="/tickets" className="text-gray-300 hover:text-white">Tickets</Link></li>
               <li><Link to="/visas" className="text-gray-300 hover:text-white">Visas</Link></li>
+              <li><Link to="/transfers" className="text-gray-300 hover:text-white">Transfers</Link></li>
+              <li><Link to="/about" className="text-gray-300 hover:text-white">About Us</Link></li>
               <li><Link to="/contact" className="text-gray-300 hover:text-white">Contact</Link></li>
             </ul>
           </div>
@@ -41,6 +43,7 @@ const Footer = () => {
               <li><span className="text-gray-300">Multi-day Packages</span></li>
               <li><span className="text-gray-300">Attraction Tickets</span></li>
               <li><span className="text-gray-300">Visa Processing</span></li>
+              <li><span className="text-gray-300">Airport Transfers</span></li>
               <li><span className="text-gray-300">Custom Itineraries</span></li>
             </ul>
           </div>
@@ -51,11 +54,11 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2" />
-                <span className="text-gray-300">+91-9876543210</span>
+                <span className="text-gray-300">+91-9125009662</span>
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span className="text-gray-300">info@triphabibi.in</span>
+                <span className="text-gray-300">info@triphabibi.com</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2" />

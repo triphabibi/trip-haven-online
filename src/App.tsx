@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 // Pages
 import Index from '@/pages/Index';
@@ -18,14 +19,22 @@ import VisaPage from '@/pages/VisaPage';
 import TransfersPage from '@/pages/TransfersPage';
 import BookingPage from '@/pages/BookingPage';
 import OneClickInstaller from '@/pages/OneClickInstaller';
+import AboutPage from '@/pages/AboutPage';
+import ContactPage from '@/pages/ContactPage';
 
 const queryClient = new QueryClient();
+
+const ScrollToTop = () => {
+  useScrollToTop();
+  return null;
+};
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
+          <ScrollToTop />
           <div className="App">
             <Routes>
               <Route path="/" element={<Homepage />} />
@@ -41,6 +50,8 @@ function App() {
               <Route path="/transfers" element={<TransfersPage />} />
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/installer" element={<OneClickInstaller />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
             </Routes>
             <Toaster />
           </div>
