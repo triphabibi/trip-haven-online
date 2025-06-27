@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -53,7 +54,7 @@ const OneClickInstaller = () => {
           instant_confirmation: true,
           free_cancellation: true,
           is_featured: true,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.8,
           total_reviews: 156
         },
@@ -89,7 +90,7 @@ const OneClickInstaller = () => {
           instant_confirmation: true,
           free_cancellation: true,
           is_featured: true,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.6,
           total_reviews: 234
         },
@@ -125,7 +126,7 @@ const OneClickInstaller = () => {
           instant_confirmation: true,
           free_cancellation: true,
           is_featured: false,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.7,
           total_reviews: 89
         },
@@ -160,7 +161,7 @@ const OneClickInstaller = () => {
           instant_confirmation: true,
           free_cancellation: true,
           is_featured: false,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.4,
           total_reviews: 67
         }
@@ -193,7 +194,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=500'
           ],
           is_featured: true,
-          status: 'active'
+          status: 'active' as const
         },
         {
           country: 'UAE',
@@ -214,7 +215,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=500'
           ],
           is_featured: true,
-          status: 'active'
+          status: 'active' as const
         },
         {
           country: 'Oman',
@@ -233,7 +234,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500'
           ],
           is_featured: false,
-          status: 'active'
+          status: 'active' as const
         },
         {
           country: 'Saudi Arabia',
@@ -254,7 +255,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1578643463897-5d2e4d4ab471?w=500'
           ],
           is_featured: true,
-          status: 'active'
+          status: 'active' as const
         }
       ];
 
@@ -281,7 +282,7 @@ const OneClickInstaller = () => {
           is_featured: true,
           rating: 4.8,
           total_reviews: 1250,
-          status: 'active'
+          status: 'active' as const
         },
         {
           title: 'Dubai Aquarium & Underwater Zoo',
@@ -297,7 +298,7 @@ const OneClickInstaller = () => {
           is_featured: true,
           rating: 4.6,
           total_reviews: 876,
-          status: 'active'
+          status: 'active' as const
         },
         {
           title: 'Dubai Frame Tickets',
@@ -313,7 +314,7 @@ const OneClickInstaller = () => {
           is_featured: false,
           rating: 4.4,
           total_reviews: 324,
-          status: 'active'
+          status: 'active' as const
         },
         {
           title: 'Global Village Entry Ticket',
@@ -329,7 +330,7 @@ const OneClickInstaller = () => {
           is_featured: false,
           rating: 4.3,
           total_reviews: 567,
-          status: 'active'
+          status: 'active' as const
         }
       ];
 
@@ -411,7 +412,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800'
           ],
           is_featured: true,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.7,
           total_reviews: 89
         },
@@ -452,7 +453,7 @@ const OneClickInstaller = () => {
             'https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?w=800'
           ],
           is_featured: true,
-          status: 'active',
+          status: 'active' as const,
           rating: 4.9,
           total_reviews: 45
         }
