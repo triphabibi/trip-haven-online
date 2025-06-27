@@ -5,19 +5,26 @@ import { useTour } from '@/hooks/useTours';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import WhatsAppButton from '@/components/common/WhatsAppButton';
-import BookingForm from '@/components/booking/BookingForm';
+import TourImageGallery from '@/components/tours/TourImageGallery';
+import TourBookingCard from '@/components/tours/TourBookingCard';
+import TourOverview from '@/components/tours/TourOverview';
+import TourItinerary from '@/components/tours/TourItinerary';
+import TourInclusions from '@/components/tours/TourInclusions';
+import TourReviews from '@/components/tours/TourReviews';
+import TourFAQ from '@/components/tours/TourFAQ';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Star, MapPin, Users, CheckCircle, XCircle, Heart, Share2, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, Star, MapPin, Users, CheckCircle, XCircle, Heart, Share2, Calendar, Shield, Award } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Loading from '@/components/common/Loading';
 
 const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: tour, isLoading, error } = useTour(id!);
   const { toast } = useToast();
-  const [showBookingForm, setShowBookingForm] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const handleWishlist = () => {
     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
@@ -26,6 +33,7 @@ const TourDetailPage = () => {
     if (isInWishlist) {
       const newWishlist = wishlist.filter((item: any) => !(item.id === id && item.type === 'tour'));
       localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+      setIsWishlisted(false);
       toast({
         title: "Removed from Wishlist",
         description: "Tour removed from your wishlist",
@@ -33,6 +41,7 @@ const TourDetailPage = () => {
     } else {
       wishlist.push({ id, type: 'tour', title: tour?.title, image: tour?.image_urls?.[0] });
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      setIsWishlisted(true);
       toast({
         title: "Added to Wishlist",
         description: "Tour added to your wishlist",
@@ -60,19 +69,7 @@ const TourDetailPage = () => {
     return (
       <div className="min-h-screen">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-96 bg-gray-200 rounded-lg mb-6"></div>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-2">
-                <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-              </div>
-              <div className="h-96 bg-gray-200 rounded-lg"></div>
-            </div>
-          </div>
-        </div>
+        <Loading message="Loading tour details..." />
         <Footer />
       </div>
     );
@@ -97,209 +94,175 @@ const TourDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/tours" className="hover:text-blue-600">Tours</Link>
+          <Link to="/tours" className="hover:text-blue-600 transition-colors">Tours</Link>
           <span>/</span>
-          <span className="text-gray-900">{tour.title}</span>
+          <span className="text-gray-900 font-medium">{tour.title}</span>
         </nav>
 
-        {/* Image Gallery */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="col-span-4 md:col-span-3">
-            <img
-              src={tour.image_urls?.[selectedImageIndex] || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800'}
-              alt={tour.title}
-              className="w-full h-96 object-cover rounded-lg"
-            />
-          </div>
-          <div className="col-span-4 md:col-span-1 grid grid-cols-4 md:grid-cols-1 gap-2">
-            {tour.image_urls?.slice(0, 4).map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`${tour.title} ${index + 1}`}
-                className={`w-full h-20 md:h-24 object-cover rounded cursor-pointer ${
-                  index === selectedImageIndex ? 'ring-2 ring-blue-500' : ''
-                }`}
-                onClick={() => setSelectedImageIndex(index)}
-              />
-            ))}
+        {/* Header Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex flex-wrap gap-2 mb-4">
+                {tour.instant_confirmation && (
+                  <Badge className="bg-green-500 hover:bg-green-600">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Instant Confirmation
+                  </Badge>
+                )}
+                {tour.free_cancellation && (
+                  <Badge className="bg-blue-500 hover:bg-blue-600">
+                    <XCircle className="h-3 w-3 mr-1" />
+                    Free Cancellation
+                  </Badge>
+                )}
+                {tour.is_featured && (
+                  <Badge className="bg-yellow-500 hover:bg-yellow-600">
+                    <Award className="h-3 w-3 mr-1" />
+                    Best Seller
+                  </Badge>
+                )}
+                <Badge variant="outline" className="border-orange-300 text-orange-700 bg-orange-50">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Trusted Partner
+                </Badge>
+              </div>
+
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {tour.title}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-6 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <span className="text-lg font-semibold">{tour.rating || 0}</span>
+                  </div>
+                  <span className="text-gray-600">({tour.total_reviews || 0} reviews)</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Clock className="h-5 w-5" />
+                  <span className="font-medium">{tour.duration || 'Full Day'}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-600">
+                  <MapPin className="h-5 w-5" />
+                  <span className="font-medium">Dubai</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Users className="h-5 w-5" />
+                  <span className="font-medium">Group Tour</span>
+                </div>
+              </div>
+
+              <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                {tour.description}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleWishlist}
+                className={`${isWishlisted ? 'text-red-500 border-red-200' : ''}`}
+              >
+                <Heart className={`h-5 w-5 mr-2 ${isWishlisted ? 'fill-red-500' : ''}`} />
+                Save
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleShare}>
+                <Share2 className="h-5 w-5 mr-2" />
+                Share
+              </Button>
+            </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Title and Actions */}
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{tour.title}</h1>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{tour.rating || 0}</span>
-                    <span className="text-gray-500">({tour.total_reviews || 0} reviews)</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <Clock className="h-4 w-4" />
-                    <span>{tour.duration || 'Full Day'}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <MapPin className="h-4 w-4" />
-                    <span>Dubai</span>
-                  </div>
-                </div>
-                <div className="flex gap-2 mb-4">
-                  {tour.instant_confirmation && (
-                    <Badge className="bg-green-500">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Instant Confirmation
-                    </Badge>
-                  )}
-                  {tour.free_cancellation && (
-                    <Badge className="bg-blue-500">
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Free Cancellation
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handleWishlist}>
-                  <Heart className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleShare}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          <div className="lg:col-span-2 space-y-8">
+            {/* Image Gallery */}
+            <TourImageGallery tour={tour} />
 
-            {/* Description */}
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-3">About This Tour</h2>
-                <p className="text-gray-600 leading-relaxed">{tour.description}</p>
-              </CardContent>
-            </Card>
-
-            {/* Highlights */}
+            {/* Quick Highlights */}
             {tour.highlights && tour.highlights.length > 0 && (
-              <Card className="mb-6">
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-3">Highlights</h2>
-                  <ul className="space-y-2">
-                    {tour.highlights.map((highlight, index) => (
-                      <li key={index} className="flex items-start gap-2">
+              <Card className="overflow-hidden">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold mb-4">Highlights</h2>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {tour.highlights.slice(0, 6).map((highlight, index) => (
+                      <div key={index} className="flex items-start gap-3">
                         <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-600">{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* What's Included */}
-            {tour.whats_included && tour.whats_included.length > 0 && (
-              <Card className="mb-6">
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-3">What's Included</h2>
-                  <ul className="space-y-2">
-                    {tour.whats_included.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-600">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Available Times */}
-            {tour.available_times && tour.available_times.length > 0 && (
-              <Card className="mb-6">
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-3">Available Times</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {tour.available_times.map((time, index) => (
-                      <Badge key={index} variant="outline" className="text-sm">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {time}
-                      </Badge>
+                        <span className="text-gray-700">{highlight}</span>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Languages */}
-            {tour.languages && tour.languages.length > 0 && (
-              <Card className="mb-6">
-                <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-3">Languages</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {tour.languages.map((language, index) => (
-                      <Badge key={index} variant="outline">{language}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Main Content Tabs */}
+            <Card className="overflow-hidden">
+              <Tabs defaultValue="overview" className="w-full">
+                <div className="border-b bg-gray-50/50">
+                  <TabsList className="h-auto p-1 bg-transparent w-full justify-start">
+                    <TabsTrigger value="overview" className="px-6 py-3 text-base font-medium">
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="itinerary" className="px-6 py-3 text-base font-medium">
+                      Itinerary
+                    </TabsTrigger>
+                    <TabsTrigger value="inclusions" className="px-6 py-3 text-base font-medium">
+                      Inclusions
+                    </TabsTrigger>
+                    <TabsTrigger value="reviews" className="px-6 py-3 text-base font-medium">
+                      Reviews
+                    </TabsTrigger>
+                    <TabsTrigger value="faq" className="px-6 py-3 text-base font-medium">
+                      FAQ
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <div className="p-6">
+                  <TabsContent value="overview">
+                    <TourOverview tour={tour} />
+                  </TabsContent>
+
+                  <TabsContent value="itinerary">
+                    <TourItinerary tour={tour} />
+                  </TabsContent>
+
+                  <TabsContent value="inclusions">
+                    <TourInclusions tour={tour} />
+                  </TabsContent>
+
+                  <TabsContent value="reviews">
+                    <TourReviews tourId={tour.id} rating={tour.rating} totalReviews={tour.total_reviews} />
+                  </TabsContent>
+
+                  <TabsContent value="faq">
+                    <TourFAQ />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </Card>
           </div>
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center mb-6">
-                    <div className="text-3xl font-bold text-blue-600 mb-1">
-                      ₹{tour.price_adult.toLocaleString()}
-                    </div>
-                    <div className="text-gray-500">per adult</div>
-                    {tour.price_child > 0 && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        Child (2-11): ₹{tour.price_child.toLocaleString()}
-                      </div>
-                    )}
-                    {tour.price_infant > 0 && (
-                      <div className="text-sm text-gray-500">
-                        Infant (0-2): ₹{tour.price_infant.toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-
-                  {!showBookingForm ? (
-                    <Button 
-                      className="w-full"
-                      onClick={() => setShowBookingForm(true)}
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      Book Now
-                    </Button>
-                  ) : (
-                    <BookingForm 
-                      tour={tour} 
-                      onCancel={() => setShowBookingForm(false)}
-                    />
-                  )}
-
-                  <div className="mt-4 pt-4 border-t text-center">
-                    <p className="text-sm text-gray-500 mb-2">Need help?</p>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Contact Support
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <TourBookingCard tour={tour} />
             </div>
           </div>
         </div>
