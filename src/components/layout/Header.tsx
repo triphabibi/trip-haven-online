@@ -1,143 +1,151 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, User, LogOut, Plane, Car, FileText, Ticket } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const navItems = [
+    { name: 'Tours', href: '/tours', icon: Plane },
+    { name: 'Packages', href: '/packages', icon: FileText },
+    { name: 'Tickets', href: '/tickets', icon: Ticket },
+    { name: 'Visas', href: '/visas', icon: FileText },
+    { name: 'Transfers', href: '/transfers', icon: Car },
+  ];
 
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            TripHabibi
-          </Link>
+          <div className="flex items-center">
+            <Link to="/" className="text-2xl font-bold text-blue-600">
+              TripHabibi
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/tours" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Tours
-            </Link>
-            <Link to="/packages" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Packages
-            </Link>
-            <Link to="/tickets" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Tickets
-            </Link>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="flex items-center gap-1 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* User Actions */}
+          <div className="flex items-center space-x-4">
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span>{profile?.full_name || user.email}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white border shadow-lg">
-                  {profile?.role === 'admin' && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin" className="flex items-center space-x-2 cursor-pointer">
-                        <span>Admin Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={signOut} className="flex items-center space-x-2 cursor-pointer">
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center space-x-2">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" size="sm">
+                      Admin Panel
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
             ) : (
               <Link to="/auth">
-                <Button>Sign In</Button>
+                <Button size="sm" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Sign In
+                </Button>
               </Link>
             )}
-          </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={toggleMenu}
-            className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
-              <Link
-                to="/tours"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Tours
-              </Link>
-              <Link
-                to="/packages"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Packages
-              </Link>
-              <Link
-                to="/tickets"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Tickets
-              </Link>
-              
-              {user ? (
-                <div className="border-t pt-2">
-                  <div className="px-3 py-2 text-sm text-gray-500">
-                    {profile?.full_name || user.email}
+            {/* Mobile menu */}
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="sm">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col space-y-4">
+                  <Link to="/" className="text-2xl font-bold text-blue-600 mb-8">
+                    TripHabibi
+                  </Link>
+                  
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center gap-3 text-gray-700 hover:text-blue-600 font-medium py-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon className="h-5 w-5" />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                  
+                  <div className="pt-4 border-t">
+                    {user ? (
+                      <div className="space-y-2">
+                        {isAdmin && (
+                          <Link to="/admin" onClick={() => setIsOpen(false)}>
+                            <Button variant="outline" className="w-full justify-start">
+                              Admin Panel
+                            </Button>
+                          </Link>
+                        )}
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            handleSignOut();
+                            setIsOpen(false);
+                          }}
+                          className="w-full justify-start"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Link to="/auth" onClick={() => setIsOpen(false)}>
+                        <Button className="w-full justify-start">
+                          <User className="h-4 w-4 mr-2" />
+                          Sign In
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  {profile?.role === 'admin' && (
-                    <Link
-                      to="/admin"
-                      className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                      onClick={toggleMenu}
-                    >
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => {signOut(); toggleMenu();}}
-                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  to="/auth"
-                  className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                  onClick={toggleMenu}
-                >
-                  Sign In
-                </Link>
-              )}
-            </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

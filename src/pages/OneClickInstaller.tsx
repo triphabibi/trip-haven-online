@@ -35,18 +35,40 @@ const OneClickInstaller = () => {
       // Create sample tours
       const { error: toursError } = await supabase.from('tours').upsert([
         {
-          title: 'Dubai City Tour',
-          description: 'Explore the magnificent city of Dubai with our comprehensive tour package.',
+          title: 'Dubai City Tour with Burj Khalifa',
+          description: 'Explore the magnificent city of Dubai with our comprehensive tour package including Burj Khalifa visit.',
           price_adult: 2500,
           price_child: 1800,
           price_infant: 0,
           duration: '8 hours',
           category: 'city-tour',
-          highlights: ['Burj Khalifa', 'Dubai Mall', 'Palm Jumeirah', 'Dubai Marina'],
-          whats_included: ['Transportation', 'Tour Guide', 'Entry Tickets', 'Lunch'],
+          highlights: ['Burj Khalifa At The Top', 'Dubai Mall', 'Palm Jumeirah', 'Dubai Marina', 'Gold & Spice Souks'],
+          whats_included: ['Transportation', 'Professional Tour Guide', 'Burj Khalifa Tickets', 'Hotel Pickup & Drop-off', 'Refreshments'],
           languages: ['English', 'Hindi', 'Arabic'],
           status: 'active',
-          is_featured: true
+          is_featured: true,
+          image_urls: ['https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800'],
+          available_times: ['9:00 AM', '2:00 PM', '6:00 PM'],
+          instant_confirmation: true,
+          free_cancellation: true
+        },
+        {
+          title: 'Desert Safari with BBQ Dinner',
+          description: 'Experience the thrill of desert safari with dune bashing, camel riding, and traditional BBQ dinner.',
+          price_adult: 1500,
+          price_child: 1200,
+          price_infant: 0,
+          duration: '6 hours',
+          category: 'adventure',
+          highlights: ['Dune Bashing', 'Camel Riding', 'Sandboarding', 'Henna Painting', 'Traditional Shows', 'BBQ Dinner'],
+          whats_included: ['4WD Transportation', 'Dune Bashing', 'Camel Ride', 'BBQ Dinner', 'Traditional Entertainment', 'Hotel Pickup & Drop-off'],
+          languages: ['English', 'Hindi', 'Arabic'],
+          status: 'active',
+          is_featured: true,
+          image_urls: ['https://images.unsplash.com/photo-1539650116574-75c0c6d73a14?w=800'],
+          available_times: ['3:30 PM'],
+          instant_confirmation: true,
+          free_cancellation: true
         }
       ]);
 
@@ -61,16 +83,17 @@ const OneClickInstaller = () => {
       const { error: packagesError } = await supabase.from('tour_packages').upsert([
         {
           title: 'Dubai & Abu Dhabi 3 Days Package',
-          description: 'Experience the best of UAE with our 3-day Dubai and Abu Dhabi package.',
+          description: 'Experience the best of UAE with our 3-day Dubai and Abu Dhabi package including major attractions.',
           price_adult: 15000,
           price_child: 12000,
           price_infant: 0,
           days: 3,
           nights: 2,
-          highlights: ['Dubai City Tour', 'Abu Dhabi City Tour', 'Desert Safari', 'Dhow Cruise'],
-          whats_included: ['Hotel Accommodation', 'Daily Breakfast', 'Transportation', 'Tour Guide'],
+          highlights: ['Dubai City Tour', 'Abu Dhabi City Tour', 'Desert Safari', 'Dhow Cruise', 'Sheikh Zayed Mosque'],
+          whats_included: ['Hotel Accommodation (4-Star)', 'Daily Breakfast', 'Transportation', 'Professional Tour Guide', 'All Entry Tickets'],
           status: 'active',
-          is_featured: true
+          is_featured: true,
+          image_urls: ['https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800']
         }
       ]);
 
@@ -79,15 +102,28 @@ const OneClickInstaller = () => {
       // Create sample attraction tickets
       const { error: ticketsError } = await supabase.from('attraction_tickets').upsert([
         {
-          title: 'Burj Khalifa At The Top',
-          description: 'Experience breathtaking views from the world\'s tallest building.',
+          title: 'Burj Khalifa At The Top (Level 124 & 125)',
+          description: 'Experience breathtaking views from the world\'s tallest building. Skip the lines with instant digital tickets.',
           price_adult: 400,
           price_child: 300,
           price_infant: 0,
           location: 'Downtown Dubai',
           instant_delivery: true,
           is_featured: true,
-          status: 'active'
+          status: 'active',
+          image_urls: ['https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800']
+        },
+        {
+          title: 'Dubai Aquarium & Underwater Zoo',
+          description: 'Walk through one of the world\'s largest aquariums and discover marine life from around the globe.',
+          price_adult: 250,
+          price_child: 200,
+          price_infant: 0,
+          location: 'Dubai Mall',
+          instant_delivery: true,
+          is_featured: true,
+          status: 'active',
+          image_urls: ['https://images.unsplash.com/photo-1568430462989-44163eb1752f?w=800']
         }
       ]);
 
@@ -97,12 +133,23 @@ const OneClickInstaller = () => {
       const { error: visasError } = await supabase.from('visa_services').upsert([
         {
           country: 'UAE',
-          visa_type: 'Tourist Visa',
+          visa_type: '30 Days Tourist Visa',
           price: 350,
           processing_time: '3-5 working days',
-          description: 'Single entry tourist visa valid for 30 days.',
-          requirements: ['Passport copy', 'Photo', 'Flight tickets', 'Hotel booking'],
+          description: 'Single entry tourist visa valid for 30 days from arrival date.',
+          requirements: ['Passport copy (6 months validity)', 'Passport size photo', 'Flight tickets', 'Hotel booking confirmation'],
           is_featured: true,
+          status: 'active',
+          image_urls: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800']
+        },
+        {
+          country: 'India',
+          visa_type: 'e-Tourist Visa',
+          price: 500,
+          processing_time: '5-7 working days',
+          description: 'Electronic tourist visa for India valid for 30 days with double entry.',
+          requirements: ['Passport copy', 'Digital photo', 'Travel itinerary', 'Bank statements'],
+          is_featured: false,
           status: 'active'
         }
       ]);
@@ -119,11 +166,20 @@ const OneClickInstaller = () => {
       const { error: slidersError } = await supabase.from('homepage_sliders').upsert([
         {
           title: 'Welcome to TripHabibi',
-          subtitle: 'Your Gateway to Amazing Dubai Experiences',
-          image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c',
+          subtitle: 'Your Gateway to Amazing Dubai & UAE Experiences',
+          image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200',
           button_text: 'Explore Tours',
           link_url: '/tours',
           display_order: 1,
+          is_active: true
+        },
+        {
+          title: 'Desert Safari Adventures',
+          subtitle: 'Experience the Magic of Arabian Desert',
+          image_url: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73a14?w=1200',
+          button_text: 'Book Safari',
+          link_url: '/tours',
+          display_order: 2,
           is_active: true
         }
       ]);
@@ -143,6 +199,18 @@ const OneClickInstaller = () => {
           setting_value: 'true',
           setting_type: 'boolean',
           description: 'Enable automatic currency conversion'
+        },
+        {
+          setting_key: 'site_name',
+          setting_value: 'TripHabibi',
+          setting_type: 'text',
+          description: 'Website name'
+        },
+        {
+          setting_key: 'support_email',
+          setting_value: 'support@triphabibi.in',
+          setting_type: 'text',
+          description: 'Support email address'
         }
       ]);
 
@@ -153,7 +221,7 @@ const OneClickInstaller = () => {
 
       toast({
         title: "Installation Complete!",
-        description: "Your TripHabibi system has been successfully set up.",
+        description: "Your TripHabibi system has been successfully set up with demo data.",
       });
 
     } catch (error) {

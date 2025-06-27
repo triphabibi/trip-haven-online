@@ -1,43 +1,35 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { TourPackage } from '@/types/tourism';
 
-export const usePackages = (featured?: boolean) => {
+export const usePackages = () => {
   return useQuery({
-    queryKey: ['packages', featured],
+    queryKey: ['tour_packages'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('tour_packages')
         .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
       
-      if (featured) {
-        query = query.eq('is_featured', true);
-      }
-      
-      const { data, error } = await query;
-      
       if (error) throw error;
-      return data as TourPackage[];
+      return data || [];
     },
   });
 };
 
 export const usePackage = (id: string) => {
   return useQuery({
-    queryKey: ['package', id],
+    queryKey: ['tour_package', id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tour_packages')
         .select('*')
         .eq('id', id)
-        .eq('status', 'active')
         .single();
       
       if (error) throw error;
-      return data as TourPackage;
+      return data;
     },
     enabled: !!id,
   });
