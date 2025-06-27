@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +16,7 @@ const TransfersPage = () => {
   const [transferType, setTransferType] = useState('all');
   const [sortBy, setSortBy] = useState('price-low');
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
 
   // Demo transfer data
   const transfers = [
@@ -96,6 +98,10 @@ const TransfersPage = () => {
         return a.title.localeCompare(b.title);
     }
   });
+
+  const handleTransferBooking = (transferId: string) => {
+    navigate(`/booking?type=transfer&id=${transferId}`);
+  };
 
   return (
     <div className="min-h-screen">
@@ -214,7 +220,7 @@ const TransfersPage = () => {
                     <span className="text-2xl font-bold text-blue-600">{formatPrice(transfer.price_adult)}</span>
                     <span className="text-gray-500 text-sm ml-1">per transfer</span>
                   </div>
-                  <Button className="group">
+                  <Button className="group" onClick={() => handleTransferBooking(transfer.id)}>
                     Book Transfer
                     <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </Button>

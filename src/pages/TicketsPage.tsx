@@ -1,33 +1,23 @@
 
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import WhatsAppButton from '@/components/common/WhatsAppButton';
 import TicketCard from '@/components/tickets/TicketCard';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Search, Filter, Ticket } from 'lucide-react';
+import { useTickets } from '@/hooks/useTickets';
 
 const TicketsPage = () => {
+  const { data: tickets, isLoading } = useTickets();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest');
   const [priceRange, setPriceRange] = useState('all');
-
-  const { data: tickets, isLoading } = useQuery({
-    queryKey: ['attraction_tickets'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('attraction_tickets')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
+  const navigate = useNavigate();
 
   const filteredTickets = tickets?.filter(ticket => 
     ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,6 +36,10 @@ const TicketsPage = () => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
   });
+
+  const handleTicketBooking = (ticketId: string) => {
+    navigate(`/booking?type=ticket&id=${ticketId}`);
+  };
 
   if (isLoading) {
     return (
@@ -107,9 +101,9 @@ const TicketsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="0-500">Under ₹500</SelectItem>
-                <SelectItem value="500-2000">₹500 - ₹2,000</SelectItem>
-                <SelectItem value="2000+">₹2,000+</SelectItem>
+                <SelectItem value="0-1000">Under ₹1,000</SelectItem>
+                <SelectItem value="1000-5000">₹1,000 - ₹5,000</SelectItem>
+                <SelectItem value="5000+">₹5,000+</SelectItem>
               </SelectContent>
             </Select>
 
@@ -126,18 +120,25 @@ const TicketsPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedTickets.map((ticket) => (
-            <TicketCard key={ticket.id} ticket={ticket} />
+            <div key={ticket.id}>
+              <TicketCard 
+                ticket={ticket} 
+                onBook={() => handleTicketBooking(ticket.id)}
+              />
+            </div>
           ))}
         </div>
 
         {sortedTickets.length === 0 && (
           <div className="text-center py-12">
+            <Ticket className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">No tickets found matching your criteria.</p>
           </div>
         )}
       </main>
 
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

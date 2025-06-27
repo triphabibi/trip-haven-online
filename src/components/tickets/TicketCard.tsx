@@ -20,10 +20,12 @@ interface TicketCardProps {
     is_featured?: boolean;
     rating?: number;
     total_reviews?: number;
+    created_at: string;
   };
+  onBook?: () => void;
 }
 
-const TicketCard = ({ ticket }: TicketCardProps) => {
+const TicketCard = ({ ticket, onBook }: TicketCardProps) => {
   const { formatPrice } = useCurrency();
 
   return (
@@ -76,12 +78,10 @@ const TicketCard = ({ ticket }: TicketCardProps) => {
               </div>
             )}
           </div>
-          <Link to={`/tickets/${ticket.id}`}>
-            <Button size="sm" className="group">
-              Buy Ticket
-              <Download className="h-4 w-4 ml-1 group-hover:translate-y-1 transition-transform" />
-            </Button>
-          </Link>
+          <Button size="sm" className="group" onClick={onBook}>
+            Buy Ticket
+            <Download className="h-4 w-4 ml-1 group-hover:translate-y-1 transition-transform" />
+          </Button>
         </div>
       </CardContent>
     </Card>
