@@ -7,13 +7,13 @@ interface AdminRouteProps {
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
-  if (!user || profile?.role !== 'admin') {
+  if (!user || !isAdmin) {
     return <Navigate to="/" replace />;
   }
 

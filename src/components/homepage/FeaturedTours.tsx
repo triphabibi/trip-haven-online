@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Clock, Users, Star, ArrowRight } from 'lucide-react';
 import { useTours } from '@/hooks/useTours';
 
 const FeaturedTours = () => {
-  const { data: tours, isLoading } = useTours(true);
+  const { data: tours, isLoading } = useTours();
 
   if (isLoading) {
     return (
@@ -45,7 +44,7 @@ const FeaturedTours = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {tours.slice(0, 6).map((tour) => (
+          {tours?.slice(0, 6).map((tour) => (
             <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
               <div className="relative">
                 <img

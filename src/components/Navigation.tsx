@@ -11,7 +11,7 @@ import {
 import { User, LogOut, History, Settings } from 'lucide-react';
 
 const Navigation = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -40,7 +40,7 @@ const Navigation = () => {
                   My Bookings
                 </Link>
                 
-                {profile?.role === 'admin' && (
+                {isAdmin && (
                   <Link to="/admin" className="text-gray-700 hover:text-blue-600">
                     Admin
                   </Link>
@@ -50,7 +50,7 @@ const Navigation = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
                       <User className="h-4 w-4 mr-2" />
-                      {profile?.full_name || user.email}
+                      {user.email}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -58,7 +58,7 @@ const Navigation = () => {
                       <History className="h-4 w-4 mr-2" />
                       Booking History
                     </DropdownMenuItem>
-                    {profile?.role === 'admin' && (
+                    {isAdmin && (
                       <DropdownMenuItem onClick={() => navigate('/admin')}>
                         <Settings className="h-4 w-4 mr-2" />
                         Admin Panel
