@@ -1,12 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, Download, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
+import BookingFilters from './booking/BookingFilters';
+import BookingCard from './booking/BookingCard';
 
 type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 
@@ -115,122 +113,22 @@ const BookingManagement = () => {
     <Card>
       <CardHeader>
         <CardTitle>Booking Management</CardTitle>
-        <div className="flex gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Search by name, email, or reference..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={exportToExcel}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
+        <BookingFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          onExport={exportToExcel}
+        />
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {filteredBookings.map((booking) => (
-            <div key={booking.id} className="border rounded-lg p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">{booking.customer_name}</h3>
-                    <Badge 
-                      variant={
-                        booking.booking_status === 'confirmed' ? 'default' :
-                        booking.booking_status === 'pending' ? 'secondary' :
-                        booking.booking_status === 'cancelled' ? 'destructive' : 'outline'
-                      }
-                    >
-                      {booking.booking_status}
-                    </Badge>
-                    <Badge 
-                      variant={
-                        booking.payment_status === 'completed' ? 'default' :
-                        booking.payment_status === 'pending' ? 'secondary' : 'destructive'
-                      }
-                    >
-                      {booking.payment_status}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Reference:</span> {booking.booking_reference}
-                    </div>
-                    <div>
-                      <span className="font-medium">Amount:</span> ₹{booking.final_amount}
-                    </div>
-                    <div>
-                      <span className="font-medium">Email:</span> {booking.customer_email || 'N/A'}
-                    </div>
-                    <div>
-                      <span className="font-medium">Phone:</span> {booking.customer_phone || 'N/A'}
-                    </div>
-                    <div>
-                      <span className="font-medium">Adults:</span> {booking.adults_count}
-                    </div>
-                    <div>
-                      <span className="font-medium">Children:</span> {booking.children_count}
-                    </div>
-                    <div>
-                      <span className="font-medium">Travel Date:</span> {booking.travel_date || 'N/A'}
-                    </div>
-                    <div>
-                      <span className="font-medium">Pickup:</span> {booking.pickup_location || 'N/A'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {booking.booking_status === 'pending' && (
-                    <>
-                      <Button 
-                        size="sm" 
-                        onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Confirm
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                    </>
-                  )}
-                  {booking.booking_status === 'confirmed' && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => updateBookingStatus(booking.id, 'completed')}
-                    >
-                      <Clock className="h-4 w-4 mr-1" />
-                      Complete
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              onUpdateStatus={updateBookingStatus}
+            />
           ))}
 
           {filteredBookings.length === 0 && (
