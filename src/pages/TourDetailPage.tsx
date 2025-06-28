@@ -1,73 +1,36 @@
 
-import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTour } from '@/hooks/useTours';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import WhatsAppButton from '@/components/common/WhatsAppButton';
+import TourDetailHeader from '@/components/tours/TourDetailHeader';
+import TourHighlights from '@/components/tours/TourHighlights';
 import TourImageGallery from '@/components/tours/TourImageGallery';
-import TourBookingCard from '@/components/tours/TourBookingCard';
+import EnhancedBookingCard from '@/components/tours/EnhancedBookingCard';
 import TourOverview from '@/components/tours/TourOverview';
 import TourItinerary from '@/components/tours/TourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
 import TourReviews from '@/components/tours/TourReviews';
 import TourFAQ from '@/components/tours/TourFAQ';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import StickyMobileCTA from '@/components/common/StickyMobileCTA';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Star, MapPin, Users, CheckCircle, XCircle, Heart, Share2, Calendar, Shield, Award } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import Loading from '@/components/common/Loading';
 
 const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: tour, isLoading, error } = useTour(id!);
-  const { toast } = useToast();
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  const handleWishlist = () => {
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    const isInWishlist = wishlist.some((item: any) => item.id === id && item.type === 'tour');
-    
-    if (isInWishlist) {
-      const newWishlist = wishlist.filter((item: any) => !(item.id === id && item.type === 'tour'));
-      localStorage.setItem('wishlist', JSON.stringify(newWishlist));
-      setIsWishlisted(false);
-      toast({
-        title: "Removed from Wishlist",
-        description: "Tour removed from your wishlist",
-      });
-    } else {
-      wishlist.push({ id, type: 'tour', title: tour?.title, image: tour?.image_urls?.[0] });
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-      setIsWishlisted(true);
-      toast({
-        title: "Added to Wishlist",
-        description: "Tour added to your wishlist",
-      });
-    }
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: tour?.title,
-        text: tour?.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link Copied!",
-        description: "Tour link copied to clipboard",
-      });
-    }
+  const handleBookNow = () => {
+    navigate(`/booking?type=tour&id=${id}`);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <Loading message="Loading tour details..." />
         <Footer />
@@ -77,14 +40,15 @@ const TourDetailPage = () => {
 
   if (error || !tour) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
-            <p className="text-gray-600 mb-6">The tour you're looking for doesn't exist or has been removed.</p>
+            <div className="text-6xl mb-6">🏖️</div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
+            <p className="text-gray-600 mb-8 text-lg">The tour you're looking for doesn't exist or has been removed.</p>
             <Link to="/tours">
-              <Button>Browse All Tours</Button>
+              <Button size="lg" className="px-8">Browse All Tours</Button>
             </Link>
           </div>
         </div>
@@ -100,158 +64,81 @@ const TourDetailPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <Link to="/" className="hover:text-blue-600 transition-colors font-medium">Home</Link>
           <span>/</span>
-          <Link to="/tours" className="hover:text-blue-600 transition-colors">Tours</Link>
+          <Link to="/tours" className="hover:text-blue-600 transition-colors font-medium">Tours</Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{tour.title}</span>
+          <span className="text-gray-900 font-medium truncate">{tour.title}</span>
         </nav>
 
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {tour.instant_confirmation && (
-                  <Badge className="bg-green-500 hover:bg-green-600">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Instant Confirmation
-                  </Badge>
-                )}
-                {tour.free_cancellation && (
-                  <Badge className="bg-blue-500 hover:bg-blue-600">
-                    <XCircle className="h-3 w-3 mr-1" />
-                    Free Cancellation
-                  </Badge>
-                )}
-                {tour.is_featured && (
-                  <Badge className="bg-yellow-500 hover:bg-yellow-600">
-                    <Award className="h-3 w-3 mr-1" />
-                    Best Seller
-                  </Badge>
-                )}
-                <Badge variant="outline" className="border-orange-300 text-orange-700 bg-orange-50">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Trusted Partner
-                </Badge>
-              </div>
+        <TourDetailHeader tour={tour} />
 
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                {tour.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-6 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-lg font-semibold">{tour.rating || 0}</span>
-                  </div>
-                  <span className="text-gray-600">({tour.total_reviews || 0} reviews)</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Clock className="h-5 w-5" />
-                  <span className="font-medium">{tour.duration || 'Full Day'}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="h-5 w-5" />
-                  <span className="font-medium">Dubai</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Users className="h-5 w-5" />
-                  <span className="font-medium">Group Tour</span>
-                </div>
-              </div>
-
-              <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                {tour.description}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleWishlist}
-                className={`${isWishlisted ? 'text-red-500 border-red-200' : ''}`}
-              >
-                <Heart className={`h-5 w-5 mr-2 ${isWishlisted ? 'fill-red-500' : ''}`} />
-                Save
-              </Button>
-              <Button variant="outline" size="lg" onClick={handleShare}>
-                <Share2 className="h-5 w-5 mr-2" />
-                Share
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 mb-20 lg:mb-0">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
             <TourImageGallery tour={tour} />
 
-            {/* Quick Highlights */}
-            {tour.highlights && tour.highlights.length > 0 && (
-              <Card className="overflow-hidden">
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Highlights</h2>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {tour.highlights.slice(0, 6).map((highlight, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Highlights */}
+            <TourHighlights tour={tour} />
 
             {/* Main Content Tabs */}
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden shadow-sm border-gray-100">
               <Tabs defaultValue="overview" className="w-full">
                 <div className="border-b bg-gray-50/50">
-                  <TabsList className="h-auto p-1 bg-transparent w-full justify-start">
-                    <TabsTrigger value="overview" className="px-6 py-3 text-base font-medium">
+                  <TabsList className="h-auto p-0 bg-transparent w-full justify-start rounded-none">
+                    <TabsTrigger 
+                      value="overview" 
+                      className="px-4 lg:px-6 py-4 text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                    >
                       Overview
                     </TabsTrigger>
-                    <TabsTrigger value="itinerary" className="px-6 py-3 text-base font-medium">
+                    <TabsTrigger 
+                      value="itinerary" 
+                      className="px-4 lg:px-6 py-4 text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                    >
                       Itinerary
                     </TabsTrigger>
-                    <TabsTrigger value="inclusions" className="px-6 py-3 text-base font-medium">
+                    <TabsTrigger 
+                      value="inclusions" 
+                      className="px-4 lg:px-6 py-4 text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                    >
                       Inclusions
                     </TabsTrigger>
-                    <TabsTrigger value="reviews" className="px-6 py-3 text-base font-medium">
+                    <TabsTrigger 
+                      value="reviews" 
+                      className="px-4 lg:px-6 py-4 text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                    >
                       Reviews
                     </TabsTrigger>
-                    <TabsTrigger value="faq" className="px-6 py-3 text-base font-medium">
+                    <TabsTrigger 
+                      value="faq" 
+                      className="px-4 lg:px-6 py-4 text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                    >
                       FAQ
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
-                <div className="p-6">
-                  <TabsContent value="overview">
+                <div className="p-4 lg:p-8">
+                  <TabsContent value="overview" className="mt-0">
                     <TourOverview tour={tour} />
                   </TabsContent>
 
-                  <TabsContent value="itinerary">
+                  <TabsContent value="itinerary" className="mt-0">
                     <TourItinerary tour={tour} />
                   </TabsContent>
 
-                  <TabsContent value="inclusions">
+                  <TabsContent value="inclusions" className="mt-0">
                     <TourInclusions tour={tour} />
                   </TabsContent>
 
-                  <TabsContent value="reviews">
+                  <TabsContent value="reviews" className="mt-0">
                     <TourReviews tourId={tour.id} rating={tour.rating} totalReviews={tour.total_reviews} />
                   </TabsContent>
 
-                  <TabsContent value="faq">
+                  <TabsContent value="faq" className="mt-0">
                     <TourFAQ />
                   </TabsContent>
                 </div>
@@ -261,15 +148,19 @@ const TourDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              <TourBookingCard tour={tour} />
-            </div>
+            <EnhancedBookingCard tour={tour} />
           </div>
         </div>
       </main>
 
       <Footer />
-      <WhatsAppButton />
+      
+      {/* Sticky Mobile CTA */}
+      <StickyMobileCTA 
+        tour={tour} 
+        showBooking={true} 
+        onBookNow={handleBookNow} 
+      />
     </div>
   );
 };
