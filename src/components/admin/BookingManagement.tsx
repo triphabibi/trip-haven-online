@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,11 +8,13 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, Download, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 
+type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+
 const BookingManagement = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,7 +42,7 @@ const BookingManagement = () => {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+  const updateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
     try {
       const { error } = await supabase
         .from('new_bookings')
@@ -77,7 +78,6 @@ const BookingManagement = () => {
   });
 
   const exportToExcel = () => {
-    // Simple CSV export
     const csvContent = [
       ['Reference', 'Customer', 'Email', 'Phone', 'Amount', 'Status', 'Date'].join(','),
       ...filteredBookings.map(booking => [

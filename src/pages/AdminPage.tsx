@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +13,7 @@ import SystemSettings from '@/components/admin/SystemSettings';
 import TourManagement from '@/components/admin/TourManagement';
 import BookingManagement from '@/components/admin/BookingManagement';
 import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
+import EmailSettings from '@/components/admin/EmailSettings';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -141,10 +141,11 @@ const AdminPage = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="tours">Tours</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
@@ -160,6 +161,10 @@ const AdminPage = () => {
 
           <TabsContent value="payments">
             <PaymentGatewaySettings />
+          </TabsContent>
+
+          <TabsContent value="emails">
+            <EmailSettings />
           </TabsContent>
 
           <TabsContent value="bulk">
