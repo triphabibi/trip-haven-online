@@ -3,19 +3,17 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Users, Package, Ticket, CreditCard, TrendingUp, Plus, Edit, Trash, Upload, Settings as SettingsIcon } from 'lucide-react';
+import { Users, Package, CreditCard, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BulkUpload from '@/components/admin/BulkUpload';
 import SystemSettings from '@/components/admin/SystemSettings';
+import TourManagement from '@/components/admin/TourManagement';
+import BookingManagement from '@/components/admin/BookingManagement';
+import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -26,14 +24,7 @@ const AdminPage = () => {
     totalRevenue: 0,
     pendingBookings: 0,
   });
-  const [tours, setTours] = useState<any[]>([]);
-  const [packages, setPackages] = useState<any[]>([]);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [sliders, setSliders] = useState<any[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [editingType, setEditingType] = useState<string>('');
 
   useEffect(() => {
     fetchAdminData();
@@ -44,17 +35,9 @@ const AdminPage = () => {
       const [
         usersCount,
         bookingsData,
-        toursData,
-        packagesData,
-        ticketsData,
-        slidersData
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact' }),
         supabase.from('new_bookings').select('*').order('created_at', { ascending: false }),
-        supabase.from('tours').select('*').order('created_at', { ascending: false }),
-        supabase.from('tour_packages').select('*').order('created_at', { ascending: false }),
-        supabase.from('attraction_tickets').select('*').order('created_at', { ascending: false }),
-        supabase.from('homepage_sliders').select('*').order('display_order', { ascending: true }),
       ]);
 
       const totalRevenue = bookingsData.data?.reduce((sum, booking) => sum + Number(booking.final_amount || 0), 0) || 0;
@@ -66,12 +49,6 @@ const AdminPage = () => {
         totalRevenue,
         pendingBookings,
       });
-
-      setTours(toursData.data || []);
-      setPackages(packagesData.data || []);
-      setTickets(ticketsData.data || []);
-      setSliders(slidersData.data || []);
-      setBookings(bookingsData.data || []);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -83,210 +60,6 @@ const AdminPage = () => {
       setLoading(false);
     }
   };
-
-  const toggleItemStatus = async (table: string, id: string, currentStatus: boolean | string, statusField: string = 'status') => {
-    try {
-      let updateData: any;
-      
-      if (statusField === 'status') {
-        const newStatus = (currentStatus === 'active' || currentStatus === true) ? 'inactive' : 'active';
-        updateData = { status: newStatus };
-      } else {
-        updateData = { [statusField]: !currentStatus };
-      }
-
-      let query;
-      switch (table) {
-        case 'tours':
-          query = supabase.from('tours').update(updateData).eq('id', id);
-          break;
-        case 'tour_packages':
-          query = supabase.from('tour_packages').update(updateData).eq('id', id);
-          break;
-        case 'attraction_tickets':
-          query = supabase.from('attraction_tickets').update(updateData).eq('id', id);
-          break;
-        case 'homepage_sliders':
-          query = supabase.from('homepage_sliders').update(updateData).eq('id', id);
-          break;
-        default:
-          throw new Error('Invalid table name');
-      }
-
-      const { error } = await query;
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Item status updated successfully",
-      });
-
-      fetchAdminData();
-    } catch (error) {
-      console.error('Error updating item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update item status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = (item: any, type: string) => {
-    setEditingItem(item);
-    setEditingType(type);
-  };
-
-  const handleSave = async () => {
-    if (!editingItem || !editingType) return;
-
-    try {
-      let query;
-      switch (editingType) {
-        case 'tours':
-          query = supabase.from('tours').update(editingItem).eq('id', editingItem.id);
-          break;
-        case 'tour_packages':
-          query = supabase.from('tour_packages').update(editingItem).eq('id', editingItem.id);
-          break;
-        case 'attraction_tickets':
-          query = supabase.from('attraction_tickets').update(editingItem).eq('id', editingItem.id);
-          break;
-        case 'homepage_sliders':
-          query = supabase.from('homepage_sliders').update(editingItem).eq('id', editingItem.id);
-          break;
-        default:
-          throw new Error('Invalid table type');
-      }
-
-      const { error } = await query;
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Item updated successfully",
-      });
-
-      setEditingItem(null);
-      setEditingType('');
-      fetchAdminData();
-    } catch (error) {
-      console.error('Error updating item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update item",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const renderEditModal = () => {
-    if (!editingItem) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <CardHeader>
-            <CardTitle>Edit {editingType}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={editingItem.title || ''}
-                onChange={(e) => setEditingItem({...editingItem, title: e.target.value})}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={editingItem.description || ''}
-                onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
-              />
-            </div>
-            
-            {editingType !== 'homepage_sliders' && (
-              <div>
-                <Label htmlFor="price">Price (Adult)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={editingItem.price_adult || editingItem.price || ''}
-                  onChange={(e) => setEditingItem({
-                    ...editingItem, 
-                    [editingItem.price_adult !== undefined ? 'price_adult' : 'price']: Number(e.target.value)
-                  })}
-                />
-              </div>
-            )}
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="featured"
-                checked={editingItem.is_featured || false}
-                onCheckedChange={(checked) => setEditingItem({...editingItem, is_featured: checked})}
-              />
-              <Label htmlFor="featured">Featured</Label>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button onClick={handleSave}>Save Changes</Button>
-              <Button variant="outline" onClick={() => {setEditingItem(null); setEditingType('')}}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  const renderContentTable = (items: any[], type: string) => (
-    <div className="space-y-4">
-      {items.map((item) => (
-        <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex-1">
-            <p className="font-medium">{item.title || item.country}</p>
-            <p className="text-sm text-gray-600">
-              {type === 'homepage_sliders' ? `Order: ${item.display_order}` : 
-               `Price: ₹${item.price_adult || item.price || 0}`}
-            </p>
-            {item.location && <p className="text-sm text-gray-500">{item.location}</p>}
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge className={
-              (item.status === 'active' || item.is_active) ? 'bg-green-500' : 'bg-gray-500'
-            }>
-              {(item.status === 'active' || item.is_active) ? 'Active' : 'Inactive'}
-            </Badge>
-            {item.is_featured && <Badge className="bg-yellow-500">Featured</Badge>}
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => handleEdit(item, type)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => toggleItemStatus(
-                type, 
-                item.id, 
-                item.status || item.is_active,
-                type === 'homepage_sliders' ? 'is_active' : 'status'
-              )}
-            >
-              {(item.status === 'active' || item.is_active) ? 'Deactivate' : 'Activate'}
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   if (loading) {
     return (
@@ -308,7 +81,7 @@ const AdminPage = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage your travel business content</p>
+            <p className="text-gray-600">Manage your travel business</p>
           </div>
           <Button onClick={signOut} variant="outline">
             Sign Out
@@ -366,106 +139,27 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Content Management Tabs */}
+        {/* Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="tours">Tours ({tours.length})</TabsTrigger>
-            <TabsTrigger value="packages">Packages ({packages.length})</TabsTrigger>
-            <TabsTrigger value="tickets">Tickets ({tickets.length})</TabsTrigger>
-            <TabsTrigger value="sliders">Sliders ({sliders.length})</TabsTrigger>
-            <TabsTrigger value="bookings">Bookings ({bookings.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="tours">Tours</TabsTrigger>
+            <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tours">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tours Management</CardTitle>
-                <CardDescription>Manage your tour offerings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderContentTable(tours, 'tours')}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="packages">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tour Packages Management</CardTitle>
-                <CardDescription>Manage your tour packages</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderContentTable(packages, 'tour_packages')}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="tickets">
-            <Card>
-              <CardHeader>
-                <CardTitle>Attraction Tickets Management</CardTitle>
-                <CardDescription>Manage your attraction tickets</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderContentTable(tickets, 'attraction_tickets')}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="sliders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Homepage Sliders Management</CardTitle>
-                <CardDescription>Manage your homepage carousel</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderContentTable(sliders, 'homepage_sliders')}
-              </CardContent>
-            </Card>
+            <TourManagement />
           </TabsContent>
 
           <TabsContent value="bookings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bookings Management</CardTitle>
-                <CardDescription>Manage customer bookings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {bookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium">{booking.customer_name}</p>
-                        <p className="text-sm text-gray-600">
-                          Ref: {booking.booking_reference} | Amount: ₹{booking.final_amount}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {booking.customer_phone} | {booking.customer_email}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={
-                          booking.booking_status === 'confirmed' ? 'bg-green-500' :
-                          booking.booking_status === 'pending' ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }>
-                          {booking.booking_status}
-                        </Badge>
-                        <Badge className={
-                          booking.payment_status === 'completed' ? 'bg-green-500' :
-                          booking.payment_status === 'pending' ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }>
-                          {booking.payment_status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <BookingManagement />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentGatewaySettings />
           </TabsContent>
 
           <TabsContent value="bulk">
@@ -475,10 +169,23 @@ const AdminPage = () => {
           <TabsContent value="settings">
             <SystemSettings />
           </TabsContent>
+
+          <TabsContent value="system">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">System Information</h3>
+                <div className="space-y-2 text-sm">
+                  <p><strong>Version:</strong> 1.0.0</p>
+                  <p><strong>Database:</strong> Connected</p>
+                  <p><strong>Cache:</strong> Active</p>
+                  <p><strong>Storage:</strong> Available</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
-      {renderEditModal()}
       <Footer />
     </div>
   );
