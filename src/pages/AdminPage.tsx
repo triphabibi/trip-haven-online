@@ -14,6 +14,7 @@ import TourManagement from '@/components/admin/TourManagement';
 import BookingManagement from '@/components/admin/BookingManagement';
 import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
 import EmailSettings from '@/components/admin/EmailSettings';
+import VisaManagement from '@/components/admin/VisaManagement';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -141,9 +142,10 @@ const AdminPage = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="tours">Tours</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="visas">Visas</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
@@ -157,6 +159,10 @@ const AdminPage = () => {
 
           <TabsContent value="bookings">
             <BookingManagement />
+          </TabsContent>
+
+          <TabsContent value="visas">
+            <VisaManagement />
           </TabsContent>
 
           <TabsContent value="payments">
