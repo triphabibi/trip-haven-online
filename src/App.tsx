@@ -1,9 +1,10 @@
+
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PaymentProvider } from '@/contexts/PaymentContext';
-import HomePage from '@/pages/HomePage';
+import Homepage from '@/pages/Homepage';
 import ToursPage from '@/pages/ToursPage';
 import TicketsPage from '@/pages/TicketsPage';
 import VisaPage from '@/pages/VisaPage';
@@ -29,7 +30,7 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <Toaster />
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<Homepage />} />
               <Route path="/tours" element={<ToursPage />} />
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/visas" element={<VisaPage />} />
@@ -42,9 +43,7 @@ function App() {
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/tours/:id" element={<TourDetailPage />} />
               <Route path="/tickets/:id" element={<TicketDetailPage />} />
-              
               <Route path="/visas/:id" element={<VisaDetailPage />} />
-              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </QueryClientProvider>

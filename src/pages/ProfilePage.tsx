@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { User, Mail, Phone, MapPin } from 'lucide-react';
+import { User, Mail, Phone } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -18,7 +18,6 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState({
     full_name: '',
     phone: '',
-    address: '',
   });
 
   useEffect(() => {
@@ -41,7 +40,6 @@ const ProfilePage = () => {
         setProfile({
           full_name: data.full_name || '',
           phone: data.phone || '',
-          address: data.address || '',
         });
       }
     } catch (error) {
@@ -139,32 +137,17 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    Phone
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={profile.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="address" className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Address
-                  </Label>
-                  <Input
-                    id="address"
-                    type="text"
-                    value={profile.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Phone
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                />
               </div>
 
               <Button type="submit" disabled={loading} className="w-full">
