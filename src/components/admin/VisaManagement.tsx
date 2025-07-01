@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,7 +45,7 @@ const VisaManagement = () => {
     },
   });
 
-  const updateApplicationStatus = async (applicationId: string, status: string, adminNotes?: string) => {
+  const updateApplicationStatus = async (applicationId: string, status: 'pending' | 'approved' | 'rejected' | 'processing', adminNotes?: string) => {
     try {
       const { error } = await supabase
         .from('visa_applications')
