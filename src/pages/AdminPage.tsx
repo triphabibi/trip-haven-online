@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Package, CreditCard, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
+import { Users, Package, CreditCard, TrendingUp, Settings as SettingsIcon, Ticket } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BulkUpload from '@/components/admin/BulkUpload';
@@ -15,6 +16,8 @@ import BookingManagement from '@/components/admin/BookingManagement';
 import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
 import EmailSettings from '@/components/admin/EmailSettings';
 import VisaManagement from '@/components/admin/VisaManagement';
+import TicketManagement from '@/components/admin/TicketManagement';
+import PackageManagement from '@/components/admin/PackageManagement';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -142,19 +145,28 @@ const AdminPage = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="tours">Tours</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets</TabsTrigger>
+            <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="visas">Visas</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="emails">Emails</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tours">
             <TourManagement />
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <TicketManagement />
+          </TabsContent>
+
+          <TabsContent value="packages">
+            <PackageManagement />
           </TabsContent>
 
           <TabsContent value="bookings">
@@ -179,20 +191,6 @@ const AdminPage = () => {
 
           <TabsContent value="settings">
             <SystemSettings />
-          </TabsContent>
-
-          <TabsContent value="system">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">System Information</h3>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Version:</strong> 1.0.0</p>
-                  <p><strong>Database:</strong> Connected</p>
-                  <p><strong>Cache:</strong> Active</p>
-                  <p><strong>Storage:</strong> Available</p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>

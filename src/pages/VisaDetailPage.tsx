@@ -1,8 +1,8 @@
-
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useVisa } from '@/hooks/useVisas';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import VisaBookingForm from '@/components/visa/VisaBookingForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,10 +16,6 @@ const VisaDetailPage = () => {
   const navigate = useNavigate();
   const { data: visa, isLoading, error } = useVisa(id!);
   const { formatPrice } = useCurrency();
-
-  const handleApplyNow = () => {
-    navigate(`/booking?type=visa&id=${id}`);
-  };
 
   if (isLoading) {
     return (
@@ -64,44 +60,34 @@ const VisaDetailPage = () => {
           <span className="text-gray-900 font-medium truncate">{visa.country} {visa.visa_type}</span>
         </nav>
 
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Globe className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{visa.country} {visa.visa_type}</h1>
-              {visa.is_featured && (
-                <Badge className="bg-yellow-500 mt-2">Featured Service</Badge>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>Processing: {visa.processing_time}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
-              <span>{visa.requirements?.length || 0} documents required</span>
-            </div>
-          </div>
-        </div>
-
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            <Card className="overflow-hidden shadow-sm border-gray-100">
-              <div className="h-64 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                <div className="text-white text-center">
-                  <Globe className="h-16 w-16 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold">{visa.country}</h2>
-                  <p className="text-blue-100">{visa.visa_type}</p>
+            {/* Header Section */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{visa.country} {visa.visa_type}</h1>
+                  {visa.is_featured && (
+                    <Badge className="bg-yellow-500 mt-2">Featured Service</Badge>
+                  )}
                 </div>
               </div>
-            </Card>
+              
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>Processing: {visa.processing_time}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  <span>{visa.requirements?.length || 0} documents required</span>
+                </div>
+              </div>
+            </div>
 
             <Tabs defaultValue="overview" className="w-full">
               <div className="border-b bg-gray-50/50">
@@ -123,6 +109,12 @@ const VisaDetailPage = () => {
                     className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
                   >
                     Process
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="apply" 
+                    className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+                  >
+                    Apply Now
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -208,6 +200,20 @@ const VisaDetailPage = () => {
                     </div>
                   </div>
                 </TabsContent>
+
+                <TabsContent value="apply" className="mt-0">
+                  <VisaBookingForm 
+                    service={{
+                      id: visa.id,
+                      title: `${visa.country} ${visa.visa_type}`,
+                      country: visa.country,
+                      visa_type: visa.visa_type,
+                      price: visa.price,
+                      processing_time: visa.processing_time,
+                      requirements: visa.requirements || []
+                    }}
+                  />
+                </TabsContent>
               </div>
             </Tabs>
           </div>
@@ -232,10 +238,6 @@ const VisaDetailPage = () => {
                       <span className="font-medium">{visa.requirements?.length || 0}</span>
                     </div>
                   </div>
-                  
-                  <Button onClick={handleApplyNow} className="w-full mb-4" size="lg">
-                    Apply Now
-                  </Button>
                   
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 text-sm text-gray-600">

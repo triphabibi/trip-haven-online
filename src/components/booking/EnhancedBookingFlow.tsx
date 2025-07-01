@@ -25,6 +25,12 @@ interface BookingFlowProps {
   serviceType: 'tour' | 'ticket' | 'visa' | 'package';
 }
 
+const generateBookingReference = () => {
+  const timestamp = Date.now().toString();
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `BK${timestamp.slice(-8)}${random}`;
+};
+
 const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -60,10 +66,12 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
     setLoading(true);
     try {
       const totalAmount = calculateTotal();
+      const bookingReference = generateBookingReference();
       
       const { data: booking, error } = await supabase
         .from('new_bookings')
         .insert({
+          booking_reference: bookingReference,
           service_id: service.id,
           booking_type: serviceType,
           customer_name: bookingData.customer_name,
@@ -90,10 +98,10 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
 
       toast({
         title: "Booking Submitted!",
-        description: `Your booking reference is ${booking.booking_reference}. We'll contact you shortly to confirm.`,
+        description: `Your booking reference is ${bookingReference}. We'll contact you shortly to confirm.`,
       });
 
-      setStep(4); // Success step
+      setStep(4);
     } catch (error) {
       console.error('Booking error:', error);
       toast({
@@ -152,7 +160,8 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
         </div>
       </div>
 
-      {serviceType !== 'visa' && (
+      {/* Only show date/time/pickup for tours and packages */}
+      {(serviceType === 'tour' || serviceType === 'package') && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="travel_date">Travel Date</Label>
@@ -183,7 +192,22 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
         </div>
       )}
 
-      {service.languages && service.languages.length > 1 && (
+      {/* Only show visit date for tickets */}
+      {serviceType === 'ticket' && (
+        <div>
+          <Label htmlFor="travel_date">Visit Date</Label>
+          <Input
+            id="travel_date"
+            type="date"
+            value={bookingData.travel_date}
+            onChange={(e) => handleInputChange('travel_date', e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+      )}
+
+      {/* Language selection for tours only */}
+      {serviceType === 'tour' && service.languages && service.languages.length > 1 && (
         <div>
           <Label htmlFor="language">Preferred Language</Label>
           <Select value={bookingData.selected_language} onValueChange={(value) => handleInputChange('selected_language', value)}>
@@ -241,6 +265,7 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
           />
         </div>
         
+        {/* Only show pickup location for tours */}
         {serviceType === 'tour' && (
           <div>
             <Label htmlFor="pickup_location">Pickup Location</Label>
