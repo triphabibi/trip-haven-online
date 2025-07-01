@@ -3,10 +3,13 @@ import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSlider from '@/components/homepage/HeroSlider';
+import SmartSearch from '@/components/homepage/SmartSearch';
+import HomepageFilters from '@/components/homepage/HomepageFilters';
 import OptimizedServiceCards from '@/components/homepage/OptimizedServiceCards';
 import OptimizedFeaturedTours from '@/components/homepage/OptimizedFeaturedTours';
-import CountryFilter from '@/components/common/CountryFilter';
-import AIAssistant from '@/components/common/AIAssistant';
+import TrendingSection from '@/components/homepage/TrendingSection';
+import AnimatedStats from '@/components/homepage/AnimatedStats';
+import EnhancedAIAssistant from '@/components/common/EnhancedAIAssistant';
 import WhatsAppButton from '@/components/common/WhatsAppButton';
 
 const Homepage = () => {
@@ -38,24 +41,53 @@ const Homepage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main>
-        <HeroSlider />
-        
-        {/* Country & Service Filter */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <CountryFilter
-            selectedCountry={selectedCountry}
-            onCountryChange={setSelectedCountry}
-            selectedType={selectedType}
-            onTypeChange={setSelectedType}
-          />
+        {/* Hero Section with Smart Search */}
+        <div className="relative">
+          <HeroSlider />
+          
+          {/* Overlay Search and Filters */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="max-w-4xl mx-auto px-4 w-full">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                  Plan Your Perfect Trip with AI
+                </h1>
+                <p className="text-xl md:text-2xl text-white/90 mb-8 drop-shadow">
+                  Discover amazing destinations, get instant visas, and create unforgettable memories
+                </p>
+              </div>
+              
+              {/* Smart Search Bar */}
+              <div className="mb-6">
+                <SmartSearch />
+              </div>
+              
+              {/* Quick Filters */}
+              <HomepageFilters
+                selectedCountry={selectedCountry}
+                onCountryChange={setSelectedCountry}
+                selectedType={selectedType}
+                onTypeChange={setSelectedType}
+              />
+            </div>
+          </div>
         </div>
         
+        {/* Services Section */}
         <OptimizedServiceCards />
+        
+        {/* Trending Section */}
+        <TrendingSection />
+        
+        {/* Featured Tours */}
         <OptimizedFeaturedTours />
+        
+        {/* Animated Stats */}
+        <AnimatedStats />
       </main>
       <Footer />
       <WhatsAppButton />
-      <AIAssistant />
+      <EnhancedAIAssistant />
     </div>
   );
 };

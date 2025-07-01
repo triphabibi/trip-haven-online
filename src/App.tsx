@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PaymentProvider } from '@/contexts/PaymentContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import Homepage from '@/pages/Homepage';
 import ToursPage from '@/pages/ToursPage';
 import TicketsPage from '@/pages/TicketsPage';
@@ -34,42 +35,51 @@ const queryClient = new QueryClient({
   },
 });
 
+// Component to handle scroll to top
+const ScrollToTopHandler = () => {
+  useScrollToTop();
+  return null;
+};
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <PaymentProvider>
           <QueryClientProvider client={queryClient}>
-            <Toaster 
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-              }}
-            />
-            <Routes>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/tours" element={<ToursPage />} />
-              <Route path="/tickets" element={<TicketsPage />} />
-              <Route path="/visas" element={<VisaPage />} />
-              <Route path="/packages" element={<PackagesPage />} />
-              <Route path="/transfers" element={<TransfersPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/booking" element={<BookingPage />} />
-              <Route path="/tours/:id" element={<TourDetailPage />} />
-              <Route path="/tickets/:id" element={<TicketDetailPage />} />
-              <Route path="/visas/:id" element={<VisaDetailPage />} />
-              <Route path="/packages/:id" element={<PackageDetailPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <ScrollToTopHandler />
+            <div className="App" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
+                }}
+              />
+              <Routes>
+                <Route path="/" element={<Homepage />} />
+                <Route path="/tours" element={<ToursPage />} />
+                <Route path="/tickets" element={<TicketsPage />} />
+                <Route path="/visas" element={<VisaPage />} />
+                <Route path="/packages" element={<PackagesPage />} />
+                <Route path="/transfers" element={<TransfersPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/booking" element={<BookingPage />} />
+                <Route path="/tours/:id" element={<TourDetailPage />} />
+                <Route path="/tickets/:id" element={<TicketDetailPage />} />
+                <Route path="/visas/:id" element={<VisaDetailPage />} />
+                <Route path="/packages/:id" element={<PackageDetailPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
           </QueryClientProvider>
         </PaymentProvider>
       </AuthProvider>

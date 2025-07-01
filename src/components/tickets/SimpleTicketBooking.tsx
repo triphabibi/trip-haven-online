@@ -37,7 +37,7 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
     setIsSubmitting(true);
     
     setTimeout(() => {
-      alert('Ticket booking confirmed! Check your email for tickets.');
+      alert('Ticket booking confirmed! Redirecting to payment...');
       setIsSubmitting(false);
     }, 2000);
   };
@@ -51,7 +51,7 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
         </CardTitle>
         {ticket.instant_delivery && (
           <div className="text-sm bg-white/20 rounded-full px-3 py-1 w-fit">
-            Instant Digital Delivery
+            ⚡ Instant Digital Delivery
           </div>
         )}
         <div className="text-2xl font-bold">{formatPrice(ticket.price_adult)} <span className="text-sm font-normal">per adult</span></div>
@@ -71,7 +71,7 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {travelDate ? format(travelDate, "PPP") : "Select date"}
+                {travelDate ? format(travelDate, "PPP") : "Select travel date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -81,16 +81,16 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 onSelect={setTravelDate}
                 disabled={(date) => date < new Date()}
                 initialFocus
-                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
         </div>
 
-        {/* Ticket Quantity */}
+        {/* Number of Pax */}
         <div className="space-y-4">
-          <Label className="text-sm font-semibold text-gray-700">Number of Tickets</Label>
+          <Label className="text-sm font-semibold text-gray-700">Number of Pax</Label>
           
+          {/* Adults */}
           <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-gray-500" />
@@ -120,11 +120,12 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
             </div>
           </div>
 
+          {/* Children */}
           <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-gray-500" />
               <div>
-                <div className="font-medium">Children</div>
+                <div className="font-medium">Children (2-12 years)</div>
                 <div className="text-sm text-gray-500">{formatPrice(ticket.price_child)} each</div>
               </div>
             </div>
@@ -149,11 +150,12 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
             </div>
           </div>
 
+          {/* Infants */}
           <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-gray-500" />
               <div>
-                <div className="font-medium">Infants</div>
+                <div className="font-medium">Infants (0-2 years)</div>
                 <div className="text-sm text-gray-500">{formatPrice(ticket.price_infant)} each</div>
               </div>
             </div>
@@ -182,10 +184,11 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
         {/* Contact Information */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700">Email Address *</Label>
+            <Label className="text-sm font-semibold text-gray-700" htmlFor="email">Email Address *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
+                id="email"
                 type="email"
                 placeholder="your@email.com"
                 value={email}
@@ -197,10 +200,11 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700">Phone Number *</Label>
+            <Label className="text-sm font-semibold text-gray-700" htmlFor="phone">Phone Number *</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
+                id="phone"
                 type="tel"
                 placeholder="+971 50 123 4567"
                 value={phone}
@@ -242,14 +246,14 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
         <Button
           onClick={handleBooking}
           disabled={isSubmitting || !travelDate || !email || !phone}
-          className="w-full h-12 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold"
+          className="w-full h-12 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold text-lg"
         >
-          {isSubmitting ? 'Processing...' : 'Get Tickets Instantly'}
+          {isSubmitting ? 'Processing...' : `Book Now - ${formatPrice(totalPrice)}`}
         </Button>
 
         {ticket.instant_delivery && (
           <p className="text-xs text-gray-500 text-center">
-            Tickets will be delivered to your email instantly after payment
+            🎫 E-tickets delivered instantly to your email after payment
           </p>
         )}
       </CardContent>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
 import GuestBookingForm from '@/components/booking/GuestBookingForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTour } from '@/hooks/useTours';
@@ -97,6 +98,47 @@ const BookingPage = () => {
     );
   }
 
+  // Use simplified ticket booking form for tickets
+  if (serviceType === 'ticket' && ticket) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl">
+                      {ticket.title}
+                    </CardTitle>
+                    <p className="text-gray-600">{ticket.location}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <img
+                      src={ticket.image_urls?.[0] || 'https://images.unsplash.com/photo-1564053489984-317bbd824340?w=800'}
+                      alt={ticket.title}
+                      className="w-full h-64 object-cover rounded-lg mb-4"
+                    />
+                    <p className="text-gray-700">{ticket.description}</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="lg:col-span-1">
+                <SimpleTicketBooking ticket={ticket} />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
+
+  // Use regular booking form for other services
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
