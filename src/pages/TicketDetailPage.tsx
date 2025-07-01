@@ -1,15 +1,16 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useTicket } from '@/hooks/useTickets';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Ticket as TicketIcon, MapPin, Star, Download } from 'lucide-react';
+import { MapPin, Star, Download, Clock, Users } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import Loading from '@/components/common/Loading';
 import NotFound from '@/pages/NotFound';
-import TicketBookingForm from '@/components/tickets/TicketBookingForm';
+import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
+import AIAssistant from '@/components/common/AIAssistant';
 
 const TicketDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,77 +47,110 @@ const TicketDetailPage = () => {
           <span className="text-gray-900 font-medium truncate">{ticket.title}</span>
         </nav>
 
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-start gap-4 mb-4">
-            <img
-              src={ticket.image_urls?.[0] || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500'}
-              alt={ticket.title}
-              className="w-32 h-32 object-cover rounded-lg shadow-md"
-            />
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{ticket.title}</h1>
-              <div className="flex flex-wrap items-center gap-2 mt-2">
-                {ticket.is_featured && (
-                  <Badge className="bg-yellow-500">Featured</Badge>
-                )}
-                {ticket.instant_delivery && (
-                  <Badge className="bg-green-500">Instant Delivery</Badge>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span>{ticket.rating || 0} ({ticket.total_reviews || 0} reviews)</span>
-            </div>
-            {ticket.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{ticket.location}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Header Section */}
+            <div className="mb-8">
+              <div className="flex items-start gap-4 mb-4">
+                <img
+                  src={ticket.image_urls?.[0] || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500'}
+                  alt={ticket.title}
+                  className="w-32 h-32 object-cover rounded-xl shadow-md"
+                />
+                <div className="flex-1">
+                  <h1 className="text-4xl font-bold text-gray-900 mb-3">{ticket.title}</h1>
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    {ticket.is_featured && (
+                      <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                    )}
+                    {ticket.instant_delivery && (
+                      <Badge className="bg-green-500 hover:bg-green-600">
+                        <Download className="h-3 w-3 mr-1" />
+                        Instant Delivery
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span>{ticket.rating || 4.5} ({ticket.total_reviews || 0} reviews)</span>
+                    </div>
+                    {ticket.location && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        <span>{ticket.location}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* About Section */}
             <Card className="overflow-hidden shadow-sm border-gray-100">
+              <CardHeader>
+                <CardTitle className="text-2xl">About This Attraction</CardTitle>
+              </CardHeader>
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">About This Ticket</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  {ticket.description || 'No description provided for this ticket.'}
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  {ticket.description || 'Experience this amazing attraction with skip-the-line access and instant digital tickets delivered to your email.'}
                 </p>
+                
+                <div className="mt-6 grid md:grid-cols-2 gap-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <h4 className="font-semibold text-gray-900">Instant Access</h4>
+                    </div>
+                    <p className="text-gray-700 text-sm">Get your tickets immediately after booking</p>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold text-gray-900">Skip the Line</h4>
+                    </div>
+                    <p className="text-gray-700 text-sm">Bypass the queue with priority access</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pricing Display */}
+            <Card className="overflow-hidden shadow-sm border-gray-100">
+              <CardHeader>
+                <CardTitle className="text-2xl">Ticket Prices</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-blue-600">{formatPrice(ticket.price_adult)}</div>
+                    <div className="text-sm text-gray-600">Adult (12+ years)</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-green-600">{formatPrice(ticket.price_child)}</div>
+                    <div className="text-sm text-gray-600">Child (3-11 years)</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-purple-600">{formatPrice(ticket.price_infant)}</div>
+                    <div className="text-sm text-gray-600">Infant (0-2 years)</div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <Card className="shadow-lg border-gray-200">
-                <CardHeader>
-                  <CardTitle>Book Your Tickets</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TicketBookingForm
-                    ticketId={ticket.id}
-                    ticketTitle={ticket.title}
-                    priceAdult={ticket.price_adult}
-                    priceChild={ticket.price_child}
-                    priceInfant={ticket.price_infant}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <SimpleTicketBooking ticket={ticket} />
           </div>
         </div>
       </main>
 
       <Footer />
+      <AIAssistant />
     </div>
   );
 };

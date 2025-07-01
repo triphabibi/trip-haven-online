@@ -5,8 +5,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PackageHero from '@/components/packages/PackageHero';
-import PackageInfo from '@/components/packages/PackageInfo';
+import ModernPackageBooking from '@/components/packages/ModernPackageBooking';
 import PackageDetails from '@/components/packages/PackageDetails';
+import AIAssistant from '@/components/common/AIAssistant';
 
 const PackageDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,9 +42,13 @@ const PackageDetailPage = () => {
               <Skeleton className="h-96 w-full" />
             </div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-8">
-              <PackageHero pkg={pkg!} isLoading={isLoading} />
-              <PackageInfo pkg={pkg!} isLoading={isLoading} />
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <PackageHero pkg={pkg!} isLoading={isLoading} />
+              </div>
+              <div className="lg:col-span-1">
+                <ModernPackageBooking pkg={pkg!} />
+              </div>
             </div>
           )}
         </div>
@@ -55,6 +60,7 @@ const PackageDetailPage = () => {
       </div>
 
       <Footer />
+      <AIAssistant />
     </div>
   );
 };

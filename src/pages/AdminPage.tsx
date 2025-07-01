@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Package, CreditCard, TrendingUp, Settings as SettingsIcon, Ticket } from 'lucide-react';
+import { Users, Package, CreditCard, TrendingUp, Settings as SettingsIcon, Ticket, Car } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BulkUpload from '@/components/admin/BulkUpload';
@@ -84,60 +84,60 @@ const AdminPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage your travel business</p>
+            <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600 text-lg">Manage your travel business with ease</p>
           </div>
-          <Button onClick={signOut} variant="outline">
+          <Button onClick={signOut} variant="outline" size="lg">
             Sign Out
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Modern Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Total Users</p>
+                  <p className="text-3xl font-bold">{stats.totalUsers}</p>
                 </div>
+                <Users className="h-10 w-10 text-blue-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium">Total Bookings</p>
+                  <p className="text-3xl font-bold">{stats.totalBookings}</p>
                 </div>
+                <Package className="h-10 w-10 text-green-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <TrendingUp className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(2)}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm font-medium">Total Revenue</p>
+                  <p className="text-3xl font-bold">₹{stats.totalRevenue.toFixed(2)}</p>
                 </div>
+                <TrendingUp className="h-10 w-10 text-purple-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <CreditCard className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Pending Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pendingBookings}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm font-medium">Pending Bookings</p>
+                  <p className="text-3xl font-bold">{stats.pendingBookings}</p>
                 </div>
+                <CreditCard className="h-10 w-10 text-orange-200" />
               </div>
             </CardContent>
           </Card>
@@ -145,16 +145,17 @@ const AdminPage = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="tours" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-9">
-            <TabsTrigger value="tours">Tours</TabsTrigger>
-            <TabsTrigger value="tickets">Tickets</TabsTrigger>
-            <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="visas">Visas</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="emails">Emails</TabsTrigger>
-            <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-white border shadow-sm">
+            <TabsTrigger value="tours" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Tours</TabsTrigger>
+            <TabsTrigger value="tickets" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Tickets</TabsTrigger>
+            <TabsTrigger value="packages" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">Packages</TabsTrigger>
+            <TabsTrigger value="bookings" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">Bookings</TabsTrigger>
+            <TabsTrigger value="visas" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">Visas</TabsTrigger>
+            <TabsTrigger value="transfers" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">Transfers</TabsTrigger>
+            <TabsTrigger value="payments" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Payments</TabsTrigger>
+            <TabsTrigger value="emails" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">Emails</TabsTrigger>
+            <TabsTrigger value="bulk" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white">Bulk Upload</TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-gray-500 data-[state=active]:text-white">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tours">
@@ -175,6 +176,18 @@ const AdminPage = () => {
 
           <TabsContent value="visas">
             <VisaManagement />
+          </TabsContent>
+
+          <TabsContent value="transfers">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center py-12">
+                  <Car className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Transfer Management</h3>
+                  <p className="text-gray-500">Transfer management coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="payments">

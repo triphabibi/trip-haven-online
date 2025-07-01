@@ -6,27 +6,21 @@ import Footer from '@/components/layout/Footer';
 import TourDetailHeader from '@/components/tours/TourDetailHeader';
 import TourHighlights from '@/components/tours/TourHighlights';
 import TourImageGallery from '@/components/tours/TourImageGallery';
-import EnhancedBookingCard from '@/components/tours/EnhancedBookingCard';
+import StreamlinedTourBooking from '@/components/tours/StreamlinedTourBooking';
 import TourOverview from '@/components/tours/TourOverview';
 import TourItinerary from '@/components/tours/TourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
 import TourReviews from '@/components/tours/TourReviews';
 import TourFAQ from '@/components/tours/TourFAQ';
-import StickyMobileCTA from '@/components/common/StickyMobileCTA';
+import AIAssistant from '@/components/common/AIAssistant';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
 import Loading from '@/components/common/Loading';
 
 const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { data: tour, isLoading, error } = useTour(id!);
-
-  const handleBookNow = () => {
-    navigate(`/booking?type=tour&id=${id}`);
-  };
 
   if (isLoading) {
     return (
@@ -148,19 +142,13 @@ const TourDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <EnhancedBookingCard tour={tour} />
+            <StreamlinedTourBooking tour={tour} />
           </div>
         </div>
       </main>
 
       <Footer />
-      
-      {/* Sticky Mobile CTA */}
-      <StickyMobileCTA 
-        tour={tour} 
-        showBooking={true} 
-        onBookNow={handleBookNow} 
-      />
+      <AIAssistant />
     </div>
   );
 };

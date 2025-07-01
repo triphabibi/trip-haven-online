@@ -9,6 +9,7 @@ import ToursPage from '@/pages/ToursPage';
 import TicketsPage from '@/pages/TicketsPage';
 import VisaPage from '@/pages/VisaPage';
 import PackagesPage from '@/pages/PackagesPage';
+import TransfersPage from '@/pages/TransfersPage';
 import AboutPage from '@/pages/AboutPage';
 import ContactPage from '@/pages/ContactPage';
 import LoginPage from '@/pages/LoginPage';
@@ -26,7 +27,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
+      gcTime: 10 * 60 * 1000, // 10 minutes
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -55,6 +56,7 @@ function App() {
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/visas" element={<VisaPage />} />
               <Route path="/packages" element={<PackagesPage />} />
+              <Route path="/transfers" element={<TransfersPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/login" element={<LoginPage />} />
