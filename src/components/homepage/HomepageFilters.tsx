@@ -36,19 +36,19 @@ const HomepageFilters = ({ selectedCountry, onCountryChange, selectedType, onTyp
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+    <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
       <div className="flex-1">
         <Select value={selectedCountry} onValueChange={onCountryChange}>
-          <SelectTrigger className="h-10 md:h-12 bg-white/90 backdrop-blur-md border-white/40 text-gray-900 text-sm md:text-base">
+          <SelectTrigger className="h-8 md:h-12 bg-white border border-gray-300 text-gray-900 text-sm md:text-base shadow-sm">
             <Globe className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
             <SelectValue placeholder="Select Country" />
           </SelectTrigger>
-          <SelectContent className="bg-white z-50">
+          <SelectContent className="bg-white border border-gray-200 shadow-lg z-50 max-h-64 overflow-y-auto">
             {countries.map((country) => (
-              <SelectItem key={country.code} value={country.code}>
+              <SelectItem key={country.code} value={country.code} className="hover:bg-gray-50">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{country.flag}</span>
-                  <span>{country.name}</span>
+                  <span className="text-gray-900">{country.name}</span>
                 </div>
               </SelectItem>
             ))}
@@ -58,16 +58,16 @@ const HomepageFilters = ({ selectedCountry, onCountryChange, selectedType, onTyp
 
       <div className="flex-1">
         <Select value={selectedType} onValueChange={onTypeChange}>
-          <SelectTrigger className="h-10 md:h-12 bg-white/90 backdrop-blur-md border-white/40 text-gray-900 text-sm md:text-base">
+          <SelectTrigger className="h-8 md:h-12 bg-white border border-gray-300 text-gray-900 text-sm md:text-base shadow-sm">
             <Filter className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
             <SelectValue placeholder="Service Type" />
           </SelectTrigger>
-          <SelectContent className="bg-white z-50">
+          <SelectContent className="bg-white border border-gray-200 shadow-lg z-50 max-h-64 overflow-y-auto">
             {serviceTypes.map((type) => (
-              <SelectItem key={type.code} value={type.code}>
+              <SelectItem key={type.code} value={type.code} className="hover:bg-gray-50">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{type.icon}</span>
-                  <span>{type.name}</span>
+                  <span className="text-gray-900">{type.name}</span>
                 </div>
               </SelectItem>
             ))}

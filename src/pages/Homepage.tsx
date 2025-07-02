@@ -16,6 +16,7 @@ import WhatsAppButton from '@/components/common/WhatsAppButton';
 import ScrollToTop from '@/components/common/ScrollToTop';
 import MobileTabBar from '@/components/layout/MobileTabBar';
 import PageTransition from '@/components/common/PageTransition';
+import StickyBookingButton from '@/components/common/StickyBookingButton';
 
 const Homepage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,48 +46,62 @@ const Homepage = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-gray-50">
+        {/* Top Contact Bar */}
+        <div className="bg-blue-600 text-white py-2 text-sm">
+          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <span>📞 +91-9125009662</span>
+              <span>📧 info@triphabibi.com</span>
+            </div>
+            <div className="hidden md:flex items-center space-x-2">
+              <span className="px-2 py-1 bg-green-600 rounded text-xs">✅ SSL Secure</span>
+              <span className="px-2 py-1 bg-yellow-600 rounded text-xs">⭐ 98% Visa Success</span>
+            </div>
+          </div>
+        </div>
+
         <Header />
+        
+        {/* Search Section - Moved after header */}
+        <div className="bg-white shadow-sm py-4 sticky top-16 z-40">
+          <div className="max-w-4xl mx-auto px-4">
+            <SmartSearch />
+          </div>
+        </div>
+
         <main>
-          {/* Hero Section with Smart Search */}
+          {/* Hero Section */}
           <div className="relative">
             <HeroSlider />
             
-            {/* Overlay Search and Filters - Moved higher */}
-            <div className="absolute top-20 left-0 right-0 z-20">
-              <div className="max-w-4xl mx-auto px-4 w-full">
-                <div className="text-center mb-6">
-                  <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-                    Plan Your Perfect Trip with AI
-                  </h1>
-                  <p className="text-xl md:text-2xl text-white/90 mb-6 drop-shadow">
-                    🎤 Speak or type to discover amazing destinations with AI assistance
-                  </p>
+            {/* Hero Content */}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+              <div className="text-center text-white max-w-4xl px-4">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="px-3 py-1 bg-green-600 rounded-full text-sm">🔒 SSL Secure</span>
+                  <span className="px-3 py-1 bg-blue-600 rounded-full text-sm">⭐ 10,000+ Happy Clients</span>
                 </div>
-                
-                {/* Smart Search Bar */}
-                <div className="mb-4">
-                  <SmartSearch />
-                </div>
-                
-                {/* Compact Filters for Mobile */}
-                <div className="block md:hidden">
-                  <HomepageFilters
-                    selectedCountry={selectedCountry}
-                    onCountryChange={setSelectedCountry}
-                    selectedType={selectedType}
-                    onTypeChange={setSelectedType}
-                  />
-                </div>
-                
-                {/* Full Filters for Desktop */}
-                <div className="hidden md:block">
-                  <HomepageFilters
-                    selectedCountry={selectedCountry}
-                    onCountryChange={setSelectedCountry}
-                    selectedType={selectedType}
-                    onTypeChange={setSelectedType}
-                  />
-                </div>
+                <h1 className="text-5xl md:text-7xl font-bold mb-4 animate-fade-in-up">
+                  Your Dream Trip Awaits
+                </h1>
+                <p className="text-xl md:text-2xl mb-8 animate-fade-in-up">
+                  Choose Destination → Select Service → Book Now
+                </p>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 pulse-cta animate-fade-in-up">
+                  🚀 Start Your Journey
+                </button>
+              </div>
+            </div>
+            
+            {/* Filters positioned at bottom of slider */}
+            <div className="absolute bottom-4 left-0 right-0 z-20">
+              <div className="max-w-2xl mx-auto px-4">
+                <HomepageFilters
+                  selectedCountry={selectedCountry}
+                  onCountryChange={setSelectedCountry}
+                  selectedType={selectedType}
+                  onTypeChange={setSelectedType}
+                />
               </div>
             </div>
           </div>
@@ -122,6 +137,7 @@ const Homepage = () => {
         <VoiceAIAssistant />
         <ScrollToTop />
         <MobileTabBar />
+        <StickyBookingButton />
       </div>
     </PageTransition>
   );

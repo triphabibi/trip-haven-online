@@ -121,11 +121,11 @@ const SmartSearch = () => {
           placeholder="Search tours, packages, visas, tickets... (e.g., 'Dubai', 'Europe')"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 pr-4 h-14 text-lg border-2 border-white/20 bg-white/90 backdrop-blur-md text-gray-900 placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition-all duration-300"
+          className="pl-12 pr-20 h-12 md:h-14 text-base md:text-lg border-2 border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 rounded-lg"
         />
         <Button 
           size="sm" 
-          className="absolute right-2 top-2 h-10 bg-blue-600 hover:bg-blue-700"
+          className="absolute right-1 top-1 h-10 md:h-12 bg-blue-600 hover:bg-blue-700 rounded-md"
           onClick={() => setShowResults(true)}
         >
           Search
