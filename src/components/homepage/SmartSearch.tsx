@@ -27,10 +27,10 @@ const SmartSearch = () => {
     queryKey: ['search-data'],
     queryFn: async () => {
       const [tours, packages, visas, tickets] = await Promise.all([
-        supabase.from('tours').select('id, title, country, price_adult').eq('status', 'active'),
-        supabase.from('tour_packages').select('id, title, country, price_adult').eq('status', 'active'),
+        supabase.from('tours').select('id, title, price_adult').eq('status', 'active'),
+        supabase.from('tour_packages').select('id, title, price_adult').eq('status', 'active'),
         supabase.from('visa_services').select('id, country, visa_type, price').eq('status', 'active'),
-        supabase.from('attraction_tickets').select('id, title, country, price_adult').eq('status', 'active')
+        supabase.from('attraction_tickets').select('id, title, location, price_adult').eq('status', 'active')
       ]);
 
       const results: SearchResult[] = [
@@ -38,14 +38,14 @@ const SmartSearch = () => {
           id: item.id,
           title: item.title,
           type: 'tour' as const,
-          country: item.country,
+          country: 'UAE', // Default for now, can be made dynamic later
           price: item.price_adult
         })),
         ...(packages.data || []).map(item => ({
           id: item.id,
           title: item.title,
           type: 'package' as const,
-          country: item.country,
+          country: 'UAE', // Default for now, can be made dynamic later
           price: item.price_adult
         })),
         ...(visas.data || []).map(item => ({
@@ -59,7 +59,7 @@ const SmartSearch = () => {
           id: item.id,
           title: item.title,
           type: 'ticket' as const,
-          country: item.country,
+          country: item.location || 'UAE',
           price: item.price_adult
         }))
       ];
@@ -121,7 +121,7 @@ const SmartSearch = () => {
           placeholder="Search tours, packages, visas, tickets... (e.g., 'Dubai', 'Europe')"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 pr-4 h-14 text-lg border-2 border-white/20 bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition-all duration-300"
+          className="pl-12 pr-4 h-14 text-lg border-2 border-white/20 bg-white/90 backdrop-blur-md text-gray-900 placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition-all duration-300"
         />
         <Button 
           size="sm" 
@@ -133,7 +133,7 @@ const SmartSearch = () => {
       </div>
 
       {showResults && filteredResults.length > 0 && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 max-h-96 overflow-y-auto shadow-2xl border-0">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 max-h-96 overflow-y-auto shadow-2xl border-0 bg-white">
           <div className="p-2">
             {filteredResults.map((result) => (
               <Link
@@ -161,7 +161,7 @@ const SmartSearch = () => {
       )}
 
       {showResults && searchQuery.length >= 2 && filteredResults.length === 0 && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-2xl border-0">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-2xl border-0 bg-white">
           <div className="p-4 text-center text-gray-500">
             No results found for "{searchQuery}"
           </div>
