@@ -48,7 +48,7 @@ function App() {
         <PaymentProvider>
           <QueryClientProvider client={queryClient}>
             <ScrollToTopHandler />
-            <div className="App" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
+            <div className="App pb-16 md:pb-0" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
               <Toaster 
                 position="top-right"
                 toastOptions={{
