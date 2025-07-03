@@ -113,23 +113,16 @@ const SmartSearch = () => {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-2xl mx-auto">
+    <div ref={searchRef} className="relative w-full max-w-sm mx-auto">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           type="text"
-          placeholder="Search tours, packages, visas, tickets... (e.g., 'Dubai', 'Europe')"
+          placeholder="Search destinations..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 pr-20 h-12 md:h-14 text-base md:text-lg border-2 border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 rounded-lg"
+          className="pl-10 pr-3 h-9 text-sm border-0 bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 rounded-full shadow-lg"
         />
-        <Button 
-          size="sm" 
-          className="absolute right-1 top-1 h-10 md:h-12 bg-blue-600 hover:bg-blue-700 rounded-md"
-          onClick={() => setShowResults(true)}
-        >
-          Search
-        </Button>
       </div>
 
       {showResults && filteredResults.length > 0 && (

@@ -5,7 +5,7 @@ import Footer from '@/components/layout/Footer';
 import HeroSlider from '@/components/homepage/HeroSlider';
 import SmartSearch from '@/components/homepage/SmartSearch';
 import HomepageFilters from '@/components/homepage/HomepageFilters';
-import OptimizedServiceCards from '@/components/homepage/OptimizedServiceCards';
+import OptimizedServices from '@/components/homepage/OptimizedServices';
 import OptimizedFeaturedTours from '@/components/homepage/OptimizedFeaturedTours';
 import TrendingSection from '@/components/homepage/TrendingSection';
 import AnimatedStats from '@/components/homepage/AnimatedStats';
@@ -14,9 +14,9 @@ import CustomerReviews from '@/components/homepage/CustomerReviews';
 import VoiceAIAssistant from '@/components/common/VoiceAIAssistant';
 import WhatsAppButton from '@/components/common/WhatsAppButton';
 import ScrollToTop from '@/components/common/ScrollToTop';
-import MobileTabBar from '@/components/layout/MobileTabBar';
+import EnhancedMobileTabBar from '@/components/layout/EnhancedMobileTabBar';
 import PageTransition from '@/components/common/PageTransition';
-import StickyBookingButton from '@/components/common/StickyBookingButton';
+import StickyMobileCTA from '@/components/common/StickyMobileCTA';
 
 const Homepage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -62,40 +62,37 @@ const Homepage = () => {
 
         <Header />
         
-        {/* Search Section - Moved after header */}
-        <div className="bg-white shadow-sm py-4 sticky top-16 z-40">
-          <div className="max-w-4xl mx-auto px-4">
-            <SmartSearch />
-          </div>
-        </div>
-
         <main>
-          {/* Hero Section */}
+          {/* Hero Section with Search and Filters */}
           <div className="relative">
+            {/* Search Bar over Slider - Point 1 */}
+            <div className="absolute top-4 left-0 right-0 z-30">
+              <div className="max-w-md mx-auto px-4">
+                <SmartSearch />
+              </div>
+            </div>
+            
             <HeroSlider />
             
-            {/* Hero Content */}
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+            {/* Hero Content - Point 2: Removed extra text */}
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-10">
               <div className="text-center text-white max-w-4xl px-4">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <span className="px-3 py-1 bg-green-600 rounded-full text-sm">🔒 SSL Secure</span>
                   <span className="px-3 py-1 bg-blue-600 rounded-full text-sm">⭐ 10,000+ Happy Clients</span>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-bold mb-4 animate-fade-in-up">
+                <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in-up">
                   Your Dream Trip Awaits
                 </h1>
-                <p className="text-xl md:text-2xl mb-8 animate-fade-in-up">
-                  Choose Destination → Select Service → Book Now
-                </p>
                 <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 pulse-cta animate-fade-in-up">
                   🚀 Start Your Journey
                 </button>
               </div>
             </div>
             
-            {/* Filters positioned at bottom of slider */}
+            {/* Filters positioned at bottom of slider - Point 2: Made smaller for mobile */}
             <div className="absolute bottom-4 left-0 right-0 z-20">
-              <div className="max-w-2xl mx-auto px-4">
+              <div className="max-w-lg mx-auto px-4">
                 <HomepageFilters
                   selectedCountry={selectedCountry}
                   onCountryChange={setSelectedCountry}
@@ -106,9 +103,9 @@ const Homepage = () => {
             </div>
           </div>
           
-          {/* Services Section - Optimized for Mobile */}
+          {/* Services Section - Point 14: Single line on mobile with horizontal scroll */}
           <div className="py-8 md:py-16">
-            <OptimizedServiceCards />
+            <OptimizedServices />
           </div>
           
           {/* Trending Section */}
@@ -136,8 +133,8 @@ const Homepage = () => {
         <WhatsAppButton />
         <VoiceAIAssistant />
         <ScrollToTop />
-        <MobileTabBar />
-        <StickyBookingButton />
+        <EnhancedMobileTabBar />
+        <StickyMobileCTA />
       </div>
     </PageTransition>
   );
