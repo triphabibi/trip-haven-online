@@ -8,9 +8,9 @@ import HomepageFilters from '@/components/homepage/HomepageFilters';
 import OptimizedServices from '@/components/homepage/OptimizedServices';
 import OptimizedFeaturedTours from '@/components/homepage/OptimizedFeaturedTours';
 import TrendingSection from '@/components/homepage/TrendingSection';
-import AnimatedStats from '@/components/homepage/AnimatedStats';
-import VideoSection from '@/components/homepage/VideoSection';
-import CustomerReviews from '@/components/homepage/CustomerReviews';
+import CompactAnimatedStats from '@/components/homepage/CompactAnimatedStats';
+import EnhancedVideoSection from '@/components/homepage/EnhancedVideoSection';
+import EnhancedFooter from '@/components/layout/EnhancedFooter';
 import VoiceAIAssistant from '@/components/common/VoiceAIAssistant';
 import WhatsAppButton from '@/components/common/WhatsAppButton';
 import ScrollToTop from '@/components/common/ScrollToTop';
@@ -114,20 +114,17 @@ const Homepage = () => {
           {/* Featured Tours */}
           <OptimizedFeaturedTours />
           
-          {/* Animated Stats - Smaller on Mobile */}
-          <div className="py-8 md:py-16">
-            <AnimatedStats />
-          </div>
+          {/* Compact Animated Stats - Point 20: Smaller on Mobile */}
+          <CompactAnimatedStats />
           
-          {/* Video Section */}
-          <VideoSection />
+          {/* Enhanced Video Section - Point 18 */}
+          <EnhancedVideoSection />
           
-          {/* Customer Reviews */}
-          <CustomerReviews />
+          {/* Customer Reviews - Point 30: Will be added in next update */}
         </main>
         
-        {/* Footer - Optimized for Mobile */}
-        <Footer />
+        {/* Enhanced Footer - Point 19: Mobile optimized */}
+        <EnhancedFooter />
         
         {/* Fixed Components */}
         <WhatsAppButton />
