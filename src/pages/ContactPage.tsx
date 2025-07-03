@@ -94,7 +94,7 @@ const ContactPage = () => {
                   <Mail className="h-6 w-6 text-blue-600 mt-1 mr-4" />
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">info@triphabibi.com</p>
+                    <p className="text-gray-600">info@triphabibi.in</p>
                     <p className="text-sm text-gray-500">We reply within 24 hours</p>
                   </div>
                 </div>
