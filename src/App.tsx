@@ -23,6 +23,7 @@ import TourDetailPage from '@/pages/TourDetailPage';
 import TicketDetailPage from '@/pages/TicketDetailPage';
 import VisaDetailPage from '@/pages/VisaDetailPage';
 import PackageDetailPage from '@/pages/PackageDetailPage';
+import OkToBoardPage from '@/pages/OkToBoardPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +78,7 @@ function App() {
                 <Route path="/tickets/:id" element={<TicketDetailPage />} />
                 <Route path="/visas/:id" element={<VisaDetailPage />} />
                 <Route path="/packages/:id" element={<PackageDetailPage />} />
+                <Route path="/ok-to-board" element={<OkToBoardPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>

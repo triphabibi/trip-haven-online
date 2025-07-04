@@ -17,6 +17,7 @@ import ScrollToTop from '@/components/common/ScrollToTop';
 import EnhancedMobileTabBar from '@/components/layout/EnhancedMobileTabBar';
 import PageTransition from '@/components/common/PageTransition';
 import StickyMobileCTA from '@/components/common/StickyMobileCTA';
+import NotificationSystem from '@/components/common/NotificationSystem';
 
 const Homepage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -132,6 +133,7 @@ const Homepage = () => {
         <ScrollToTop />
         <EnhancedMobileTabBar />
         <StickyMobileCTA />
+        <NotificationSystem />
       </div>
     </PageTransition>
   );

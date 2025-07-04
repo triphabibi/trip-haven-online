@@ -9,7 +9,7 @@ const EnhancedMobileTabBar = () => {
     { name: 'Home', path: '/', icon: Home, emoji: '🏠' },
     { name: 'Tours', path: '/tours', icon: MapPin, emoji: '🎭' },
     { name: 'Visas', path: '/visas', icon: FileText, emoji: '📋' },
-    { name: 'Tickets', path: '/tickets', icon: Ticket, emoji: '🎫' },
+    { name: 'Ok to Board', path: '/ok-to-board', icon: Ticket, emoji: '✈️' },
     { name: 'Support', path: '/contact', icon: Phone, emoji: '💬' },
   ];
 

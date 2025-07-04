@@ -21,6 +21,7 @@ const Header = () => {
     { name: 'Packages', href: '/packages', icon: FileText },
     { name: 'Tickets', href: '/tickets', icon: Ticket },
     { name: 'Visas', href: '/visas', icon: FileText },
+    { name: 'Ok to Board', href: '/ok-to-board', icon: Plane },
     { name: 'Transfers', href: '/transfers', icon: Car },
   ];
 
