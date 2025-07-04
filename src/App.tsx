@@ -24,6 +24,7 @@ import TicketDetailPage from '@/pages/TicketDetailPage';
 import VisaDetailPage from '@/pages/VisaDetailPage';
 import PackageDetailPage from '@/pages/PackageDetailPage';
 import OkToBoardPage from '@/pages/OkToBoardPage';
+import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +51,7 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <ScrollToTopHandler />
             <div className="App pb-16 md:pb-0" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
+              <StickyMobileBookingButton />
               <Toaster 
                 position="top-right"
                 toastOptions={{

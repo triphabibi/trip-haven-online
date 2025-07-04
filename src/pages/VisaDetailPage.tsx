@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Globe, FileText, CheckCircle, AlertCircle, Users } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import Loading from '@/components/common/Loading';
+import ModernVisaBooking from '@/components/visa/ModernVisaBooking';
 
 const VisaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -202,17 +203,7 @@ const VisaDetailPage = () => {
                 </TabsContent>
 
                 <TabsContent value="apply" className="mt-0">
-                  <VisaBookingForm 
-                    service={{
-                      id: visa.id,
-                      title: `${visa.country} ${visa.visa_type}`,
-                      country: visa.country,
-                      visa_type: visa.visa_type,
-                      price: visa.price,
-                      processing_time: visa.processing_time,
-                      requirements: visa.requirements || []
-                    }}
-                  />
+                  <ModernVisaBooking service={visa} />
                 </TabsContent>
               </div>
             </Tabs>
@@ -220,7 +211,18 @@ const VisaDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8">
+            {/* Mobile Visa Booking - Point 8 */}
+            <div className="md:hidden mb-8">
+              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-2xl text-white text-center mb-4">
+                <h3 className="text-xl font-bold mb-2">Apply for {visa.country} Visa</h3>
+                <div className="text-3xl font-bold mb-2">₹{visa.price.toLocaleString()}</div>
+                <p className="text-white/80">Expert assistance included</p>
+              </div>
+              <ModernVisaBooking service={visa} />
+            </div>
+            
+            {/* Desktop Sidebar */}
+            <div className="hidden md:block sticky top-8">
               <Card className="shadow-lg border-gray-200">
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
@@ -240,10 +242,17 @@ const VisaDetailPage = () => {
                   </div>
                   
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <span>Expert assistance included</span>
                     </div>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                      onClick={() => document.querySelector('[data-booking-form]')?.scrollIntoView({ behavior: 'smooth' })}
+                    >
+                      Apply Now
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

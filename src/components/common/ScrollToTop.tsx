@@ -25,18 +25,18 @@ const ScrollToTop = () => {
     });
   };
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <>
-      {isVisible && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-40 h-12 w-12 rounded-full bg-gray-900 hover:bg-gray-800 text-white shadow-lg transition-all duration-300 hover:scale-110"
-          size="icon"
-        >
-          <ArrowUp className="h-5 w-5" />
-        </Button>
-      )}
-    </>
+    <Button
+      onClick={scrollToTop}
+      className="fixed bottom-32 md:bottom-8 right-4 z-50 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+      size="icon"
+    >
+      <ArrowUp className="h-5 w-5" />
+    </Button>
   );
 };
 

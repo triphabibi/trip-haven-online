@@ -66,7 +66,7 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal h-12",
+                  "w-full justify-start text-left font-normal h-12 bg-white border-gray-300",
                   !travelDate && "text-muted-foreground"
                 )}
               >
@@ -74,13 +74,14 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 {travelDate ? format(travelDate, "PPP") : "Select travel date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 bg-white border border-gray-200 shadow-lg" align="start">
               <Calendar
                 mode="single"
                 selected={travelDate}
                 onSelect={setTravelDate}
                 disabled={(date) => date < new Date()}
                 initialFocus
+                className="bg-white"
               />
             </PopoverContent>
           </Popover>

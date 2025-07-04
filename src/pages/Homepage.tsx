@@ -6,6 +6,7 @@ import HeroSlider from '@/components/homepage/HeroSlider';
 import SmartSearch from '@/components/homepage/SmartSearch';
 import HomepageFilters from '@/components/homepage/HomepageFilters';
 import OptimizedServices from '@/components/homepage/OptimizedServices';
+import OptimizedServicesMobile from '@/components/homepage/OptimizedServicesMobile';
 import OptimizedFeaturedTours from '@/components/homepage/OptimizedFeaturedTours';
 import TrendingSection from '@/components/homepage/TrendingSection';
 import CompactAnimatedStats from '@/components/homepage/CompactAnimatedStats';
@@ -106,7 +107,10 @@ const Homepage = () => {
           
           {/* Services Section - Point 14: Single line on mobile with horizontal scroll */}
           <div className="py-8 md:py-16">
-            <OptimizedServices />
+            <div className="hidden md:block">
+              <OptimizedServices />
+            </div>
+            <OptimizedServicesMobile />
           </div>
           
           {/* Trending Section */}

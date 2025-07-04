@@ -124,11 +124,11 @@ const EnhancedBookingForm = ({ serviceType, serviceId, serviceName, basePrice }:
                 <Label className="text-sm font-medium text-gray-700">
                   📅 Travel Date *
                 </Label>
-                <Input
+                 <Input
                   type="date"
                   value={formData.travelDate}
                   onChange={(e) => setFormData({ ...formData, travelDate: e.target.value })}
-                  className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg transition-all duration-300"
+                  className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg transition-all duration-300 bg-white"
                 />
               </div>
               
