@@ -389,6 +389,167 @@ export type Database = {
         }
         Relationships: []
       }
+      ok_to_board_bookings: {
+        Row: {
+          additional_docs_url: string | null
+          airline: string
+          arrival_airport: string
+          booking_reference: string
+          booking_status: string | null
+          covid_certificate_url: string | null
+          created_at: string | null
+          date_of_birth: string
+          departure_airport: string
+          departure_date: string
+          departure_time: string
+          dietary_requirements: string | null
+          email: string
+          emergency_contact: string
+          emergency_phone: string
+          first_name: string
+          flight_number: string
+          gender: string
+          id: string
+          last_name: string
+          medical_conditions: string | null
+          nationality: string
+          passport_copy_url: string | null
+          passport_expiry: string
+          passport_number: string
+          payment_reference: string | null
+          payment_status: string | null
+          phone: string
+          service_id: string | null
+          special_assistance: string | null
+          total_amount: number
+          updated_at: string | null
+          visa_copy_url: string | null
+        }
+        Insert: {
+          additional_docs_url?: string | null
+          airline: string
+          arrival_airport: string
+          booking_reference: string
+          booking_status?: string | null
+          covid_certificate_url?: string | null
+          created_at?: string | null
+          date_of_birth: string
+          departure_airport: string
+          departure_date: string
+          departure_time: string
+          dietary_requirements?: string | null
+          email: string
+          emergency_contact: string
+          emergency_phone: string
+          first_name: string
+          flight_number: string
+          gender: string
+          id?: string
+          last_name: string
+          medical_conditions?: string | null
+          nationality: string
+          passport_copy_url?: string | null
+          passport_expiry: string
+          passport_number: string
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone: string
+          service_id?: string | null
+          special_assistance?: string | null
+          total_amount: number
+          updated_at?: string | null
+          visa_copy_url?: string | null
+        }
+        Update: {
+          additional_docs_url?: string | null
+          airline?: string
+          arrival_airport?: string
+          booking_reference?: string
+          booking_status?: string | null
+          covid_certificate_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string
+          departure_airport?: string
+          departure_date?: string
+          departure_time?: string
+          dietary_requirements?: string | null
+          email?: string
+          emergency_contact?: string
+          emergency_phone?: string
+          first_name?: string
+          flight_number?: string
+          gender?: string
+          id?: string
+          last_name?: string
+          medical_conditions?: string | null
+          nationality?: string
+          passport_copy_url?: string | null
+          passport_expiry?: string
+          passport_number?: string
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone?: string
+          service_id?: string | null
+          special_assistance?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          visa_copy_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ok_to_board_bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "ok_to_board_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ok_to_board_services: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          description: string | null
+          features: string[] | null
+          id: string
+          is_active: boolean | null
+          processing_fee: number
+          processing_time: string
+          requirements: string[] | null
+          tax_rate: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          processing_fee?: number
+          processing_time?: string
+          requirements?: string[] | null
+          tax_rate?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          processing_fee?: number
+          processing_time?: string
+          requirements?: string[] | null
+          tax_rate?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payment_gateways: {
         Row: {
           api_key: string | null
