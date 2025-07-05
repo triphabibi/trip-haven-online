@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,12 +52,6 @@ const GuestBookingForm = ({
     return adultTotal + childTotal + infantTotal;
   };
 
-  const generateBookingReference = () => {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `TH${timestamp.slice(-8)}${random}`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -75,14 +68,13 @@ const GuestBookingForm = ({
     
     try {
       const totalAmount = calculateTotal();
-      const bookingReference = generateBookingReference();
       
       const { data, error } = await supabase
         .from('new_bookings')
         .insert({
-          booking_reference: bookingReference,
+          service_type: serviceType,
           service_id: serviceId,
-          booking_type: serviceType,
+          service_title: serviceTitle,
           customer_name: formData.customerName,
           customer_phone: formData.customerPhone,
           customer_email: formData.customerEmail || null,
@@ -92,8 +84,8 @@ const GuestBookingForm = ({
           infants_count: formData.infantsCount,
           pickup_location: formData.pickupLocation || null,
           special_requests: formData.specialRequests || null,
-          selected_time: formData.selectedTime || null,
           selected_language: formData.selectedLanguage,
+          base_amount: totalAmount,
           total_amount: totalAmount,
           final_amount: totalAmount,
           booking_status: 'pending',
@@ -106,7 +98,7 @@ const GuestBookingForm = ({
 
       toast({
         title: "Booking Submitted!",
-        description: `Your booking reference is ${bookingReference}`,
+        description: `Your booking has been submitted successfully!`,
       });
 
       // Reset form

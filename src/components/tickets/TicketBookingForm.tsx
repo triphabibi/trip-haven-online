@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,12 +43,6 @@ const TicketBookingForm = ({
     return adultTotal + childTotal + infantTotal;
   };
 
-  const generateBookingReference = () => {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `TK${timestamp.slice(-8)}${random}`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -66,20 +59,20 @@ const TicketBookingForm = ({
     
     try {
       const totalAmount = calculateTotal();
-      const bookingReference = generateBookingReference();
       
       const { data, error } = await supabase
         .from('new_bookings')
         .insert({
-          booking_reference: bookingReference,
+          service_type: 'ticket',
           service_id: ticketId,
-          booking_type: 'ticket',
+          service_title: ticketTitle,
           customer_name: formData.customerName,
           customer_email: formData.customerEmail,
           travel_date: formData.visitDate || null,
           adults_count: formData.adultsCount,
           children_count: formData.childrenCount,
           infants_count: formData.infantsCount,
+          base_amount: totalAmount,
           total_amount: totalAmount,
           final_amount: totalAmount,
           booking_status: 'pending',
@@ -92,7 +85,7 @@ const TicketBookingForm = ({
 
       toast({
         title: "Ticket Booked!",
-        description: `Your booking reference is ${bookingReference}. You will receive confirmation via email.`,
+        description: `Your ticket has been booked successfully! You will receive confirmation via email.`,
       });
 
       // Reset form

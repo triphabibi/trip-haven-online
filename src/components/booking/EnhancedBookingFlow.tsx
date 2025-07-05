@@ -25,12 +25,6 @@ interface BookingFlowProps {
   serviceType: 'tour' | 'ticket' | 'visa' | 'package';
 }
 
-const generateBookingReference = () => {
-  const timestamp = Date.now().toString();
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `BK${timestamp.slice(-8)}${random}`;
-};
-
 const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -66,14 +60,13 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
     setLoading(true);
     try {
       const totalAmount = calculateTotal();
-      const bookingReference = generateBookingReference();
       
       const { data: booking, error } = await supabase
         .from('new_bookings')
         .insert({
-          booking_reference: bookingReference,
+          service_type: serviceType,
           service_id: service.id,
-          booking_type: serviceType,
+          service_title: service.title,
           customer_name: bookingData.customer_name,
           customer_email: bookingData.customer_email,
           customer_phone: bookingData.customer_phone,
@@ -81,13 +74,12 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
           children_count: bookingData.children_count,
           infants_count: bookingData.infants_count,
           travel_date: bookingData.travel_date || null,
-          selected_time: bookingData.selected_time || null,
-          selected_language: bookingData.selected_language,
           pickup_location: bookingData.pickup_location || null,
           special_requests: bookingData.special_requests || null,
+          selected_language: bookingData.selected_language,
+          base_amount: totalAmount,
           total_amount: totalAmount,
           final_amount: totalAmount,
-          discount_amount: 0,
           booking_status: 'pending',
           payment_status: 'pending'
         })
@@ -98,7 +90,7 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
 
       toast({
         title: "Booking Submitted!",
-        description: `Your booking reference is ${bookingReference}. We'll contact you shortly to confirm.`,
+        description: `Your booking has been submitted successfully. We'll contact you shortly to confirm.`,
       });
 
       setStep(4);
@@ -197,7 +189,7 @@ const EnhancedBookingFlow = ({ service, serviceType }: BookingFlowProps) => {
         <div>
           <Label htmlFor="travel_date">Visit Date</Label>
           <Input
-            id="travel_date"
+            id="travel_date"  
             type="date"
             value={bookingData.travel_date}
             onChange={(e) => handleInputChange('travel_date', e.target.value)}

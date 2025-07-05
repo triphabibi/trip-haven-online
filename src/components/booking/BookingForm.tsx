@@ -93,7 +93,11 @@ const BookingForm = ({
 
       const { data, error } = await supabase
         .from('new_bookings')
-        .insert([bookingData])
+        .insert({
+          ...bookingData,
+          booking_status: 'pending',
+          payment_status: 'pending'
+        })
         .select()
         .single();
 
