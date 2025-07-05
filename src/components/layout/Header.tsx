@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, User, LogOut, Plane, Car, FileText, Ticket } from 'lucide-react';
+import { Menu, User, LogOut, Plane, Car, FileText, Ticket, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
@@ -27,7 +27,7 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50 w-full">
-      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
@@ -68,7 +68,8 @@ const Header = () => {
               <div className="flex items-center space-x-3">
                 {isAdmin && (
                   <Link to="/admin">
-                    <Button variant="outline" size="sm" className="h-10">
+                    <Button variant="outline" size="sm" className="h-10 flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
                       Admin Panel
                     </Button>
                   </Link>
@@ -131,6 +132,7 @@ const Header = () => {
                         {isAdmin && (
                           <Link to="/admin" onClick={() => setIsOpen(false)}>
                             <Button variant="outline" className="w-full justify-start h-12">
+                              <Settings className="h-5 w-5 mr-3" />
                               Admin Panel
                             </Button>
                           </Link>

@@ -17,7 +17,7 @@ const Homepage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white w-full overflow-x-hidden">
+    <div className="min-h-screen bg-white w-full">
       <Header />
       
       <main className="w-full">
@@ -28,42 +28,42 @@ const Homepage = () => {
 
         {/* Services Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <OptimizedServices />
           </div>
         </section>
 
         {/* Featured Tours Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <OptimizedFeaturedTours />
           </div>
         </section>
 
         {/* Trending Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-blue-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <TrendingSection />
           </div>
         </section>
 
         {/* Video Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <EnhancedVideoSection />
           </div>
         </section>
 
         {/* Stats Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <CompactAnimatedStats />
           </div>
         </section>
 
         {/* Reviews Section */}
         <section className="w-full py-12 sm:py-16 lg:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <CustomerReviews />
           </div>
         </section>
