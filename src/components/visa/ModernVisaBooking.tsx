@@ -231,32 +231,43 @@ const ModernVisaBooking = ({ service }: ModernVisaBookingProps) => {
               {formData.travelers.map((traveler, index) => (
                 <Card key={index} className="p-4 border-dashed border-2 border-gray-200">
                   <h4 className="font-medium mb-3">Traveler #{index + 1}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input
-                      placeholder="Full name (as in passport)"
-                      value={traveler.name}
-                      onChange={(e) => updateTraveler(index, 'name', e.target.value)}
-                      className="bg-white"
-                    />
-                    <Input
-                      placeholder="Passport number"
-                      value={traveler.passport}
-                      onChange={(e) => updateTraveler(index, 'passport', e.target.value)}
-                      className="bg-white"
-                    />
-                    <Input
-                      placeholder="Nationality"
-                      value={traveler.nationality}
-                      onChange={(e) => updateTraveler(index, 'nationality', e.target.value)}
-                      className="bg-white"
-                    />
-                    <Input
-                      type="date"
-                      placeholder="Date of birth"
-                      value={traveler.dateOfBirth}
-                      onChange={(e) => updateTraveler(index, 'dateOfBirth', e.target.value)}
-                      className="bg-white"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">👤 Full Name (as in passport)</Label>
+                      <Input
+                        placeholder="Full name exactly as in passport"
+                        value={traveler.name}
+                        onChange={(e) => updateTraveler(index, 'name', e.target.value)}
+                        className="bg-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">📔 Passport Number</Label>
+                      <Input
+                        placeholder="Passport number"
+                        value={traveler.passport}
+                        onChange={(e) => updateTraveler(index, 'passport', e.target.value)}
+                        className="bg-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">🌍 Nationality</Label>
+                      <Input
+                        placeholder="Your nationality"
+                        value={traveler.nationality}
+                        onChange={(e) => updateTraveler(index, 'nationality', e.target.value)}
+                        className="bg-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">📅 Date of Birth</Label>
+                      <Input
+                        type="date"
+                        value={traveler.dateOfBirth}
+                        onChange={(e) => updateTraveler(index, 'dateOfBirth', e.target.value)}
+                        className="bg-white"
+                      />
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -272,43 +283,56 @@ const ModernVisaBooking = ({ service }: ModernVisaBookingProps) => {
               <h3 className="font-semibold text-lg">📞 Contact & Travel Details</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  placeholder="📧 Email address"
-                  type="email"
-                  value={formData.customerEmail}
-                  onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
-                  className="bg-white"
-                />
-                <Input
-                  placeholder="📞 Phone number"
-                  type="tel"
-                  value={formData.customerPhone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
-                  className="bg-white"
-                />
-                <Input
-                  type="date"
-                  placeholder="Intended arrival"
-                  value={formData.arrivalDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, arrivalDate: e.target.value }))}
-                  className="bg-white"
-                />
-                <Input
-                  type="date"
-                  placeholder="Intended departure"
-                  value={formData.departureDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, departureDate: e.target.value }))}
-                  className="bg-white"
-                />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">📧 Email Address</Label>
+                  <Input
+                    placeholder="your@email.com"
+                    type="email"
+                    value={formData.customerEmail}
+                    onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
+                    className="bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">📞 Phone Number</Label>
+                  <Input
+                    placeholder="+971 50 123 4567"
+                    type="tel"
+                    value={formData.customerPhone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
+                    className="bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">🛬 Intended Arrival Date</Label>
+                  <Input
+                    type="date"
+                    value={formData.arrivalDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, arrivalDate: e.target.value }))}
+                    className="bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">🛫 Intended Departure Date</Label>
+                  <Input
+                    type="date"
+                    value={formData.departureDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, departureDate: e.target.value }))}
+                    className="bg-white"
+                  />
+                </div>
               </div>
 
-              <Textarea
-                placeholder="💬 Special requests or additional information..."
-                value={formData.specialRequests}
-                onChange={(e) => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
-                className="bg-white"
-                rows={3}
-              />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">💬 Special Requests</Label>
+                <Textarea
+                  placeholder="Any special requests or additional information..."
+                  value={formData.specialRequests}
+                  onChange={(e) => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
+                  className="bg-white"
+                  rows={3}
+                />
+              </div>
             </div>
           )}
 

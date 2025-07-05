@@ -8,7 +8,7 @@ import TourHighlights from '@/components/tours/TourHighlights';
 import TourImageGallery from '@/components/tours/TourImageGallery';
 import StreamlinedTourBooking from '@/components/tours/StreamlinedTourBooking';
 import TourOverview from '@/components/tours/TourOverview';
-import TourItinerary from '@/components/tours/TourItinerary';
+import ModernTourItinerary from '@/components/tours/ModernTourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
 import TourReviews from '@/components/tours/TourReviews';
 import TourFAQ from '@/components/tours/TourFAQ';
@@ -121,7 +121,7 @@ const TourDetailPage = () => {
                   </TabsContent>
 
                   <TabsContent value="itinerary" className="mt-0">
-                    <TourItinerary tour={tour} />
+                    <ModernTourItinerary tour={tour} />
                   </TabsContent>
 
                   <TabsContent value="inclusions" className="mt-0">

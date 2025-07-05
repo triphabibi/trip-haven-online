@@ -226,7 +226,7 @@ const VoiceAIAssistant = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 left-6 z-40">
         <Button
           onClick={() => setIsOpen(true)}
           className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-xl hover:shadow-2xl transition-all duration-500 group animate-pulse"
@@ -236,7 +236,7 @@ const VoiceAIAssistant = () => {
             <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-300 animate-bounce" />
           </div>
         </Button>
-        <div className="absolute -top-3 -left-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-bounce shadow-lg">
+        <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-bounce shadow-lg">
           🎤 Voice AI ✨
         </div>
       </div>
@@ -244,7 +244,7 @@ const VoiceAIAssistant = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-2rem)]">
+    <div className="fixed bottom-6 left-6 z-40 w-96 max-w-[calc(100vw-2rem)]">
       <Card className="shadow-2xl border-0 overflow-hidden backdrop-blur-sm">
         <CardHeader className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-4">
           <div className="flex items-center justify-between">

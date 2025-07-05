@@ -211,14 +211,19 @@ const VisaDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            {/* Mobile Visa Booking - Point 8 */}
-            <div className="md:hidden mb-8">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-2xl text-white text-center mb-4">
-                <h3 className="text-xl font-bold mb-2">Apply for {visa.country} Visa</h3>
-                <div className="text-3xl font-bold mb-2">₹{visa.price.toLocaleString()}</div>
-                <p className="text-white/80">Expert assistance included</p>
+            {/* Mobile Visa Booking */}
+            <div className="md:hidden mb-8 sticky top-4 z-10">
+              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-4 rounded-2xl text-white text-center mb-4 shadow-xl">
+                <h3 className="text-lg font-bold mb-2">Apply for {visa.country} Visa</h3>
+                <div className="text-2xl font-bold mb-2">{formatPrice(visa.price)}</div>
+                <p className="text-white/80 text-sm">Expert assistance included</p>
+                <Button 
+                  className="mt-3 w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                  onClick={() => document.querySelector('[data-booking-form]')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Apply Now
+                </Button>
               </div>
-              <ModernVisaBooking service={visa} />
             </div>
             
             {/* Desktop Sidebar */}

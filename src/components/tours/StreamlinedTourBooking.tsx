@@ -44,7 +44,7 @@ const StreamlinedTourBooking = ({ tour }: StreamlinedTourBookingProps) => {
   };
 
   return (
-    <Card className="sticky top-8 shadow-xl border-0">
+    <Card className="sticky top-8 shadow-xl border-0" data-booking-form>
       <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
         <CardTitle className="text-xl">Book This Tour</CardTitle>
         <div className="text-2xl font-bold">{formatPrice(tour.price_adult)} <span className="text-sm font-normal">per adult</span></div>
@@ -137,10 +137,32 @@ const StreamlinedTourBooking = ({ tour }: StreamlinedTourBookingProps) => {
           </div>
         </div>
 
+        {/* Pickup Information */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-gray-700">📍 Pickup Point *</Label>
+            <Input
+              type="text"
+              placeholder="Hotel name or location for pickup"
+              className="h-12 bg-white"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-gray-700">🕐 Preferred Pickup Time *</Label>
+            <Input
+              type="time"
+              className="h-12 bg-white"
+              required
+            />
+          </div>
+        </div>
+
         {/* Contact Information */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700">Email Address *</Label>
+            <Label className="text-sm font-semibold text-gray-700">📧 Email Address *</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -148,14 +170,14 @@ const StreamlinedTourBooking = ({ tour }: StreamlinedTourBookingProps) => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-10 h-12 bg-white"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700">Phone Number *</Label>
+            <Label className="text-sm font-semibold text-gray-700">📞 Phone Number *</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -163,7 +185,7 @@ const StreamlinedTourBooking = ({ tour }: StreamlinedTourBookingProps) => {
                 placeholder="+971 50 123 4567"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-10 h-12 bg-white"
                 required
               />
             </div>
