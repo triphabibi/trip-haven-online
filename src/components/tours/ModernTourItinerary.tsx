@@ -6,10 +6,11 @@ interface TourItineraryProps {
 }
 
 const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
+  console.log('Tour data in ModernTourItinerary:', tour);
+  console.log('Tour itinerary:', tour?.itinerary);
+
   // Use actual tour itinerary data from the database
   const itinerary = tour?.itinerary?.days || [];
-
-  console.log('Tour itinerary data:', tour?.itinerary);
 
   // If no itinerary data, show a message
   if (!itinerary || itinerary.length === 0) {
@@ -18,8 +19,8 @@ const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
             <Calendar className="h-16 w-16 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600">No Itinerary Available</h3>
-            <p className="text-gray-500">Detailed itinerary will be provided upon booking confirmation.</p>
+            <h3 className="text-xl font-semibold text-gray-600">No Detailed Itinerary Available</h3>
+            <p className="text-gray-500">Detailed day-by-day itinerary will be provided upon booking confirmation or contact us for more details.</p>
           </div>
         </div>
       </div>
@@ -28,10 +29,11 @@ const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
 
   const getIconForActivity = (title: string) => {
     const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('pickup') || lowerTitle.includes('transport')) return <Car className="h-5 w-5" />;
-    if (lowerTitle.includes('hotel') || lowerTitle.includes('accommodation')) return <Building2 className="h-5 w-5" />;
-    if (lowerTitle.includes('meal') || lowerTitle.includes('lunch') || lowerTitle.includes('dinner')) return <Utensils className="h-5 w-5" />;
-    if (lowerTitle.includes('visit') || lowerTitle.includes('tour')) return <Camera className="h-5 w-5" />;
+    if (lowerTitle.includes('pickup') || lowerTitle.includes('transport') || lowerTitle.includes('transfer')) return <Car className="h-5 w-5" />;
+    if (lowerTitle.includes('hotel') || lowerTitle.includes('accommodation') || lowerTitle.includes('check')) return <Building2 className="h-5 w-5" />;
+    if (lowerTitle.includes('meal') || lowerTitle.includes('lunch') || lowerTitle.includes('dinner') || lowerTitle.includes('breakfast')) return <Utensils className="h-5 w-5" />;
+    if (lowerTitle.includes('visit') || lowerTitle.includes('tour') || lowerTitle.includes('explore') || lowerTitle.includes('see')) return <Camera className="h-5 w-5" />;
+    if (lowerTitle.includes('coffee') || lowerTitle.includes('break') || lowerTitle.includes('rest')) return <Coffee className="h-5 w-5" />;
     return <MapPin className="h-5 w-5" />;
   };
 
@@ -40,7 +42,7 @@ const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
       <div>
         <h3 className="text-xl font-bold mb-4">Detailed Itinerary</h3>
         <p className="text-gray-600 mb-6">
-          Experience every moment of your tour with our carefully crafted itinerary. Each step is designed to give you the best experience.
+          Experience every moment of your tour with our carefully crafted itinerary. Each day is designed to give you the best experience.
         </p>
       </div>
 
@@ -48,11 +50,13 @@ const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
         {itinerary.map((day: any, dayIndex: number) => (
           <div key={dayIndex} className="border-l-4 border-blue-500 pl-6 relative">
             <div className="absolute -left-3 top-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-              {day.day}
+              {day.day || dayIndex + 1}
             </div>
             
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <h4 className="text-xl font-bold text-gray-900 mb-2">{day.title}</h4>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">
+                {day.title || `Day ${day.day || dayIndex + 1}`}
+              </h4>
               
               {day.description && (
                 <p className="text-gray-600 mb-4">{day.description}</p>
@@ -64,7 +68,7 @@ const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
                   <div className="space-y-3">
                     {day.activities.map((activity: string, activityIndex: number) => (
                       <div key={activityIndex} className="flex items-start gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full mt-1">
+                        <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full mt-1 flex-shrink-0">
                           {getIconForActivity(activity)}
                         </div>
                         <div className="flex-1">

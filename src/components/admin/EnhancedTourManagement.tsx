@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import ItineraryEditor from './itinerary/ItineraryEditor';
 
@@ -55,8 +55,7 @@ const EnhancedTourManagement = () => {
     featured_image: '',
     gallery_images: [],
     instant_confirmation: true,
-    free_cancellation: true,
-    youtube_video_url: ''
+    free_cancellation: true
   });
 
   const { toast } = useToast();
@@ -66,12 +65,17 @@ const EnhancedTourManagement = () => {
   const { data: tours, isLoading } = useQuery({
     queryKey: ['admin_tours'],
     queryFn: async () => {
+      console.log('Fetching tours...');
       const { data, error } = await supabase
         .from('tours')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching tours:', error);
+        throw error;
+      }
+      console.log('Tours fetched:', data);
       return data || [];
     },
   });
@@ -95,9 +99,24 @@ const EnhancedTourManagement = () => {
         tourData.slug = generateSlug(tourData.title);
       }
 
+      // Ensure required fields have proper values
+      const processedData = {
+        ...tourData,
+        price_adult: Number(tourData.price_adult) || 0,
+        price_child: Number(tourData.price_child) || 0,
+        price_infant: Number(tourData.price_infant) || 0,
+        highlights: Array.isArray(tourData.highlights) ? tourData.highlights : [],
+        whats_included: Array.isArray(tourData.whats_included) ? tourData.whats_included : [],
+        exclusions: Array.isArray(tourData.exclusions) ? tourData.exclusions : [],
+        languages: Array.isArray(tourData.languages) ? tourData.languages : ['English'],
+        available_times: Array.isArray(tourData.available_times) ? tourData.available_times : [],
+        gallery_images: Array.isArray(tourData.gallery_images) ? tourData.gallery_images : [],
+        itinerary: tourData.itinerary || { days: [] }
+      };
+
       const { data, error } = await supabase
         .from('tours')
-        .insert([tourData])
+        .insert([processedData])
         .select()
         .single();
       
@@ -128,9 +147,24 @@ const EnhancedTourManagement = () => {
         tourData.slug = generateSlug(tourData.title);
       }
 
+      // Ensure required fields have proper values
+      const processedData = {
+        ...tourData,
+        price_adult: Number(tourData.price_adult) || 0,
+        price_child: Number(tourData.price_child) || 0,
+        price_infant: Number(tourData.price_infant) || 0,
+        highlights: Array.isArray(tourData.highlights) ? tourData.highlights : [],
+        whats_included: Array.isArray(tourData.whats_included) ? tourData.whats_included : [],
+        exclusions: Array.isArray(tourData.exclusions) ? tourData.exclusions : [],
+        languages: Array.isArray(tourData.languages) ? tourData.languages : ['English'],
+        available_times: Array.isArray(tourData.available_times) ? tourData.available_times : [],
+        gallery_images: Array.isArray(tourData.gallery_images) ? tourData.gallery_images : [],
+        itinerary: tourData.itinerary || { days: [] }
+      };
+
       const { data, error } = await supabase
         .from('tours')
-        .update(tourData)
+        .update(processedData)
         .eq('id', id)
         .select()
         .single();
@@ -205,8 +239,7 @@ const EnhancedTourManagement = () => {
       featured_image: '',
       gallery_images: [],
       instant_confirmation: true,
-      free_cancellation: true,
-      youtube_video_url: ''
+      free_cancellation: true
     });
     setIsEditing(false);
     setSelectedTour(null);
@@ -217,7 +250,7 @@ const EnhancedTourManagement = () => {
     
     console.log('Form submitted with data:', formData);
     
-    if (!formData.title) {
+    if (!formData.title?.trim()) {
       toast({ title: "Error", description: "Tour title is required", variant: "destructive" });
       return;
     }
@@ -248,11 +281,11 @@ const EnhancedTourManagement = () => {
       price_child: tour.price_child || 0,
       price_infant: tour.price_infant || 0,
       category: tour.category || 'tour',
-      highlights: tour.highlights || [],
-      whats_included: tour.whats_included || [],
-      exclusions: tour.exclusions || [],
-      languages: tour.languages || ['English'],
-      available_times: tour.available_times || [],
+      highlights: Array.isArray(tour.highlights) ? tour.highlights : [],
+      whats_included: Array.isArray(tour.whats_included) ? tour.whats_included : [],
+      exclusions: Array.isArray(tour.exclusions) ? tour.exclusions : [],
+      languages: Array.isArray(tour.languages) ? tour.languages : ['English'],
+      available_times: Array.isArray(tour.available_times) ? tour.available_times : [],
       itinerary: tour.itinerary || { days: [] },
       cancellation_policy: tour.cancellation_policy || 'Free cancellation up to 24 hours before the experience starts (local time)',
       refund_policy: tour.refund_policy || 'Full refund for cancellations made 24+ hours in advance',
@@ -265,10 +298,9 @@ const EnhancedTourManagement = () => {
       is_featured: tour.is_featured || false,
       status: tour.status || 'active',
       featured_image: tour.featured_image || '',
-      gallery_images: tour.gallery_images || [],
+      gallery_images: Array.isArray(tour.gallery_images) ? tour.gallery_images : [],
       instant_confirmation: tour.instant_confirmation !== false,
-      free_cancellation: tour.free_cancellation !== false,
-      youtube_video_url: tour.youtube_video_url || ''
+      free_cancellation: tour.free_cancellation !== false
     });
     setIsEditing(true);
     setActiveTab('form');
@@ -277,23 +309,6 @@ const EnhancedTourManagement = () => {
   const handleArrayFieldChange = (field: string, value: string) => {
     const items = value.split('\n').filter(item => item.trim());
     setFormData(prev => ({ ...prev, [field]: items }));
-  };
-
-  const addImageUrl = (field: 'gallery_images') => {
-    const url = prompt('Enter image URL:');
-    if (url) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: [...(prev[field] as string[]), url]
-      }));
-    }
-  };
-
-  const removeImageUrl = (field: 'gallery_images', index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: (prev[field] as string[]).filter((_, i) => i !== index)
-    }));
   };
 
   if (isLoading) {
@@ -487,7 +502,7 @@ const EnhancedTourManagement = () => {
 
                   {/* Itinerary Section */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Itinerary</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Detailed Itinerary</h3>
                     <ItineraryEditor
                       itinerary={formData.itinerary}
                       onItineraryChange={(itinerary) => setFormData(prev => ({ ...prev, itinerary }))}

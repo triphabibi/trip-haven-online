@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -104,7 +103,6 @@ const TrendingProductsManagement = () => {
       .eq('id', product.id);
 
     if (!error) {
-      // Refresh data
       window.location.reload();
     }
   };
@@ -122,6 +120,12 @@ const TrendingProductsManagement = () => {
   const getProductTitle = (product: any) => {
     if (product.type === 'visa') return product.display_title || `${product.country} ${product.visa_type}`;
     return product.title;
+  };
+
+  const getProductRating = (product: any) => {
+    // Visa services don't have rating, so return 0 for them
+    if (product.type === 'visa') return 0;
+    return product.rating || 0;
   };
 
   return (
@@ -189,7 +193,7 @@ const TrendingProductsManagement = () => {
                     {formatPrice(getProductPrice(product))}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm">Rating: {product.rating || 0}</span>
+                    <span className="text-sm">Rating: {getProductRating(product)}</span>
                   </div>
                 </div>
 
