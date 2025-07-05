@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { PaymentProvider } from "@/contexts/PaymentContext";
-import HomePage from "@/pages/HomePage";
+import Homepage from "@/pages/Homepage";
 import ToursPage from "@/pages/ToursPage";
 import TourDetailPage from "@/pages/TourDetailPage";
 import TicketsPage from "@/pages/TicketsPage";
@@ -44,7 +44,7 @@ function App() {
                 <NotificationSystem />
                 <div className="pb-0">
                   <Routes>
-                    <Route path="/" element={<HomePage />} />
+                    <Route path="/" element={<Homepage />} />
                     <Route path="/tours" element={<ToursPage />} />
                     <Route path="/tours/:slug" element={<TourDetailPage />} />
                     <Route path="/tickets" element={<TicketsPage />} />

@@ -109,24 +109,21 @@ const TrendingProductsManagement = () => {
 
   const toggleTrending = async (productId: string, type: string, isTrending: boolean) => {
     try {
-      let tableName = '';
-      switch (type) {
-        case 'tour':
-          tableName = 'tours';
-          break;
-        case 'package':
-          tableName = 'tour_packages';
-          break;
-        case 'ticket':
-          tableName = 'attraction_tickets';
-          break;
-        case 'visa':
-          tableName = 'visa_services';
-          break;
+      const tableNames = {
+        'tour': 'tours',
+        'package': 'tour_packages', 
+        'ticket': 'attraction_tickets',
+        'visa': 'visa_services'
+      };
+
+      const tableName = tableNames[type as keyof typeof tableNames];
+      
+      if (!tableName) {
+        throw new Error('Invalid product type');
       }
 
       const { error } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .update({ is_featured: isTrending })
         .eq('id', productId);
 
