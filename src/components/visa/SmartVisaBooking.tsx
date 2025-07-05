@@ -177,7 +177,7 @@ const SmartVisaBooking = ({ visa }: SmartVisaBookingProps) => {
 
   if (step === 1) {
     return (
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto p-4">
         <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-4">
             <CardTitle className="text-lg md:text-xl text-center font-bold">
@@ -296,7 +296,7 @@ const SmartVisaBooking = ({ visa }: SmartVisaBookingProps) => {
 
   if (step === 2 && bookingMethod === 'direct') {
     return (
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto p-4">
         <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
             <CardTitle className="text-lg md:text-xl text-center font-bold">Quick Booking</CardTitle>
@@ -377,7 +377,7 @@ const SmartVisaBooking = ({ visa }: SmartVisaBookingProps) => {
 
   if (step === 2 && bookingMethod === 'detailed') {
     return (
-      <div className="w-full max-w-md mx-auto space-y-4">
+      <div className="w-full max-w-md mx-auto p-4 space-y-4">
         <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-4">
             <CardTitle className="text-lg md:text-xl text-center font-bold">Complete Application</CardTitle>
