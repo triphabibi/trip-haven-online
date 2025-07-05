@@ -5,80 +5,95 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Video, Save, Eye } from 'lucide-react';
+import { Video, Save } from 'lucide-react';
+
+interface VideoSettings {
+  video_url: string;
+  video_title: string;
+  video_description: string;
+  is_enabled: boolean;
+}
 
 const VideoManagement = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [videoData, setVideoData] = useState({
-    url: '',
-    title: 'Experience Dubai Like Never Before',
-    description: 'Watch our exclusive travel experiences and discover why thousands choose TripHabibi'
+  const [videoSettings, setVideoSettings] = useState<VideoSettings>({
+    video_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    video_title: 'Experience the Magic of Travel',
+    video_description: 'Watch how we make your dream trips come true with our personalized travel experiences',
+    is_enabled: true
   });
+  
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchVideoSettings();
+    loadVideoSettings();
   }, []);
 
-  const fetchVideoSettings = async () => {
+  const loadVideoSettings = async () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .in('setting_key', ['homepage_video_url', 'homepage_video_title', 'homepage_video_description']);
-      
-      if (error) throw error;
+        .in('setting_key', ['video_url', 'video_title', 'video_description', 'video_enabled']);
 
-      if (data) {
-        data.forEach(setting => {
-          if (setting.setting_key === 'homepage_video_url') {
-            setVideoData(prev => ({ ...prev, url: setting.setting_value || '' }));
-          } else if (setting.setting_key === 'homepage_video_title') {
-            setVideoData(prev => ({ ...prev, title: setting.setting_value || 'Experience Dubai Like Never Before' }));
-          } else if (setting.setting_key === 'homepage_video_description') {
-            setVideoData(prev => ({ ...prev, description: setting.setting_value || 'Watch our exclusive travel experiences and discover why thousands choose TripHabibi' }));
-          }
+      if (error) {
+        console.error('Error loading video settings:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const settingsMap: Record<string, string> = {};
+        data.forEach(item => {
+          settingsMap[item.setting_key] = item.setting_value || '';
         });
+
+        setVideoSettings(prev => ({
+          video_url: settingsMap.video_url || prev.video_url,
+          video_title: settingsMap.video_title || prev.video_title,
+          video_description: settingsMap.video_description || prev.video_description,
+          is_enabled: settingsMap.video_enabled === 'true' || prev.is_enabled
+        }));
       }
     } catch (error) {
-      console.error('Error fetching video settings:', error);
+      console.error('Error loading video settings:', error);
     }
   };
 
   const saveVideoSettings = async () => {
     setLoading(true);
     try {
-      const settings = [
-        { key: 'homepage_video_url', value: videoData.url },
-        { key: 'homepage_video_title', value: videoData.title },
-        { key: 'homepage_video_description', value: videoData.description }
+      const settingsToSave = [
+        { setting_key: 'video_url', setting_value: videoSettings.video_url },
+        { setting_key: 'video_title', setting_value: videoSettings.video_title },
+        { setting_key: 'video_description', setting_value: videoSettings.video_description },
+        { setting_key: 'video_enabled', setting_value: videoSettings.is_enabled.toString() },
       ];
 
-      for (const setting of settings) {
-        const { error } = await supabase
-          .from('site_settings')
-          .upsert({
-            setting_key: setting.key,
-            setting_value: setting.value,
-            setting_type: 'text'
-          }, {
-            onConflict: 'setting_key'
-          });
+      // Delete existing video settings
+      await supabase
+        .from('site_settings')
+        .delete()
+        .in('setting_key', ['video_url', 'video_title', 'video_description', 'video_enabled']);
 
-        if (error) throw error;
-      }
+      // Insert new settings
+      const { error } = await supabase
+        .from('site_settings')
+        .insert(settingsToSave);
+
+      if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Video settings saved successfully",
+        title: "Video Settings Saved",
+        description: "Homepage video settings have been updated successfully.",
       });
     } catch (error) {
       console.error('Error saving video settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save video settings",
+        description: "Failed to save video settings.",
         variant: "destructive",
       });
     } finally {
@@ -88,82 +103,86 @@ const VideoManagement = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Video className="h-5 w-5" />
-            Homepage Video Management
+      <Card className="bg-white border border-gray-200">
+        <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Video className="h-6 w-6" />
+            Video Management
           </CardTitle>
         </CardHeader>
-        <CardContent className="bg-white space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="video-url">YouTube Video URL *</Label>
-            <Input
-              id="video-url"
-              value={videoData.url}
-              onChange={(e) => setVideoData(prev => ({ ...prev, url: e.target.value }))}
-              placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-              className="bg-white border-gray-300"
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center space-x-2 mb-4">
+            <Switch
+              id="video-enabled"
+              checked={videoSettings.is_enabled}
+              onCheckedChange={(checked) => 
+                setVideoSettings(prev => ({ ...prev, is_enabled: checked }))
+              }
             />
-            <p className="text-sm text-gray-600">
-              Enter the full YouTube URL. Both youtube.com/watch and youtu.be formats are supported.
-            </p>
+            <Label htmlFor="video-enabled" className="font-medium">
+              Enable Homepage Video
+            </Label>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="video-title">Video Section Title</Label>
-            <Input
-              id="video-title"
-              value={videoData.title}
-              onChange={(e) => setVideoData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Experience Dubai Like Never Before"
-              className="bg-white border-gray-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="video-description">Video Section Description</Label>
-            <Textarea
-              id="video-description"
-              value={videoData.description}
-              onChange={(e) => setVideoData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Watch our exclusive travel experiences and discover why thousands choose TripHabibi"
-              className="bg-white border-gray-300"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button 
-              onClick={saveVideoSettings}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-            
-            {videoData.url && (
-              <Button 
-                variant="outline"
-                onClick={() => window.open(videoData.url, '_blank')}
+          <div className="space-y-4">
+            <div>
+              <Label className="font-medium">Video URL</Label>
+              <Input
+                value={videoSettings.video_url}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, video_url: e.target.value }))}
+                placeholder="https://www.youtube.com/embed/..."
                 className="bg-white border-gray-300"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview Video
-              </Button>
-            )}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Use YouTube embed URL format (e.g., https://www.youtube.com/embed/VIDEO_ID)
+              </p>
+            </div>
+
+            <div>
+              <Label className="font-medium">Video Title</Label>
+              <Input
+                value={videoSettings.video_title}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, video_title: e.target.value }))}
+                placeholder="Enter video title"
+                className="bg-white border-gray-300"
+              />
+            </div>
+
+            <div>
+              <Label className="font-medium">Video Description</Label>
+              <Textarea
+                value={videoSettings.video_description}
+                onChange={(e) => setVideoSettings(prev => ({ ...prev, video_description: e.target.value }))}
+                placeholder="Enter video description"
+                className="bg-white border-gray-300"
+                rows={3}
+              />
+            </div>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">How to use:</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Copy the YouTube video URL from your browser</li>
-              <li>• Paste it in the Video URL field above</li>
-              <li>• Customize the title and description</li>
-              <li>• Click Save Changes to update the homepage video</li>
-            </ul>
-          </div>
+          {/* Video Preview */}
+          {videoSettings.is_enabled && videoSettings.video_url && (
+            <div className="mt-6">
+              <Label className="font-medium mb-2 block">Preview</Label>
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <iframe
+                  src={videoSettings.video_url}
+                  className="w-full h-full"
+                  allowFullScreen
+                  title="Video Preview"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button 
+            onClick={saveVideoSettings} 
+            disabled={loading}
+            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          >
+            <Save className="h-5 w-5 mr-2" />
+            {loading ? 'Saving...' : 'Save Video Settings'}
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -8,14 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Settings, Upload, Plus, Trash2, Move } from 'lucide-react';
+import { Settings, Plus, Trash2 } from 'lucide-react';
 
 interface MenuItem {
   id: string;
   name: string;
   href: string;
   icon: string;
-  order: number;
+  order_index: number;
   is_active: boolean;
 }
 
@@ -47,15 +47,7 @@ const SiteSettings = () => {
     social_links: {}
   });
   
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    { id: '1', name: 'Tours', href: '/tours', icon: 'Plane', order: 1, is_active: true },
-    { id: '2', name: 'Packages', href: '/packages', icon: 'FileText', order: 2, is_active: true },
-    { id: '3', name: 'Tickets', href: '/tickets', icon: 'Ticket', order: 3, is_active: true },
-    { id: '4', name: 'Visas', href: '/visas', icon: 'FileText', order: 4, is_active: true },
-    { id: '5', name: 'Ok to Board', href: '/ok-to-board', icon: 'Plane', order: 5, is_active: true },
-    { id: '6', name: 'Transfers', href: '/transfers', icon: 'Car', order: 6, is_active: true },
-  ]);
-
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -70,39 +62,125 @@ const SiteSettings = () => {
     'Mail', 'MapPin', 'Camera', 'Star', 'Heart', 'Link'
   ];
 
+  useEffect(() => {
+    loadMenuItems();
+    loadSiteSettings();
+  }, []);
+
+  const loadMenuItems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .order('order_index');
+
+      if (error) {
+        console.error('Error loading menu items:', error);
+        // Initialize with default menu items if none exist
+        initializeDefaultMenuItems();
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setMenuItems(data);
+      } else {
+        initializeDefaultMenuItems();
+      }
+    } catch (error) {
+      console.error('Error loading menu items:', error);
+      initializeDefaultMenuItems();
+    }
+  };
+
+  const initializeDefaultMenuItems = () => {
+    const defaultItems: MenuItem[] = [
+      { id: '1', name: 'Tours', href: '/tours', icon: 'Plane', order_index: 1, is_active: true },
+      { id: '2', name: 'Packages', href: '/packages', icon: 'FileText', order_index: 2, is_active: true },
+      { id: '3', name: 'Tickets', href: '/tickets', icon: 'Ticket', order_index: 3, is_active: true },
+      { id: '4', name: 'Visas', href: '/visas', icon: 'FileText', order_index: 4, is_active: true },
+      { id: '5', name: 'Ok to Board', href: '/ok-to-board', icon: 'Plane', order_index: 5, is_active: true },
+      { id: '6', name: 'Transfers', href: '/transfers', icon: 'Car', order_index: 6, is_active: true },
+    ];
+    setMenuItems(defaultItems);
+  };
+
+  const loadSiteSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*');
+
+      if (error) {
+        console.error('Error loading site settings:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const settingsMap: Record<string, string> = {};
+        data.forEach(item => {
+          settingsMap[item.setting_key] = item.setting_value || '';
+        });
+
+        setSettings(prev => ({
+          ...prev,
+          site_name: settingsMap.site_name || prev.site_name,
+          site_description: settingsMap.site_description || prev.site_description,
+          contact_email: settingsMap.contact_email || prev.contact_email,
+          contact_phone: settingsMap.contact_phone || prev.contact_phone,
+          address: settingsMap.address || prev.address,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading site settings:', error);
+    }
+  };
+
   const saveSettings = async () => {
     setLoading(true);
     try {
-      // Save site settings to Supabase
-      const { error } = await supabase
-        .from('site_settings')
-        .upsert({
-          id: 1,
-          ...settings,
-          updated_at: new Date().toISOString()
-        });
+      // Save site settings
+      const settingsToSave = [
+        { setting_key: 'site_name', setting_value: settings.site_name },
+        { setting_key: 'site_description', setting_value: settings.site_description },
+        { setting_key: 'contact_email', setting_value: settings.contact_email },
+        { setting_key: 'contact_phone', setting_value: settings.contact_phone },
+        { setting_key: 'address', setting_value: settings.address },
+      ];
 
-      if (error) throw error;
+      // Delete existing settings
+      await supabase.from('site_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      // Insert new settings
+      const { error: settingsError } = await supabase
+        .from('site_settings')
+        .insert(settingsToSave);
+
+      if (settingsError) {
+        console.error('Settings error:', settingsError);
+        throw settingsError;
+      }
 
       // Save menu items
+      // Delete existing menu items
+      await supabase.from('menu_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      // Insert new menu items
+      const menuItemsToInsert = menuItems.map(item => ({
+        name: item.name,
+        href: item.href,
+        icon: item.icon,
+        order_index: item.order_index,
+        is_active: item.is_active
+      }));
+
       const { error: menuError } = await supabase
         .from('menu_items')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
+        .insert(menuItemsToInsert);
 
-      if (menuError) throw menuError;
-
-      const { error: insertError } = await supabase
-        .from('menu_items')
-        .insert(menuItems.map(item => ({
-          name: item.name,
-          href: item.href,
-          icon: item.icon,
-          order_index: item.order,
-          is_active: item.is_active
-        })));
-
-      if (insertError) throw insertError;
+      if (menuError) {
+        console.error('Menu error:', menuError);
+        throw menuError;
+      }
 
       toast({
         title: "Settings Saved",
@@ -135,7 +213,7 @@ const SiteSettings = () => {
       name: newMenuItem.name,
       href: newMenuItem.href,
       icon: newMenuItem.icon,
-      order: menuItems.length + 1,
+      order_index: menuItems.length + 1,
       is_active: true
     };
 
@@ -176,7 +254,7 @@ const SiteSettings = () => {
     
     // Update order numbers
     newItems.forEach((item, i) => {
-      item.order = i + 1;
+      item.order_index = i + 1;
     });
     
     setMenuItems(newItems);
