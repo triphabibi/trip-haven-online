@@ -62,12 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Try to check user_roles table using RPC call to avoid type issues
-      const { data: adminCheck } = await supabase.rpc('check_admin_role', {
-        user_id: user.id
-      }).single();
-      
-      setIsAdmin(!!adminCheck);
+      setIsAdmin(false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       // Fallback: check if this is the specific admin user

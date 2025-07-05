@@ -11,7 +11,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BulkUpload from '@/components/admin/BulkUpload';
 import SystemSettings from '@/components/admin/SystemSettings';
-import TourManagement from '@/components/admin/TourManagement';
+import EnhancedTourManagement from '@/components/admin/EnhancedTourManagement';
 import BookingManagement from '@/components/admin/BookingManagement';
 import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
 import EmailSettings from '@/components/admin/EmailSettings';
@@ -86,6 +86,7 @@ const AdminPage = () => {
           <div>
             <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-gray-600 text-lg">Manage your travel business with ease</p>
+            <p className="text-sm text-gray-500 mt-1">Logged in as: {user?.email}</p>
           </div>
           <Button onClick={signOut} variant="outline" size="lg">
             Sign Out
@@ -144,44 +145,44 @@ const AdminPage = () => {
         </div>
 
         {/* Management Tabs */}
-        <Card className="shadow-lg bg-white">
+        <Card className="shadow-lg bg-white border border-gray-200">
           <Tabs defaultValue="tours" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-white border shadow-sm">
-              <TabsTrigger value="tours" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Tours</TabsTrigger>
-              <TabsTrigger value="tickets" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Tickets</TabsTrigger>
-              <TabsTrigger value="packages" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">Packages</TabsTrigger>
-              <TabsTrigger value="bookings" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">Bookings</TabsTrigger>
-              <TabsTrigger value="visas" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">Visas</TabsTrigger>
-              <TabsTrigger value="transfers" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white">Transfers</TabsTrigger>
-              <TabsTrigger value="payments" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Payments</TabsTrigger>
-              <TabsTrigger value="emails" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">Emails</TabsTrigger>
-              <TabsTrigger value="bulk" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white">Bulk Upload</TabsTrigger>
-              <TabsTrigger value="settings" className="data-[state=active]:bg-gray-500 data-[state=active]:text-white">Settings</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-gray-100 border-b border-gray-200">
+              <TabsTrigger value="tours" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white bg-white text-gray-700">Tours</TabsTrigger>
+              <TabsTrigger value="tickets" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white bg-white text-gray-700">Tickets</TabsTrigger>
+              <TabsTrigger value="packages" className="data-[state=active]:bg-green-500 data-[state=active]:text-white bg-white text-gray-700">Packages</TabsTrigger>
+              <TabsTrigger value="bookings" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white bg-white text-gray-700">Bookings</TabsTrigger>
+              <TabsTrigger value="visas" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white bg-white text-gray-700">Visas</TabsTrigger>
+              <TabsTrigger value="transfers" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white bg-white text-gray-700">Transfers</TabsTrigger>
+              <TabsTrigger value="payments" className="data-[state=active]:bg-red-500 data-[state=active]:text-white bg-white text-gray-700">Payments</TabsTrigger>
+              <TabsTrigger value="emails" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white bg-white text-gray-700">Emails</TabsTrigger>
+              <TabsTrigger value="bulk" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white bg-white text-gray-700">Bulk Upload</TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-gray-500 data-[state=active]:text-white bg-white text-gray-700">Settings</TabsTrigger>
             </TabsList>
 
-            <div className="p-4 bg-white">
-              <TabsContent value="tours">
-                <TourManagement />
+            <div className="p-6 bg-white border-t border-gray-200">
+              <TabsContent value="tours" className="mt-0">
+                <EnhancedTourManagement />
               </TabsContent>
 
-              <TabsContent value="tickets">
+              <TabsContent value="tickets" className="mt-0">
                 <TicketManagement />
               </TabsContent>
 
-              <TabsContent value="packages">
+              <TabsContent value="packages" className="mt-0">
                 <PackageManagement />
               </TabsContent>
 
-              <TabsContent value="bookings">
+              <TabsContent value="bookings" className="mt-0">
                 <BookingManagement />
               </TabsContent>
 
-              <TabsContent value="visas">
+              <TabsContent value="visas" className="mt-0">
                 <VisaManagement />
               </TabsContent>
 
-              <TabsContent value="transfers">
-                <Card className="bg-white">
+              <TabsContent value="transfers" className="mt-0">
+                <Card className="bg-white border border-gray-200">
                   <CardContent className="p-6">
                     <div className="text-center py-12">
                       <Car className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -192,19 +193,19 @@ const AdminPage = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="payments">
+              <TabsContent value="payments" className="mt-0">
                 <PaymentGatewaySettings />
               </TabsContent>
 
-              <TabsContent value="emails">
+              <TabsContent value="emails" className="mt-0">
                 <EmailSettings />
               </TabsContent>
 
-              <TabsContent value="bulk">
+              <TabsContent value="bulk" className="mt-0">
                 <BulkUpload />
               </TabsContent>
 
-              <TabsContent value="settings">
+              <TabsContent value="settings" className="mt-0">
                 <SystemSettings />
               </TabsContent>
             </div>

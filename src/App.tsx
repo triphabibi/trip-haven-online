@@ -17,6 +17,7 @@ import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import ProfilePage from '@/pages/ProfilePage';
 import AdminPage from '@/pages/AdminPage';
+import AuthPage from '@/pages/AuthPage';
 import NotFound from '@/pages/NotFound';
 import BookingPage from '@/pages/BookingPage';
 import TourDetailPage from '@/pages/TourDetailPage';
@@ -25,6 +26,7 @@ import VisaDetailPage from '@/pages/VisaDetailPage';
 import PackageDetailPage from '@/pages/PackageDetailPage';
 import OkToBoardPage from '@/pages/OkToBoardPage';
 import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
+import AdminRoute from '@/components/AdminRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,15 +73,24 @@ function App() {
                 <Route path="/transfers" element={<TransfersPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                } />
                 <Route path="/booking" element={<BookingPage />} />
                 <Route path="/tours/:id" element={<TourDetailPage />} />
+                <Route path="/tours/:slug" element={<TourDetailPage />} />
                 <Route path="/tickets/:id" element={<TicketDetailPage />} />
+                <Route path="/tickets/:slug" element={<TicketDetailPage />} />
                 <Route path="/visas/:id" element={<VisaDetailPage />} />
+                <Route path="/visas/:slug" element={<VisaDetailPage />} />
                 <Route path="/packages/:id" element={<PackageDetailPage />} />
+                <Route path="/packages/:slug" element={<PackageDetailPage />} />
                 <Route path="/ok-to-board" element={<OkToBoardPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
