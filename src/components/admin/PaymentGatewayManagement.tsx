@@ -7,32 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, CreditCard, Eye, EyeOff, Save } from 'lucide-react';
-
-interface PaymentGateway {
-  id: string;
-  gateway_name: string;
-  display_name: string;
-  description: string;
-  is_enabled: boolean;
-  priority: number;
-  api_key: string;
-  api_secret: string;
-  test_mode: boolean;
-  min_amount: number;
-  max_amount: number;
-  supported_currencies: string[];
-}
+import { CreditCard, Settings } from 'lucide-react';
 
 const PaymentGatewayManagement = () => {
-  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [editingGateway, setEditingGateway] = useState<string | null>(null);
 
   const { data: gateways, isLoading } = useQuery({
-    queryKey: ['payment_gateways_admin'],
+    queryKey: ['payment_gateways'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('payment_gateways')
@@ -40,12 +25,12 @@ const PaymentGatewayManagement = () => {
         .order('priority');
       
       if (error) throw error;
-      return data as PaymentGateway[];
-    }
+      return data;
+    },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<PaymentGateway> & { id: string }) => {
+  const updateGatewayMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       const { data, error } = await supabase
         .from('payment_gateways')
         .update(updates)
@@ -57,40 +42,20 @@ const PaymentGatewayManagement = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment_gateways_admin'] });
+      queryClient.invalidateQueries({ queryKey: ['payment_gateways'] });
       toast({ title: "Payment gateway updated successfully" });
+      setEditingGateway(null);
     },
-    onError: (error) => {
-      toast({ title: "Error updating payment gateway", description: error.message, variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Error updating gateway", description: error.message, variant: "destructive" });
     }
   });
 
-  const handleUpdate = (gateway: PaymentGateway, field: string, value: any) => {
-    updateMutation.mutate({ id: gateway.id, [field]: value });
-  };
-
-  const toggleSecretVisibility = (gatewayId: string) => {
-    setShowSecrets(prev => ({
-      ...prev,
-      [gatewayId]: !prev[gatewayId]
-    }));
-  };
-
-  const getGatewayIcon = (gatewayName: string) => {
-    switch (gatewayName) {
-      case 'razorpay':
-        return '💳';
-      case 'stripe':
-        return '🔵';
-      case 'paypal':
-        return '🟡';
-      case 'bank_transfer':
-        return '🏦';
-      case 'cash_on_arrival':
-        return '💰';
-      default:
-        return '💳';
-    }
+  const toggleGateway = (id: string, enabled: boolean) => {
+    updateGatewayMutation.mutate({ 
+      id, 
+      updates: { is_enabled: enabled } 
+    });
   };
 
   if (isLoading) {
@@ -102,157 +67,83 @@ const PaymentGatewayManagement = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+            <CreditCard className="h-5 w-5" />
             Payment Gateway Management
           </CardTitle>
-          <p className="text-sm text-gray-600">
-            Configure and manage payment methods for your booking system
-          </p>
         </CardHeader>
-      </Card>
-
-      <div className="grid gap-6">
-        {gateways?.map((gateway) => (
-          <Card key={gateway.id}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{getGatewayIcon(gateway.gateway_name)}</span>
-                  <div>
-                    <h3 className="font-semibold">{gateway.display_name}</h3>
-                    <p className="text-sm text-gray-600 font-normal">{gateway.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {gateways?.map((gateway) => (
+              <Card key={gateway.id} className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">{gateway.display_name}</h3>
                   <Switch
                     checked={gateway.is_enabled}
-                    onCheckedChange={(checked) => handleUpdate(gateway, 'is_enabled', checked)}
-                  />
-                  <span className="text-sm">
-                    {gateway.is_enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={`display_name_${gateway.id}`}>Display Name</Label>
-                  <Input
-                    id={`display_name_${gateway.id}`}
-                    value={gateway.display_name}
-                    onChange={(e) => handleUpdate(gateway, 'display_name', e.target.value)}
+                    onCheckedChange={(checked) => toggleGateway(gateway.id, checked)}
                   />
                 </div>
-                <div>
-                  <Label htmlFor={`priority_${gateway.id}`}>Priority</Label>
-                  <Input
-                    id={`priority_${gateway.id}`}
-                    type="number"
-                    value={gateway.priority}
-                    onChange={(e) => handleUpdate(gateway, 'priority', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor={`description_${gateway.id}`}>Description</Label>
-                <Textarea
-                  id={`description_${gateway.id}`}
-                  value={gateway.description || ''}
-                  onChange={(e) => handleUpdate(gateway, 'description', e.target.value)}
-                  rows={2}
-                />
-              </div>
-
-              {(gateway.gateway_name === 'razorpay' || gateway.gateway_name === 'stripe') && (
-                <div className="grid md:grid-cols-2 gap-4">
+                
+                <p className="text-sm text-gray-600 mb-3">{gateway.description}</p>
+                
+                <div className="space-y-2 text-xs">
                   <div>
-                    <Label htmlFor={`api_key_${gateway.id}`}>API Key</Label>
-                    <div className="relative">
-                      <Input
-                        id={`api_key_${gateway.id}`}
-                        type={showSecrets[gateway.id] ? 'text' : 'password'}
-                        value={gateway.api_key || ''}
-                        onChange={(e) => handleUpdate(gateway, 'api_key', e.target.value)}
-                        placeholder="Enter API key"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => toggleSecretVisibility(gateway.id)}
-                      >
-                        {showSecrets[gateway.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
+                    <span className="font-medium">Priority:</span> {gateway.priority}
                   </div>
                   <div>
-                    <Label htmlFor={`api_secret_${gateway.id}`}>API Secret</Label>
-                    <div className="relative">
-                      <Input
-                        id={`api_secret_${gateway.id}`}
-                        type={showSecrets[gateway.id] ? 'text' : 'password'}
-                        value={gateway.api_secret || ''}
-                        onChange={(e) => handleUpdate(gateway, 'api_secret', e.target.value)}
-                        placeholder="Enter API secret"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => toggleSecretVisibility(gateway.id)}
-                      >
-                        {showSecrets[gateway.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
+                    <span className="font-medium">Currencies:</span> {gateway.supported_currencies?.join(', ')}
                   </div>
+                  {gateway.min_amount && (
+                    <div>
+                      <span className="font-medium">Min Amount:</span> {gateway.min_amount}
+                    </div>
+                  )}
                 </div>
-              )}
 
-              <div className="grid md:grid-cols-3 gap-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-3"
+                  onClick={() => setEditingGateway(gateway.id)}
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Configure
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {editingGateway && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Configure Gateway</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`min_amount_${gateway.id}`}>Minimum Amount</Label>
-                  <Input
-                    id={`min_amount_${gateway.id}`}
-                    type="number"
-                    step="0.01"
-                    value={gateway.min_amount || 0}
-                    onChange={(e) => handleUpdate(gateway, 'min_amount', parseFloat(e.target.value))}
-                  />
+                  <Label>API Key</Label>
+                  <Input type="password" placeholder="Enter API Key" />
                 </div>
                 <div>
-                  <Label htmlFor={`max_amount_${gateway.id}`}>Maximum Amount</Label>
-                  <Input
-                    id={`max_amount_${gateway.id}`}
-                    type="number"
-                    step="0.01"
-                    value={gateway.max_amount || ''}
-                    onChange={(e) => handleUpdate(gateway, 'max_amount', e.target.value ? parseFloat(e.target.value) : null)}
-                    placeholder="No limit"
-                  />
-                </div>
-                <div className="flex items-center gap-2 pt-6">
-                  <Switch
-                    checked={gateway.test_mode}
-                    onCheckedChange={(checked) => handleUpdate(gateway, 'test_mode', checked)}
-                  />
-                  <Label>Test Mode</Label>
+                  <Label>API Secret</Label>
+                  <Input type="password" placeholder="Enter API Secret" />
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium">Supported Currencies:</span>
-                <span className="text-gray-600">
-                  {gateway.supported_currencies?.join(', ') || 'AED, USD, EUR'}
-                </span>
+              
+              <div className="flex gap-2">
+                <Button onClick={() => setEditingGateway(null)}>
+                  Save Configuration
+                </Button>
+                <Button variant="outline" onClick={() => setEditingGateway(null)}>
+                  Cancel
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

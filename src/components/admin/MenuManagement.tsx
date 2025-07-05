@@ -51,10 +51,19 @@ const MenuManagement = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (item: Partial<MenuItem>) => {
+    mutationFn: async (item: Omit<MenuItem, 'id'>) => {
       const { data, error } = await supabase
         .from('menu_items')
-        .insert(item)
+        .insert({
+          name: item.name,
+          href: item.href,
+          icon: item.icon,
+          menu_type: item.menu_type,
+          target: item.target,
+          parent_id: item.parent_id || null,
+          order_index: item.order_index,
+          is_active: item.is_active
+        })
         .select()
         .single();
       
@@ -66,7 +75,7 @@ const MenuManagement = () => {
       toast({ title: "Menu item created successfully" });
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Error creating menu item", description: error.message, variant: "destructive" });
     }
   });
@@ -88,7 +97,7 @@ const MenuManagement = () => {
       toast({ title: "Menu item updated successfully" });
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Error updating menu item", description: error.message, variant: "destructive" });
     }
   });
@@ -106,7 +115,7 @@ const MenuManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['menu_items'] });
       toast({ title: "Menu item deleted successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Error deleting menu item", description: error.message, variant: "destructive" });
     }
   });
