@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, Upload, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface TourForm {
@@ -52,6 +52,7 @@ interface TourForm {
 const EnhancedTourManagement = () => {
   const [selectedTour, setSelectedTour] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('list');
   const [formData, setFormData] = useState<TourForm>({
     title: '',
     slug: '',
@@ -106,7 +107,7 @@ const EnhancedTourManagement = () => {
   });
 
   const createTourMutation = useMutation({
-    mutationFn: async (tourData: Partial<TourForm>) => {
+    mutationFn: async (tourData: Omit<TourForm, 'rating' | 'total_reviews'>) => {
       // Generate slug if not provided
       if (!tourData.slug && tourData.title) {
         tourData.slug = tourData.title.toLowerCase()
@@ -130,6 +131,7 @@ const EnhancedTourManagement = () => {
         description: "Tour created successfully",
       });
       resetForm();
+      setActiveTab('list');
     },
     onError: (error: any) => {
       toast({
@@ -141,7 +143,7 @@ const EnhancedTourManagement = () => {
   });
 
   const updateTourMutation = useMutation({
-    mutationFn: async ({ id, ...tourData }: { id: string } & Partial<TourForm>) => {
+    mutationFn: async ({ id, ...tourData }: { id: string } & Omit<TourForm, 'rating' | 'total_reviews'>) => {
       // Generate slug if not provided
       if (!tourData.slug && tourData.title) {
         tourData.slug = tourData.title.toLowerCase()
@@ -168,6 +170,7 @@ const EnhancedTourManagement = () => {
       setIsEditing(false);
       setSelectedTour(null);
       resetForm();
+      setActiveTab('list');
     },
     onError: (error: any) => {
       toast({
@@ -245,10 +248,12 @@ const EnhancedTourManagement = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const { rating, total_reviews, ...submitData } = formData;
+    
     if (isEditing && selectedTour) {
-      updateTourMutation.mutate({ id: selectedTour.id, ...formData });
+      updateTourMutation.mutate({ id: selectedTour.id, ...submitData });
     } else {
-      createTourMutation.mutate(formData);
+      createTourMutation.mutate(submitData);
     }
   };
 
@@ -290,6 +295,7 @@ const EnhancedTourManagement = () => {
       total_reviews: tour.total_reviews || 0
     });
     setIsEditing(true);
+    setActiveTab('form');
   };
 
   const handleArrayFieldChange = (field: keyof TourForm, value: string) => {
@@ -299,7 +305,7 @@ const EnhancedTourManagement = () => {
 
   const handleNewTour = () => {
     resetForm();
-    // Switch to form tab when creating new tour
+    setActiveTab('form');
   };
 
   if (isLoading) {
@@ -315,7 +321,7 @@ const EnhancedTourManagement = () => {
   return (
     <div className="space-y-6">
       <Card className="bg-white">
-        <Tabs defaultValue="list" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="list">Tour List ({tours?.length || 0})</TabsTrigger>
             <TabsTrigger value="form">{isEditing ? 'Edit Tour' : 'Create New Tour'}</TabsTrigger>

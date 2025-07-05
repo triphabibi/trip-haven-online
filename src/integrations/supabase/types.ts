@@ -11,58 +11,115 @@ export type Database = {
     Tables: {
       attraction_tickets: {
         Row: {
+          available_times: string[] | null
+          cancellation_policy: string | null
           created_at: string | null
           description: string | null
+          exclusions: string[] | null
+          featured_image: string | null
+          free_cancellation: boolean | null
+          gallery_images: string[] | null
+          highlights: string[] | null
           id: string
           image_urls: string[] | null
+          instant_confirmation: boolean | null
           instant_delivery: boolean | null
           is_featured: boolean | null
+          languages: string[] | null
           location: string | null
+          map_location: string | null
+          meeting_point: string | null
+          overview: string | null
           price_adult: number
           price_child: number
           price_infant: number
           rating: number | null
+          refund_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions: string | null
           ticket_pdf_urls: string[] | null
           title: string
           total_reviews: number | null
           updated_at: string | null
+          whats_included: string[] | null
         }
         Insert: {
+          available_times?: string[] | null
+          cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          free_cancellation?: boolean | null
+          gallery_images?: string[] | null
+          highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
+          instant_confirmation?: boolean | null
           instant_delivery?: boolean | null
           is_featured?: boolean | null
+          languages?: string[] | null
           location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
+          overview?: string | null
           price_adult: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           ticket_pdf_urls?: string[] | null
           title: string
           total_reviews?: number | null
           updated_at?: string | null
+          whats_included?: string[] | null
         }
         Update: {
+          available_times?: string[] | null
+          cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          free_cancellation?: boolean | null
+          gallery_images?: string[] | null
+          highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
+          instant_confirmation?: boolean | null
           instant_delivery?: boolean | null
           is_featured?: boolean | null
+          languages?: string[] | null
           location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
+          overview?: string | null
           price_adult?: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           ticket_pdf_urls?: string[] | null
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
+          whats_included?: string[] | null
         }
         Relationships: []
       }
@@ -782,60 +839,114 @@ export type Database = {
       }
       tour_packages: {
         Row: {
+          available_times: string[] | null
+          cancellation_policy: string | null
           created_at: string | null
           days: number
           description: string | null
+          exclusions: string[] | null
+          featured_image: string | null
+          free_cancellation: boolean | null
+          gallery_images: string[] | null
           highlights: string[] | null
           id: string
           image_urls: string[] | null
+          instant_confirmation: boolean | null
           is_featured: boolean | null
           itinerary: Json | null
+          languages: string[] | null
+          location: string | null
+          map_location: string | null
+          meeting_point: string | null
           nights: number
+          overview: string | null
           price_adult: number
           price_child: number
           price_infant: number
           rating: number | null
+          refund_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions: string | null
           title: string
           total_reviews: number | null
           updated_at: string | null
           whats_included: string[] | null
         }
         Insert: {
+          available_times?: string[] | null
+          cancellation_policy?: string | null
           created_at?: string | null
           days: number
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          free_cancellation?: boolean | null
+          gallery_images?: string[] | null
           highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
+          instant_confirmation?: boolean | null
           is_featured?: boolean | null
           itinerary?: Json | null
+          languages?: string[] | null
+          location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
           nights: number
+          overview?: string | null
           price_adult: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           title: string
           total_reviews?: number | null
           updated_at?: string | null
           whats_included?: string[] | null
         }
         Update: {
+          available_times?: string[] | null
+          cancellation_policy?: string | null
           created_at?: string | null
           days?: number
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          free_cancellation?: boolean | null
+          gallery_images?: string[] | null
           highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
+          instant_confirmation?: boolean | null
           is_featured?: boolean | null
           itinerary?: Json | null
+          languages?: string[] | null
+          location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
           nights?: number
+          overview?: string | null
           price_adult?: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
@@ -846,22 +957,37 @@ export type Database = {
       tours: {
         Row: {
           available_times: string[] | null
+          cancellation_policy: string | null
           category: string | null
           created_at: string | null
           description: string | null
           duration: string | null
+          exclusions: string[] | null
+          featured_image: string | null
           free_cancellation: boolean | null
+          gallery_images: string[] | null
           highlights: string[] | null
           id: string
           image_urls: string[] | null
           instant_confirmation: boolean | null
           is_featured: boolean | null
+          itinerary: Json | null
           languages: string[] | null
+          location: string | null
+          map_location: string | null
+          meeting_point: string | null
+          overview: string | null
           price_adult: number
           price_child: number
           price_infant: number
           rating: number | null
+          refund_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions: string | null
           title: string
           total_reviews: number | null
           updated_at: string | null
@@ -869,22 +995,37 @@ export type Database = {
         }
         Insert: {
           available_times?: string[] | null
+          cancellation_policy?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           duration?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
           free_cancellation?: boolean | null
+          gallery_images?: string[] | null
           highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
           instant_confirmation?: boolean | null
           is_featured?: boolean | null
+          itinerary?: Json | null
           languages?: string[] | null
+          location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
+          overview?: string | null
           price_adult: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           title: string
           total_reviews?: number | null
           updated_at?: string | null
@@ -892,22 +1033,37 @@ export type Database = {
         }
         Update: {
           available_times?: string[] | null
+          cancellation_policy?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           duration?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
           free_cancellation?: boolean | null
+          gallery_images?: string[] | null
           highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
           instant_confirmation?: boolean | null
           is_featured?: boolean | null
+          itinerary?: Json | null
           languages?: string[] | null
+          location?: string | null
+          map_location?: string | null
+          meeting_point?: string | null
+          overview?: string | null
           price_adult?: number
           price_child?: number
           price_infant?: number
           rating?: number | null
+          refund_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
@@ -977,46 +1133,85 @@ export type Database = {
       }
       visa_services: {
         Row: {
+          cancellation_policy: string | null
           country: string
           created_at: string | null
           description: string | null
+          exclusions: string[] | null
+          featured_image: string | null
+          gallery_images: string[] | null
+          highlights: string[] | null
           id: string
           image_urls: string[] | null
           is_featured: boolean | null
+          overview: string | null
           price: number
           processing_time: string | null
+          refund_policy: string | null
           requirements: string[] | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions: string | null
           updated_at: string | null
           visa_type: string
+          whats_included: string[] | null
         }
         Insert: {
+          cancellation_policy?: string | null
           country: string
           created_at?: string | null
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          gallery_images?: string[] | null
+          highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
           is_featured?: boolean | null
+          overview?: string | null
           price: number
           processing_time?: string | null
+          refund_policy?: string | null
           requirements?: string[] | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           updated_at?: string | null
           visa_type: string
+          whats_included?: string[] | null
         }
         Update: {
+          cancellation_policy?: string | null
           country?: string
           created_at?: string | null
           description?: string | null
+          exclusions?: string[] | null
+          featured_image?: string | null
+          gallery_images?: string[] | null
+          highlights?: string[] | null
           id?: string
           image_urls?: string[] | null
           is_featured?: boolean | null
+          overview?: string | null
           price?: number
           processing_time?: string | null
+          refund_policy?: string | null
           requirements?: string[] | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["service_status"] | null
+          terms_conditions?: string | null
           updated_at?: string | null
           visa_type?: string
+          whats_included?: string[] | null
         }
         Relationships: []
       }
