@@ -59,15 +59,6 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
 
   const handleBookNow = () => {
     if (validateForm()) {
-      const bookingData = {
-        serviceId: tour.id,
-        serviceType: 'tour',
-        serviceTitle: tour.title,
-        ...formData,
-        totalAmount: totalPrice
-      };
-      
-      // Redirect to payment gateway with booking data
       const queryParams = new URLSearchParams({
         type: 'tour',
         id: tour.id,
@@ -101,20 +92,20 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto" data-booking-form>
-      <Card className="shadow-xl border-0">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <CardTitle className="text-xl text-center">Book This Tour</CardTitle>
+    <div className="w-full max-w-sm mx-auto" data-booking-form>
+      <Card className="shadow-xl border-0 bg-white">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
+          <CardTitle className="text-lg md:text-xl text-center font-bold">Book This Tour</CardTitle>
           <div className="text-center">
-            <div className="text-2xl font-bold">{formatPrice(totalPrice)}</div>
-            <div className="text-white/80">Total for {formData.adults + formData.children + formData.infants} travelers</div>
+            <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
+            <div className="text-white/80 text-sm">Total for {formData.adults + formData.children + formData.infants} travelers</div>
           </div>
         </CardHeader>
         
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 space-y-4 bg-white">
           {/* Tour Date */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <Calendar className="h-4 w-4" />
               Select Tour Date *
             </Label>
@@ -123,14 +114,14 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
               value={formData.selectedDate}
               onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
               min={new Date().toISOString().split('T')[0]}
-              className={`h-12 ${errors.selectedDate ? 'border-red-500' : ''}`}
+              className={`h-10 md:h-12 bg-white border-gray-300 ${errors.selectedDate ? 'border-red-500' : ''}`}
             />
             {errors.selectedDate && <p className="text-red-500 text-sm">{errors.selectedDate}</p>}
           </div>
 
           {/* Lead Guest Name */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <User className="h-4 w-4" />
               Lead Guest Full Name *
             </Label>
@@ -138,24 +129,26 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
               value={formData.leadGuestName}
               onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
               placeholder="Enter full name"
-              className={`h-12 ${errors.leadGuestName ? 'border-red-500' : ''}`}
+              className={`h-10 md:h-12 bg-white border-gray-300 ${errors.leadGuestName ? 'border-red-500' : ''}`}
             />
             {errors.leadGuestName && <p className="text-red-500 text-sm">{errors.leadGuestName}</p>}
           </div>
 
           {/* Pickup Time */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <Clock className="h-4 w-4" />
               Select Pickup Time *
             </Label>
             <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
-              <SelectTrigger className={`h-12 ${errors.selectedTime ? 'border-red-500' : ''}`}>
+              <SelectTrigger className={`h-10 md:h-12 bg-white border-gray-300 ${errors.selectedTime ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Choose pickup time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-300 shadow-lg max-h-60 overflow-y-auto z-50">
                 {timeSlots.map((time) => (
-                  <SelectItem key={time} value={time}>{time}</SelectItem>
+                  <SelectItem key={time} value={time} className="bg-white hover:bg-gray-100 text-gray-900 cursor-pointer py-2 px-3">
+                    {time}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -164,15 +157,15 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
 
           {/* Number of Travelers */}
           <div className="space-y-3">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <Users className="h-4 w-4" />
               Number of Travelers
             </Label>
             
             {/* Adults */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <div>
-                <div className="font-medium">Adults (12+)</div>
+                <div className="font-medium text-gray-900">Adults (12+)</div>
                 <div className="text-sm text-gray-600">{formatPrice(tour.price_adult || 0)} each</div>
               </div>
               <div className="flex items-center gap-3">
@@ -182,17 +175,17 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
                   size="sm"
                   onClick={() => updateCount('adults', false)}
                   disabled={formData.adults <= 1}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center font-medium">{formData.adults}</span>
+                <span className="w-8 text-center font-medium text-gray-900">{formData.adults}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => updateCount('adults', true)}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -200,9 +193,9 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
             </div>
 
             {/* Children */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <div>
-                <div className="font-medium">Children (2-11)</div>
+                <div className="font-medium text-gray-900">Children (2-11)</div>
                 <div className="text-sm text-gray-600">{formatPrice(tour.price_child || 0)} each</div>
               </div>
               <div className="flex items-center gap-3">
@@ -212,17 +205,17 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
                   size="sm"
                   onClick={() => updateCount('children', false)}
                   disabled={formData.children <= 0}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center font-medium">{formData.children}</span>
+                <span className="w-8 text-center font-medium text-gray-900">{formData.children}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => updateCount('children', true)}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -230,9 +223,9 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
             </div>
 
             {/* Infants */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <div>
-                <div className="font-medium">Infants (0-1)</div>
+                <div className="font-medium text-gray-900">Infants (0-1)</div>
                 <div className="text-sm text-gray-600">{formatPrice(tour.price_infant || 0)} each</div>
               </div>
               <div className="flex items-center gap-3">
@@ -242,17 +235,17 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
                   size="sm"
                   onClick={() => updateCount('infants', false)}
                   disabled={formData.infants <= 0}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center font-medium">{formData.infants}</span>
+                <span className="w-8 text-center font-medium text-gray-900">{formData.infants}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => updateCount('infants', true)}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white border-gray-300"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -262,7 +255,7 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
 
           {/* Email */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <Mail className="h-4 w-4" />
               Email Address *
             </Label>
@@ -271,14 +264,14 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               placeholder="Enter email address"
-              className={`h-12 ${errors.email ? 'border-red-500' : ''}`}
+              className={`h-10 md:h-12 bg-white border-gray-300 ${errors.email ? 'border-red-500' : ''}`}
             />
             {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
 
           {/* Mobile */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium">
+            <Label className="flex items-center gap-2 font-medium text-gray-700">
               <Phone className="h-4 w-4" />
               Mobile Number *
             </Label>
@@ -287,7 +280,7 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
               value={formData.mobile}
               onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
               placeholder="Enter mobile number"
-              className={`h-12 ${errors.mobile ? 'border-red-500' : ''}`}
+              className={`h-10 md:h-12 bg-white border-gray-300 ${errors.mobile ? 'border-red-500' : ''}`}
             />
             {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
           </div>
@@ -295,7 +288,7 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
           {/* Book Now Button */}
           <Button
             onClick={handleBookNow}
-            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+            className="w-full h-12 text-base md:text-lg font-semibold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
           >
             Book Now - {formatPrice(totalPrice)}
           </Button>

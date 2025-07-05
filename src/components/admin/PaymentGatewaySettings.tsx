@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CreditCard, Settings, Wallet } from 'lucide-react';
@@ -107,7 +106,7 @@ const PaymentGatewaySettings = () => {
       {
         gateway_name: 'cash_on_arrival',
         display_name: 'Pay Later / Cash',
-        is_enabled: false,
+        is_enabled: true,
         test_mode: false,
         api_key: '',
         api_secret: '',
@@ -142,21 +141,23 @@ const PaymentGatewaySettings = () => {
   const saveGateways = async () => {
     setLoading(true);
     try {
-      for (const gateway of gateways) {
-        const { error } = await supabase
-          .from('payment_gateways')
-          .upsert({
-            gateway_name: gateway.gateway_name,
-            display_name: gateway.display_name,
-            is_enabled: gateway.is_enabled,
-            test_mode: gateway.test_mode,
-            api_key: gateway.api_key,
-            api_secret: gateway.api_secret,
-            configuration: gateway.configuration
-          });
+      // First delete all existing gateways
+      await supabase.from('payment_gateways').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-        if (error) throw error;
-      }
+      // Then insert all gateways
+      const { error } = await supabase
+        .from('payment_gateways')
+        .insert(gateways.map(gateway => ({
+          gateway_name: gateway.gateway_name,
+          display_name: gateway.display_name,
+          is_enabled: gateway.is_enabled,
+          test_mode: gateway.test_mode,
+          api_key: gateway.api_key,
+          api_secret: gateway.api_secret,
+          configuration: gateway.configuration || {}
+        })));
+
+      if (error) throw error;
 
       toast({
         title: "Success",
@@ -176,11 +177,11 @@ const PaymentGatewaySettings = () => {
 
   const renderGatewayCard = (gateway: PaymentGateway) => {
     return (
-      <Card key={gateway.gateway_name} className="mb-4">
-        <CardHeader>
+      <Card key={gateway.gateway_name} className="mb-6 bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="bg-gray-50 border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CreditCard className="h-5 w-5 text-blue-600" />
               {gateway.display_name}
             </CardTitle>
             <Switch
@@ -189,7 +190,7 @@ const PaymentGatewaySettings = () => {
             />
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-6 space-y-4 bg-white">
           {gateway.gateway_name !== 'bank_transfer' && gateway.gateway_name !== 'cash_on_arrival' && (
             <>
               <div className="flex items-center space-x-2">
@@ -198,28 +199,30 @@ const PaymentGatewaySettings = () => {
                   checked={gateway.test_mode}
                   onCheckedChange={(checked) => updateGateway(gateway.gateway_name, 'test_mode', checked)}
                 />
-                <Label htmlFor={`test_mode_${gateway.gateway_name}`}>Test Mode</Label>
+                <Label htmlFor={`test_mode_${gateway.gateway_name}`} className="font-medium">Test Mode</Label>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`api_key_${gateway.gateway_name}`}>API Key</Label>
+                  <Label htmlFor={`api_key_${gateway.gateway_name}`} className="font-medium">API Key</Label>
                   <Input
                     id={`api_key_${gateway.gateway_name}`}
                     type="password"
                     value={gateway.api_key}
                     onChange={(e) => updateGateway(gateway.gateway_name, 'api_key', e.target.value)}
                     placeholder="Enter API Key"
+                    className="mt-1 bg-white border-gray-300"
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`api_secret_${gateway.gateway_name}`}>API Secret</Label>
+                  <Label htmlFor={`api_secret_${gateway.gateway_name}`} className="font-medium">API Secret</Label>
                   <Input
                     id={`api_secret_${gateway.gateway_name}`}
                     type="password"
                     value={gateway.api_secret}
                     onChange={(e) => updateGateway(gateway.gateway_name, 'api_secret', e.target.value)}
                     placeholder="Enter API Secret"
+                    className="mt-1 bg-white border-gray-300"
                   />
                 </div>
               </div>
@@ -227,39 +230,51 @@ const PaymentGatewaySettings = () => {
           )}
 
           {gateway.gateway_name === 'bank_transfer' && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Account Name</Label>
+                <Label className="font-medium">Account Name</Label>
                 <Input
                   value={gateway.configuration?.account_name || ''}
                   onChange={(e) => updateConfiguration(gateway.gateway_name, 'account_name', e.target.value)}
                   placeholder="Account Holder Name"
+                  className="mt-1 bg-white border-gray-300"
                 />
               </div>
               <div>
-                <Label>Account Number</Label>
+                <Label className="font-medium">Account Number</Label>
                 <Input
                   value={gateway.configuration?.account_number || ''}
                   onChange={(e) => updateConfiguration(gateway.gateway_name, 'account_number', e.target.value)}
                   placeholder="Bank Account Number"
+                  className="mt-1 bg-white border-gray-300"
                 />
               </div>
               <div>
-                <Label>IFSC Code</Label>
+                <Label className="font-medium">IFSC Code</Label>
                 <Input
                   value={gateway.configuration?.ifsc_code || ''}
                   onChange={(e) => updateConfiguration(gateway.gateway_name, 'ifsc_code', e.target.value)}
                   placeholder="Bank IFSC Code"
+                  className="mt-1 bg-white border-gray-300"
                 />
               </div>
               <div>
-                <Label>Bank Name</Label>
+                <Label className="font-medium">Bank Name</Label>
                 <Input
                   value={gateway.configuration?.bank_name || ''}
                   onChange={(e) => updateConfiguration(gateway.gateway_name, 'bank_name', e.target.value)}
                   placeholder="Bank Name"
+                  className="mt-1 bg-white border-gray-300"
                 />
               </div>
+            </div>
+          )}
+
+          {gateway.gateway_name === 'cash_on_arrival' && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 text-sm">
+                This option allows customers to pay later or with cash. No API configuration required.
+              </p>
             </div>
           )}
         </CardContent>
@@ -269,14 +284,14 @@ const PaymentGatewaySettings = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
+      <Card className="bg-white">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Wallet className="h-6 w-6" />
             Payment Gateway Settings
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
             {gateways.map(gateway => renderGatewayCard(gateway))}
           </div>
@@ -284,7 +299,7 @@ const PaymentGatewaySettings = () => {
           <Button 
             onClick={saveGateways} 
             disabled={loading}
-            className="w-full mt-6"
+            className="w-full mt-6 h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             {loading ? 'Saving...' : 'Save All Payment Settings'}
           </Button>
