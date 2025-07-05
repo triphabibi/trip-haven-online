@@ -11,6 +11,7 @@ import { Clock, Globe, FileText, CheckCircle, AlertCircle, Users } from 'lucide-
 import { useCurrency } from '@/hooks/useCurrency';
 import Loading from '@/components/common/Loading';
 import ModernVisaBooking from '@/components/visa/ModernVisaBooking';
+import SmartVisaBooking from '@/components/visa/SmartVisaBooking';
 
 const VisaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -203,7 +204,7 @@ const VisaDetailPage = () => {
                 </TabsContent>
 
                 <TabsContent value="apply" className="mt-0">
-                  <ModernVisaBooking service={visa} />
+                  <SmartVisaBooking service={visa} />
                 </TabsContent>
               </div>
             </Tabs>
@@ -211,7 +212,7 @@ const VisaDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            {/* Mobile Visa Booking */}
+            {/* Mobile Quick Info */}
             <div className="md:hidden mb-8 sticky top-4 z-10">
               <div className="bg-gradient-to-r from-green-600 to-blue-600 p-4 rounded-2xl text-white text-center mb-4 shadow-xl">
                 <h3 className="text-lg font-bold mb-2">Apply for {visa.country} Visa</h3>
@@ -254,7 +255,10 @@ const VisaDetailPage = () => {
                     <Button 
                       size="lg" 
                       className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                      onClick={() => document.querySelector('[data-booking-form]')?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={() => {
+                        const applyTab = document.querySelector('[data-state="inactive"][value="apply"]') as HTMLElement;
+                        if (applyTab) applyTab.click();
+                      }}
                     >
                       Apply Now
                     </Button>

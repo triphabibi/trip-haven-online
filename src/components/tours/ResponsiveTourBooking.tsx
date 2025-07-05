@@ -1,7 +1,5 @@
 
-import { useIsMobile } from '@/hooks/use-mobile';
-import MobileTourBooking from './MobileTourBooking';
-import StreamlinedTourBooking from './StreamlinedTourBooking';
+import UnifiedTourBooking from './UnifiedTourBooking';
 import type { Tour } from '@/types/tourism';
 
 interface ResponsiveTourBookingProps {
@@ -9,13 +7,7 @@ interface ResponsiveTourBookingProps {
 }
 
 const ResponsiveTourBooking = ({ tour }: ResponsiveTourBookingProps) => {
-  const isMobile = useIsMobile();
-
-  if (isMobile) {
-    return <MobileTourBooking tour={tour} />;
-  }
-
-  return <StreamlinedTourBooking tour={tour} />;
+  return <UnifiedTourBooking tour={tour} />;
 };
 
 export default ResponsiveTourBooking;

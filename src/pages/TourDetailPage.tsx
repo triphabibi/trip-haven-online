@@ -23,6 +23,20 @@ const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: tour, isLoading, error } = useTour(id!);
 
+  const scrollToBookingForm = () => {
+    const bookingForm = document.querySelector('[data-booking-form]');
+    if (bookingForm) {
+      bookingForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Trigger form validation after scroll
+      setTimeout(() => {
+        const bookButton = bookingForm.querySelector('button[type="button"]:last-child') as HTMLButtonElement;
+        if (bookButton) {
+          bookButton.click();
+        }
+      }, 500);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -157,7 +171,16 @@ const TourDetailPage = () => {
 
       <Footer />
       <AIAssistant />
-      <StickyMobileBookingButton />
+      
+      {/* Updated Sticky Mobile Booking Button */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+        <Button
+          onClick={scrollToBookingForm}
+          className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+        >
+          Book Now - {tour.price_adult ? `From ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED' }).format(tour.price_adult)}` : 'Check Price'}
+        </Button>
+      </div>
     </div>
   );
 };
