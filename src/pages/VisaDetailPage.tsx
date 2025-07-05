@@ -8,14 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Globe, FileText, CheckCircle, AlertCircle, Users } from 'lucide-react';
-import { useCurrency } from '@/hooks/useCurrency';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import Loading from '@/components/common/Loading';
 import SmartVisaBooking from '@/components/visa/SmartVisaBooking';
 
 const VisaDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { data: visa, isLoading, error } = useVisa(id!);
+  const { data: visa, isLoading, error } = useVisa(slug!);
   const { formatPrice } = useCurrency();
 
   if (isLoading) {

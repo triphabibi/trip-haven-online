@@ -10,8 +10,8 @@ import PackageDetails from '@/components/packages/PackageDetails';
 import AIAssistant from '@/components/common/AIAssistant';
 
 const PackageDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: pkg, isLoading, error } = usePackage(id!);
+  const { slug } = useParams<{ slug: string }>();
+  const { data: pkg, isLoading, error } = usePackage(slug!);
 
   if (error) {
     return (
@@ -41,14 +41,19 @@ const PackageDetailPage = () => {
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-96 w-full" />
             </div>
-          ) : (
+          ) : pkg ? (
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <PackageHero pkg={pkg!} isLoading={isLoading} />
+                <PackageHero pkg={pkg} isLoading={isLoading} />
               </div>
               <div className="lg:col-span-1">
-                <ModernPackageBooking pkg={pkg!} />
+                <ModernPackageBooking pkg={pkg} />
               </div>
+            </div>
+          ) : (
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Package Not Found</h1>
+              <p className="text-gray-600">The package you're looking for doesn't exist.</p>
             </div>
           )}
         </div>
@@ -56,7 +61,7 @@ const PackageDetailPage = () => {
 
       {/* Package Details */}
       <div className="container mx-auto px-4 py-8">
-        <PackageDetails pkg={pkg!} isLoading={isLoading} />
+        {pkg && <PackageDetails pkg={pkg} isLoading={isLoading} />}
       </div>
 
       <Footer />

@@ -25,20 +25,34 @@ export const useVisas = (featured?: boolean) => {
   });
 };
 
-export const useVisa = (id: string) => {
+export const useVisa = (slugOrId: string) => {
   return useQuery({
-    queryKey: ['visa', id],
+    queryKey: ['visa', slugOrId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First try to find by slug if it exists
+      let { data, error } = await supabase
         .from('visa_services')
         .select('*')
-        .eq('id', id)
+        .eq('slug', slugOrId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
+      
+      // If not found by slug, try by ID
+      if (!data && !error) {
+        const result = await supabase
+          .from('visa_services')
+          .select('*')
+          .eq('id', slugOrId)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        data = result.data;
+        error = result.error;
+      }
       
       if (error) throw error;
       return data as VisaService;
     },
-    enabled: !!id,
+    enabled: !!slugOrId,
   });
 };

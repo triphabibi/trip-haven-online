@@ -84,7 +84,7 @@ const VisasPage = () => {
                   <div className="text-2xl font-bold text-green-600">
                     {formatPrice(visa.price)}
                   </div>
-                  <Link to={`/visas/${visa.slug || visa.id}`}>
+                  <Link to={`/visas/${visa.id}`}>
                     <Button>Apply Now</Button>
                   </Link>
                 </div>

@@ -25,20 +25,34 @@ export const usePackages = (featured?: boolean) => {
   });
 };
 
-export const usePackage = (id: string) => {
+export const usePackage = (slugOrId: string) => {
   return useQuery({
-    queryKey: ['package', id],
+    queryKey: ['package', slugOrId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First try to find by slug
+      let { data, error } = await supabase
         .from('tour_packages')
         .select('*')
-        .eq('id', id)
+        .eq('slug', slugOrId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
+      
+      // If not found by slug, try by ID
+      if (!data && !error) {
+        const result = await supabase
+          .from('tour_packages')
+          .select('*')
+          .eq('id', slugOrId)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        data = result.data;
+        error = result.error;
+      }
       
       if (error) throw error;
       return data as TourPackage;
     },
-    enabled: !!id,
+    enabled: !!slugOrId,
   });
 };

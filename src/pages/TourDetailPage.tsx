@@ -20,8 +20,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Loading from '@/components/common/Loading';
 
 const TourDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: tour, isLoading, error } = useTour(id!);
+  const { slug } = useParams<{ slug: string }>();
+  const { data: tour, isLoading, error } = useTour(slug!);
 
   const scrollToBookingForm = () => {
     const bookingForm = document.querySelector('[data-booking-form]');

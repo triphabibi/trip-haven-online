@@ -18,19 +18,34 @@ export const useTours = () => {
   });
 };
 
-export const useTour = (id: string) => {
+export const useTour = (slugOrId: string) => {
   return useQuery({
-    queryKey: ['tour', id],
+    queryKey: ['tour', slugOrId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First try to find by slug
+      let { data, error } = await supabase
         .from('tours')
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('slug', slugOrId)
+        .eq('status', 'active')
+        .maybeSingle();
+      
+      // If not found by slug, try by ID
+      if (!data && !error) {
+        const result = await supabase
+          .from('tours')
+          .select('*')
+          .eq('id', slugOrId)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        data = result.data;
+        error = result.error;
+      }
       
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!slugOrId,
   });
 };
