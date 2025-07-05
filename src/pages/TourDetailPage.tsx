@@ -6,14 +6,13 @@ import Footer from '@/components/layout/Footer';
 import TourDetailHeader from '@/components/tours/TourDetailHeader';
 import TourHighlights from '@/components/tours/TourHighlights';
 import TourImageGallery from '@/components/tours/TourImageGallery';
-import ResponsiveTourBooking from '@/components/tours/ResponsiveTourBooking';
+import MobileFriendlyTourBooking from '@/components/tours/MobileFriendlyTourBooking';
 import TourOverview from '@/components/tours/TourOverview';
 import ModernTourItinerary from '@/components/tours/ModernTourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
 import TourReviews from '@/components/tours/TourReviews';
 import TourFAQ from '@/components/tours/TourFAQ';
 import AIAssistant from '@/components/common/AIAssistant';
-import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,13 +26,6 @@ const TourDetailPage = () => {
     const bookingForm = document.querySelector('[data-booking-form]');
     if (bookingForm) {
       bookingForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Trigger form validation after scroll
-      setTimeout(() => {
-        const bookButton = bookingForm.querySelector('button[type="button"]:last-child') as HTMLButtonElement;
-        if (bookButton) {
-          bookButton.click();
-        }
-      }, 500);
     }
   };
 
@@ -93,8 +85,8 @@ const TourDetailPage = () => {
             <TourHighlights tour={tour} />
 
             {/* Mobile Booking Section */}
-            <div className="lg:hidden">
-              <ResponsiveTourBooking tour={tour} />
+            <div className="lg:hidden" data-booking-form>
+              <MobileFriendlyTourBooking tour={tour} />
             </div>
 
             {/* Main Content Tabs */}
@@ -162,8 +154,8 @@ const TourDetailPage = () => {
 
           {/* Desktop Booking Sidebar */}
           <div className="lg:col-span-1 hidden lg:block">
-            <div className="sticky top-6">
-              <ResponsiveTourBooking tour={tour} />
+            <div className="sticky top-6" data-booking-form>
+              <MobileFriendlyTourBooking tour={tour} />
             </div>
           </div>
         </div>
