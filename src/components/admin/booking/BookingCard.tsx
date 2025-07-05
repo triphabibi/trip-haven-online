@@ -24,22 +24,38 @@ const BookingCard = ({ booking, onUpdateStatus }: BookingCardProps) => {
   const { data: serviceDetails } = useQuery({
     queryKey: ['service_details', booking.service_id, booking.booking_type],
     queryFn: async () => {
-      let tableName = 'tours';
+      if (!booking.service_id || !booking.booking_type) return null;
+
+      let query;
       
       if (booking.booking_type === 'visa') {
-        tableName = 'visa_services';
+        query = supabase
+          .from('visa_services')
+          .select('country, visa_type')
+          .eq('id', booking.service_id)
+          .single();
       } else if (booking.booking_type === 'package') {
-        tableName = 'tour_packages';
+        query = supabase
+          .from('tour_packages')
+          .select('title')
+          .eq('id', booking.service_id)
+          .single();
       } else if (booking.booking_type === 'ticket') {
-        tableName = 'attraction_tickets';
+        query = supabase
+          .from('attraction_tickets')
+          .select('title')
+          .eq('id', booking.service_id)
+          .single();
+      } else {
+        // Default to tours
+        query = supabase
+          .from('tours')
+          .select('title')
+          .eq('id', booking.service_id)
+          .single();
       }
 
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('title')
-        .eq('id', booking.service_id)
-        .single();
-
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -61,6 +77,16 @@ const BookingCard = ({ booking, onUpdateStatus }: BookingCardProps) => {
     }
   };
 
+  const getServiceTitle = () => {
+    if (!serviceDetails) return `${booking.booking_type} Service`;
+    
+    if (booking.booking_type === 'visa') {
+      return `${serviceDetails.country} ${serviceDetails.visa_type}`;
+    }
+    
+    return serviceDetails.title || `${booking.booking_type} Service`;
+  };
+
   return (
     <Card className="mb-4">
       <CardContent className="p-6">
@@ -70,7 +96,7 @@ const BookingCard = ({ booking, onUpdateStatus }: BookingCardProps) => {
               <div>
                 <h3 className="font-semibold text-lg">{booking.booking_reference}</h3>
                 <p className="text-sm text-gray-600">
-                  {serviceDetails?.title || `${booking.booking_type} Service`}
+                  {getServiceTitle()}
                 </p>
               </div>
               <Badge className={getStatusColor(booking.booking_status)}>
