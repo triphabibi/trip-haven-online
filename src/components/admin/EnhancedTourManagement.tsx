@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,6 +89,8 @@ const EnhancedTourManagement = () => {
 
   const createTourMutation = useMutation({
     mutationFn: async (tourData: any) => {
+      console.log('Creating tour with data:', tourData);
+      
       if (!tourData.slug && tourData.title) {
         tourData.slug = generateSlug(tourData.title);
       }
@@ -98,22 +101,29 @@ const EnhancedTourManagement = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating tour:', error);
+        throw error;
+      }
+      console.log('Tour created successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin_tours'] });
-      toast({ title: "Success", description: "Tour created successfully with auto-generated slug" });
+      toast({ title: "Success", description: "Tour created successfully" });
       resetForm();
       setActiveTab('list');
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Create tour error:', error);
+      toast({ title: "Error", description: error.message || "Failed to create tour", variant: "destructive" });
     },
   });
 
   const updateTourMutation = useMutation({
     mutationFn: async ({ id, ...tourData }: { id: string } & any) => {
+      console.log('Updating tour with data:', tourData);
+      
       if (!tourData.slug && tourData.title) {
         tourData.slug = generateSlug(tourData.title);
       }
@@ -125,7 +135,11 @@ const EnhancedTourManagement = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating tour:', error);
+        throw error;
+      }
+      console.log('Tour updated successfully:', data);
       return data;
     },
     onSuccess: () => {
@@ -137,7 +151,8 @@ const EnhancedTourManagement = () => {
       setActiveTab('list');
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Update tour error:', error);
+      toast({ title: "Error", description: error.message || "Failed to update tour", variant: "destructive" });
     },
   });
 
@@ -200,6 +215,18 @@ const EnhancedTourManagement = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    
+    if (!formData.title) {
+      toast({ title: "Error", description: "Tour title is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.price_adult || formData.price_adult <= 0) {
+      toast({ title: "Error", description: "Adult price must be greater than 0", variant: "destructive" });
+      return;
+    }
+    
     if (isEditing && selectedTour) {
       updateTourMutation.mutate({ id: selectedTour.id, ...formData });
     } else {
@@ -208,6 +235,7 @@ const EnhancedTourManagement = () => {
   };
 
   const handleEdit = (tour: any) => {
+    console.log('Editing tour:', tour);
     setSelectedTour(tour);
     setFormData({
       title: tour.title || '',
@@ -301,7 +329,6 @@ const EnhancedTourManagement = () => {
             <CardContent className="bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tours?.map((tour) => (
-                  
                   <div key={tour.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold truncate text-lg">{tour.title}</h4>
@@ -458,61 +485,6 @@ const EnhancedTourManagement = () => {
                     </div>
                   </div>
 
-                  {/* Images & Media */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Images & Media</h3>
-                    
-                    <div>
-                      <Label htmlFor="featured_image">Featured Image URL</Label>
-                      <Input
-                        id="featured_image"
-                        value={formData.featured_image}
-                        onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
-                        className="bg-white"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Gallery Images</Label>
-                      <div className="space-y-2">
-                        {formData.gallery_images.map((url, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input value={url} readOnly className="bg-gray-50" />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeImageUrl('gallery_images', index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => addImageUrl('gallery_images')}
-                          className="w-full"
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Add Gallery Image URL
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="youtube_video_url">YouTube Video URL (Optional)</Label>
-                      <Input
-                        id="youtube_video_url"
-                        value={formData.youtube_video_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, youtube_video_url: e.target.value }))}
-                        className="bg-white"
-                        placeholder="https://www.youtube.com/watch?v=..."
-                      />
-                    </div>
-                  </div>
-
                   {/* Itinerary Section */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Itinerary</h3>
@@ -615,6 +587,17 @@ const EnhancedTourManagement = () => {
                         className="bg-white"
                         rows={3}
                         placeholder="9:00 AM&#10;2:00 PM&#10;6:00 PM"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="featured_image">Featured Image URL</Label>
+                      <Input
+                        id="featured_image"
+                        value={formData.featured_image}
+                        onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                        className="bg-white"
+                        placeholder="https://example.com/image.jpg"
                       />
                     </div>
                   </div>

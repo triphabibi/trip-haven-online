@@ -1,3 +1,4 @@
+
 import { Clock, MapPin, Camera, Coffee, Car, Building2, Utensils, Calendar } from 'lucide-react';
 
 interface TourItineraryProps {
@@ -5,8 +6,10 @@ interface TourItineraryProps {
 }
 
 const ModernTourItinerary = ({ tour }: TourItineraryProps) => {
-  // Use actual tour itinerary data if available
+  // Use actual tour itinerary data from the database
   const itinerary = tour?.itinerary?.days || [];
+
+  console.log('Tour itinerary data:', tour?.itinerary);
 
   // If no itinerary data, show a message
   if (!itinerary || itinerary.length === 0) {

@@ -67,7 +67,7 @@ const TrendingProductsManagement = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data?.map(item => ({ ...item, type: 'visa', title: `${item.country} ${item.visa_type}` })) || [];
+      return data?.map(item => ({ ...item, type: 'visa', display_title: `${item.country} ${item.visa_type}` })) || [];
     },
   });
 
@@ -99,7 +99,7 @@ const TrendingProductsManagement = () => {
     else if (product.type === 'visa') tableName = 'visa_services';
 
     const { error } = await supabase
-      .from(tableName)
+      .from(tableName as any)
       .update({ is_featured: newFeaturedStatus })
       .eq('id', product.id);
 
@@ -107,6 +107,21 @@ const TrendingProductsManagement = () => {
       // Refresh data
       window.location.reload();
     }
+  };
+
+  const getProductLocation = (product: any) => {
+    if (product.type === 'visa') return product.country;
+    return product.location || 'No location set';
+  };
+
+  const getProductPrice = (product: any) => {
+    if (product.type === 'visa') return product.price;
+    return product.price_adult || product.price || 0;
+  };
+
+  const getProductTitle = (product: any) => {
+    if (product.type === 'visa') return product.display_title || `${product.country} ${product.visa_type}`;
+    return product.title;
   };
 
   return (
@@ -161,17 +176,17 @@ const TrendingProductsManagement = () => {
                   {product.featured_image && (
                     <img 
                       src={product.featured_image} 
-                      alt={product.title} 
+                      alt={getProductTitle(product)} 
                       className="w-full h-32 object-cover rounded mb-3"
                     />
                   )}
-                  <h4 className="font-semibold truncate">{product.title}</h4>
-                  <p className="text-sm text-gray-600">{product.location}</p>
+                  <h4 className="font-semibold truncate">{getProductTitle(product)}</h4>
+                  <p className="text-sm text-gray-600">{getProductLocation(product)}</p>
                 </div>
 
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-lg font-bold text-blue-600">
-                    {formatPrice(product.price_adult || product.price)}
+                    {formatPrice(getProductPrice(product))}
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="text-sm">Rating: {product.rating || 0}</span>
