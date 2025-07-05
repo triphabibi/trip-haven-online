@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +14,7 @@ import EnhancedTourManagement from '@/components/admin/EnhancedTourManagement';
 import BookingManagement from '@/components/admin/BookingManagement';
 import PaymentGatewaySettings from '@/components/admin/PaymentGatewaySettings';
 import EmailSettings from '@/components/admin/EmailSettings';
-import VisaManagement from '@/components/admin/VisaManagement';
+import EnhancedVisaManagement from '@/components/admin/EnhancedVisaManagement';
 import TicketManagement from '@/components/admin/TicketManagement';
 import PackageManagement from '@/components/admin/PackageManagement';
 
@@ -178,7 +177,7 @@ const AdminPage = () => {
               </TabsContent>
 
               <TabsContent value="visas" className="mt-0">
-                <VisaManagement />
+                <EnhancedVisaManagement />
               </TabsContent>
 
               <TabsContent value="transfers" className="mt-0">

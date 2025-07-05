@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign, Upload, X } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface TourForm {
@@ -47,7 +46,15 @@ interface TourForm {
   free_cancellation: boolean;
   rating: number;
   total_reviews: number;
+  youtube_video_url: string;
 }
+
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
 
 const EnhancedTourManagement = () => {
   const [selectedTour, setSelectedTour] = useState<any>(null);
@@ -69,10 +76,19 @@ const EnhancedTourManagement = () => {
     exclusions: [],
     languages: ['English'],
     available_times: [],
-    itinerary: null,
-    cancellation_policy: '',
-    refund_policy: '',
-    terms_conditions: '',
+    itinerary: {
+      days: [
+        {
+          day: 1,
+          title: 'Day 1 - Arrival',
+          description: 'Arrival and check-in',
+          activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
+        }
+      ]
+    },
+    cancellation_policy: 'Free cancellation up to 24 hours before the experience starts (local time)',
+    refund_policy: 'Full refund for cancellations made 24+ hours in advance',
+    terms_conditions: 'Standard terms and conditions apply',
     meeting_point: '',
     map_location: '',
     seo_title: '',
@@ -86,7 +102,8 @@ const EnhancedTourManagement = () => {
     instant_confirmation: true,
     free_cancellation: true,
     rating: 0,
-    total_reviews: 0
+    total_reviews: 0,
+    youtube_video_url: ''
   });
 
   const { toast } = useToast();
@@ -106,13 +123,22 @@ const EnhancedTourManagement = () => {
     },
   });
 
+  const handleTitleChange = (title: string) => {
+    const newSlug = generateSlug(title);
+    setFormData(prev => ({ 
+      ...prev, 
+      title, 
+      slug: newSlug,
+      seo_title: prev.seo_title || title,
+      seo_description: prev.seo_description || `Experience ${title} - Book now for the best rates`
+    }));
+  };
+
   const createTourMutation = useMutation({
     mutationFn: async (tourData: Omit<TourForm, 'rating' | 'total_reviews'>) => {
-      // Generate slug if not provided
+      // Ensure slug is generated
       if (!tourData.slug && tourData.title) {
-        tourData.slug = tourData.title.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
+        tourData.slug = generateSlug(tourData.title);
       }
 
       const { data, error } = await supabase
@@ -128,7 +154,7 @@ const EnhancedTourManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['admin_tours'] });
       toast({
         title: "Success",
-        description: "Tour created successfully",
+        description: "Tour created successfully with auto-generated slug",
       });
       resetForm();
       setActiveTab('list');
@@ -144,11 +170,9 @@ const EnhancedTourManagement = () => {
 
   const updateTourMutation = useMutation({
     mutationFn: async ({ id, ...tourData }: { id: string } & Omit<TourForm, 'rating' | 'total_reviews'>) => {
-      // Generate slug if not provided
+      // Ensure slug is generated
       if (!tourData.slug && tourData.title) {
-        tourData.slug = tourData.title.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
+        tourData.slug = generateSlug(tourData.title);
       }
 
       const { data, error } = await supabase
@@ -223,10 +247,19 @@ const EnhancedTourManagement = () => {
       exclusions: [],
       languages: ['English'],
       available_times: [],
-      itinerary: null,
-      cancellation_policy: '',
-      refund_policy: '',
-      terms_conditions: '',
+      itinerary: {
+        days: [
+          {
+            day: 1,
+            title: 'Day 1 - Arrival',
+            description: 'Arrival and check-in',
+            activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
+          }
+        ]
+      },
+      cancellation_policy: 'Free cancellation up to 24 hours before the experience starts (local time)',
+      refund_policy: 'Full refund for cancellations made 24+ hours in advance',
+      terms_conditions: 'Standard terms and conditions apply',
       meeting_point: '',
       map_location: '',
       seo_title: '',
@@ -240,7 +273,8 @@ const EnhancedTourManagement = () => {
       instant_confirmation: true,
       free_cancellation: true,
       rating: 0,
-      total_reviews: 0
+      total_reviews: 0,
+      youtube_video_url: ''
     });
     setIsEditing(false);
     setSelectedTour(null);
@@ -275,10 +309,19 @@ const EnhancedTourManagement = () => {
       exclusions: tour.exclusions || [],
       languages: tour.languages || ['English'],
       available_times: tour.available_times || [],
-      itinerary: tour.itinerary || null,
-      cancellation_policy: tour.cancellation_policy || '',
-      refund_policy: tour.refund_policy || '',
-      terms_conditions: tour.terms_conditions || '',
+      itinerary: tour.itinerary || {
+        days: [
+          {
+            day: 1,
+            title: 'Day 1 - Arrival',
+            description: 'Arrival and check-in',
+            activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
+          }
+        ]
+      },
+      cancellation_policy: tour.cancellation_policy || 'Free cancellation up to 24 hours before the experience starts (local time)',
+      refund_policy: tour.refund_policy || 'Full refund for cancellations made 24+ hours in advance',
+      terms_conditions: tour.terms_conditions || 'Standard terms and conditions apply',
       meeting_point: tour.meeting_point || '',
       map_location: tour.map_location || '',
       seo_title: tour.seo_title || '',
@@ -292,7 +335,8 @@ const EnhancedTourManagement = () => {
       instant_confirmation: tour.instant_confirmation !== false,
       free_cancellation: tour.free_cancellation !== false,
       rating: tour.rating || 0,
-      total_reviews: tour.total_reviews || 0
+      total_reviews: tour.total_reviews || 0,
+      youtube_video_url: tour.youtube_video_url || ''
     });
     setIsEditing(true);
     setActiveTab('form');
@@ -306,6 +350,49 @@ const EnhancedTourManagement = () => {
   const handleNewTour = () => {
     resetForm();
     setActiveTab('form');
+  };
+
+  const addImageUrl = (field: 'image_urls' | 'gallery_images') => {
+    const url = prompt('Enter image URL:');
+    if (url) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...(prev[field] as string[]), url]
+      }));
+    }
+  };
+
+  const removeImageUrl = (field: 'image_urls' | 'gallery_images', index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: (prev[field] as string[]).filter((_, i) => i !== index)
+    }));
+  };
+
+  const addItineraryDay = () => {
+    const currentDays = formData.itinerary?.days || [];
+    const newDay = {
+      day: currentDays.length + 1,
+      title: `Day ${currentDays.length + 1}`,
+      description: '',
+      activities: []
+    };
+    setFormData(prev => ({
+      ...prev,
+      itinerary: {
+        ...prev.itinerary,
+        days: [...currentDays, newDay]
+      }
+    }));
+  };
+
+  const updateItineraryDay = (index: number, field: string, value: any) => {
+    const currentDays = [...(formData.itinerary?.days || [])];
+    currentDays[index] = { ...currentDays[index], [field]: value };
+    setFormData(prev => ({
+      ...prev,
+      itinerary: { ...prev.itinerary, days: currentDays }
+    }));
   };
 
   if (isLoading) {
@@ -430,14 +517,14 @@ const EnhancedTourManagement = () => {
                         <Input
                           id="title"
                           value={formData.title}
-                          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) => handleTitleChange(e.target.value)}
                           required
                           className="bg-white"
                           placeholder="Enter tour title"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="slug">SEO Slug</Label>
+                        <Label htmlFor="slug">SEO Slug (Auto-generated)</Label>
                         <Input
                           id="slug"
                           value={formData.slug}
@@ -445,6 +532,7 @@ const EnhancedTourManagement = () => {
                           placeholder="auto-generated from title"
                           className="bg-white"
                         />
+                        <p className="text-xs text-gray-500 mt-1">URL: /tours/{formData.slug}</p>
                       </div>
                     </div>
 
@@ -494,6 +582,106 @@ const EnhancedTourManagement = () => {
                         placeholder="Detailed overview of what the tour includes"
                       />
                     </div>
+                  </div>
+
+                  {/* Images & Media */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Images & Media</h3>
+                    
+                    <div>
+                      <Label htmlFor="featured_image">Featured Image URL</Label>
+                      <Input
+                        id="featured_image"
+                        value={formData.featured_image}
+                        onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                        className="bg-white"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gallery Images</Label>
+                      <div className="space-y-2">
+                        {formData.gallery_images.map((url, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input value={url} readOnly className="bg-gray-50" />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeImageUrl('gallery_images', index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => addImageUrl('gallery_images')}
+                          className="w-full"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Add Gallery Image URL
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="youtube_video_url">YouTube Video URL (Optional)</Label>
+                      <Input
+                        id="youtube_video_url"
+                        value={formData.youtube_video_url}
+                        onChange={(e) => setFormData(prev => ({ ...prev, youtube_video_url: e.target.value }))}
+                        className="bg-white"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Itinerary */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Detailed Itinerary</h3>
+                    
+                    {formData.itinerary?.days?.map((day: any, index: number) => (
+                      <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="grid grid-cols-2 gap-4 mb-3">
+                          <div>
+                            <Label>Day {day.day} Title</Label>
+                            <Input
+                              value={day.title}
+                              onChange={(e) => updateItineraryDay(index, 'title', e.target.value)}
+                              className="bg-white"
+                              placeholder={`Day ${day.day} title`}
+                            />
+                          </div>
+                          <div>
+                            <Label>Day {day.day} Description</Label>
+                            <Input
+                              value={day.description}
+                              onChange={(e) => updateItineraryDay(index, 'description', e.target.value)}
+                              className="bg-white"
+                              placeholder="Brief description"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Activities (one per line)</Label>
+                          <Textarea
+                            value={day.activities?.join('\n') || ''}
+                            onChange={(e) => updateItineraryDay(index, 'activities', e.target.value.split('\n').filter(a => a.trim()))}
+                            className="bg-white"
+                            rows={3}
+                            placeholder="Activity 1&#10;Activity 2&#10;Activity 3"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <Button type="button" variant="outline" onClick={addItineraryDay} className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Day
+                    </Button>
                   </div>
 
                   {/* Pricing */}

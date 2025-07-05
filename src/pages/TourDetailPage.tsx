@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import TourDetailHeader from '@/components/tours/TourDetailHeader';
 import TourHighlights from '@/components/tours/TourHighlights';
 import TourImageGallery from '@/components/tours/TourImageGallery';
-import StreamlinedTourBooking from '@/components/tours/StreamlinedTourBooking';
+import ImprovedTourBooking from '@/components/tours/ImprovedTourBooking';
 import TourOverview from '@/components/tours/TourOverview';
 import ModernTourItinerary from '@/components/tours/ModernTourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
@@ -142,10 +142,17 @@ const TourDetailPage = () => {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <StreamlinedTourBooking tour={tour} />
+            <div className="sticky top-6">
+              <ImprovedTourBooking tour={tour} />
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Mobile Booking Section */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
+        <ImprovedTourBooking tour={tour} />
+      </div>
 
       <Footer />
       <AIAssistant />
