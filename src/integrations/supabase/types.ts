@@ -12,7 +12,6 @@ export type Database = {
       attraction_tickets: {
         Row: {
           available_times: string[] | null
-          booking_count: number | null
           cancellation_policy: string | null
           created_at: string | null
           description: string | null
@@ -29,7 +28,6 @@ export type Database = {
           languages: string[] | null
           location: string | null
           map_location: string | null
-          max_capacity: number | null
           meeting_point: string | null
           overview: string | null
           price_adult: number
@@ -51,7 +49,6 @@ export type Database = {
         }
         Insert: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
@@ -68,7 +65,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_capacity?: number | null
           meeting_point?: string | null
           overview?: string | null
           price_adult: number
@@ -90,7 +86,6 @@ export type Database = {
         }
         Update: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
@@ -107,7 +102,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_capacity?: number | null
           meeting_point?: string | null
           overview?: string | null
           price_adult?: number
@@ -129,142 +123,115 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_travelers: {
+        Row: {
+          age: number | null
+          booking_id: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          nationality: string | null
+          passport_number: string | null
+        }
+        Insert: {
+          age?: number | null
+          booking_id?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Update: {
+          age?: number | null
+          booking_id?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_travelers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
-          accessibility_needs: string | null
-          admin_notes: string | null
-          adults_count: number | null
-          assigned_guide: string | null
-          base_amount: number
           booking_reference: string
-          booking_status: string | null
-          cancelled_at: string | null
-          children_count: number | null
-          completed_at: string | null
-          confirmation_code: string | null
+          booking_status: Database["public"]["Enums"]["booking_status"] | null
           created_at: string | null
-          customer_email: string
-          customer_name: string
-          customer_phone: string | null
-          dietary_requirements: string | null
           discount_amount: number | null
-          emergency_contact: string | null
-          emergency_phone: string | null
+          final_amount: number
           id: string
-          infants_count: number | null
-          internal_notes: string | null
-          payment_date: string | null
           payment_gateway: string | null
-          payment_method: string | null
           payment_reference: string | null
-          payment_status: string | null
-          pickup_location: string | null
-          selected_language: string | null
-          service_fee: number | null
-          service_id: string
-          service_title: string
-          service_type: string
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id: string | null
+          service_id: string | null
           special_requests: string | null
-          taxes_amount: number | null
           total_amount: number
-          total_travelers: number | null
           travel_date: string | null
-          travel_time: string | null
+          traveler_count: number
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
-          accessibility_needs?: string | null
-          admin_notes?: string | null
-          adults_count?: number | null
-          assigned_guide?: string | null
-          base_amount: number
           booking_reference: string
-          booking_status?: string | null
-          cancelled_at?: string | null
-          children_count?: number | null
-          completed_at?: string | null
-          confirmation_code?: string | null
+          booking_status?: Database["public"]["Enums"]["booking_status"] | null
           created_at?: string | null
-          customer_email: string
-          customer_name: string
-          customer_phone?: string | null
-          dietary_requirements?: string | null
           discount_amount?: number | null
-          emergency_contact?: string | null
-          emergency_phone?: string | null
+          final_amount: number
           id?: string
-          infants_count?: number | null
-          internal_notes?: string | null
-          payment_date?: string | null
           payment_gateway?: string | null
-          payment_method?: string | null
           payment_reference?: string | null
-          payment_status?: string | null
-          pickup_location?: string | null
-          selected_language?: string | null
-          service_fee?: number | null
-          service_id: string
-          service_title: string
-          service_type: string
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id?: string | null
+          service_id?: string | null
           special_requests?: string | null
-          taxes_amount?: number | null
           total_amount: number
-          total_travelers?: number | null
           travel_date?: string | null
-          travel_time?: string | null
+          traveler_count?: number
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          accessibility_needs?: string | null
-          admin_notes?: string | null
-          adults_count?: number | null
-          assigned_guide?: string | null
-          base_amount?: number
           booking_reference?: string
-          booking_status?: string | null
-          cancelled_at?: string | null
-          children_count?: number | null
-          completed_at?: string | null
-          confirmation_code?: string | null
+          booking_status?: Database["public"]["Enums"]["booking_status"] | null
           created_at?: string | null
-          customer_email?: string
-          customer_name?: string
-          customer_phone?: string | null
-          dietary_requirements?: string | null
           discount_amount?: number | null
-          emergency_contact?: string | null
-          emergency_phone?: string | null
+          final_amount?: number
           id?: string
-          infants_count?: number | null
-          internal_notes?: string | null
-          payment_date?: string | null
           payment_gateway?: string | null
-          payment_method?: string | null
           payment_reference?: string | null
-          payment_status?: string | null
-          pickup_location?: string | null
-          selected_language?: string | null
-          service_fee?: number | null
-          service_id?: string
-          service_title?: string
-          service_type?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id?: string | null
+          service_id?: string | null
           special_requests?: string | null
-          taxes_amount?: number | null
           total_amount?: number
-          total_travelers?: number | null
           travel_date?: string | null
-          travel_time?: string | null
+          traveler_count?: number
           updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "bookings_promo_code_id_fkey"
+            columns: ["promo_code_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -344,38 +311,256 @@ export type Database = {
         }
         Relationships: []
       }
-      menu_items: {
+      new_bookings: {
         Row: {
+          adults_count: number | null
+          booking_reference: string
+          booking_status:
+            | Database["public"]["Enums"]["booking_status_new"]
+            | null
+          booking_type: string
+          children_count: number | null
           created_at: string | null
-          href: string
-          icon: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount_amount: number | null
+          final_amount: number
           id: string
-          is_active: boolean | null
-          name: string
-          order_index: number | null
+          infants_count: number | null
+          payment_gateway: Database["public"]["Enums"]["gateway_type"] | null
+          payment_reference: string | null
+          payment_status:
+            | Database["public"]["Enums"]["payment_status_new"]
+            | null
+          pickup_location: string | null
+          selected_language: string | null
+          selected_time: string | null
+          service_id: string
+          special_requests: string | null
+          total_amount: number
+          travel_date: string | null
           updated_at: string | null
         }
         Insert: {
+          adults_count?: number | null
+          booking_reference: string
+          booking_status?:
+            | Database["public"]["Enums"]["booking_status_new"]
+            | null
+          booking_type: string
+          children_count?: number | null
           created_at?: string | null
-          href: string
-          icon?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          final_amount: number
           id?: string
-          is_active?: boolean | null
-          name: string
-          order_index?: number | null
+          infants_count?: number | null
+          payment_gateway?: Database["public"]["Enums"]["gateway_type"] | null
+          payment_reference?: string | null
+          payment_status?:
+            | Database["public"]["Enums"]["payment_status_new"]
+            | null
+          pickup_location?: string | null
+          selected_language?: string | null
+          selected_time?: string | null
+          service_id: string
+          special_requests?: string | null
+          total_amount: number
+          travel_date?: string | null
           updated_at?: string | null
         }
         Update: {
+          adults_count?: number | null
+          booking_reference?: string
+          booking_status?:
+            | Database["public"]["Enums"]["booking_status_new"]
+            | null
+          booking_type?: string
+          children_count?: number | null
           created_at?: string | null
-          href?: string
-          icon?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          final_amount?: number
           id?: string
-          is_active?: boolean | null
-          name?: string
-          order_index?: number | null
+          infants_count?: number | null
+          payment_gateway?: Database["public"]["Enums"]["gateway_type"] | null
+          payment_reference?: string | null
+          payment_status?:
+            | Database["public"]["Enums"]["payment_status_new"]
+            | null
+          pickup_location?: string | null
+          selected_language?: string | null
+          selected_time?: string | null
+          service_id?: string
+          special_requests?: string | null
+          total_amount?: number
+          travel_date?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      new_promo_codes: {
+        Row: {
+          applicable_to: string[] | null
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applicable_to?: string[] | null
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applicable_to?: string[] | null
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      ok_to_board_bookings: {
+        Row: {
+          additional_docs_url: string | null
+          airline: string
+          arrival_airport: string
+          booking_reference: string
+          booking_status: string | null
+          covid_certificate_url: string | null
+          created_at: string | null
+          date_of_birth: string
+          departure_airport: string
+          departure_date: string
+          departure_time: string
+          dietary_requirements: string | null
+          email: string
+          emergency_contact: string
+          emergency_phone: string
+          first_name: string
+          flight_number: string
+          gender: string
+          id: string
+          last_name: string
+          medical_conditions: string | null
+          nationality: string
+          passport_copy_url: string | null
+          passport_expiry: string
+          passport_number: string
+          payment_reference: string | null
+          payment_status: string | null
+          phone: string
+          service_id: string | null
+          special_assistance: string | null
+          total_amount: number
+          updated_at: string | null
+          visa_copy_url: string | null
+        }
+        Insert: {
+          additional_docs_url?: string | null
+          airline: string
+          arrival_airport: string
+          booking_reference: string
+          booking_status?: string | null
+          covid_certificate_url?: string | null
+          created_at?: string | null
+          date_of_birth: string
+          departure_airport: string
+          departure_date: string
+          departure_time: string
+          dietary_requirements?: string | null
+          email: string
+          emergency_contact: string
+          emergency_phone: string
+          first_name: string
+          flight_number: string
+          gender: string
+          id?: string
+          last_name: string
+          medical_conditions?: string | null
+          nationality: string
+          passport_copy_url?: string | null
+          passport_expiry: string
+          passport_number: string
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone: string
+          service_id?: string | null
+          special_assistance?: string | null
+          total_amount: number
+          updated_at?: string | null
+          visa_copy_url?: string | null
+        }
+        Update: {
+          additional_docs_url?: string | null
+          airline?: string
+          arrival_airport?: string
+          booking_reference?: string
+          booking_status?: string | null
+          covid_certificate_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string
+          departure_airport?: string
+          departure_date?: string
+          departure_time?: string
+          dietary_requirements?: string | null
+          email?: string
+          emergency_contact?: string
+          emergency_phone?: string
+          first_name?: string
+          flight_number?: string
+          gender?: string
+          id?: string
+          last_name?: string
+          medical_conditions?: string | null
+          nationality?: string
+          passport_copy_url?: string | null
+          passport_expiry?: string
+          passport_number?: string
+          payment_reference?: string | null
+          payment_status?: string | null
+          phone?: string
+          service_id?: string | null
+          special_assistance?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          visa_copy_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ok_to_board_bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "ok_to_board_services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ok_to_board_services: {
         Row: {
@@ -463,237 +648,167 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string | null
-          date_of_birth: string | null
           email: string
           full_name: string | null
           id: string
           is_admin: boolean | null
-          nationality: string | null
-          passport_number: string | null
           phone: string | null
-          role: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string | null
-          date_of_birth?: string | null
           email: string
           full_name?: string | null
           id: string
           is_admin?: boolean | null
-          nationality?: string | null
-          passport_number?: string | null
           phone?: string | null
-          role?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string | null
-          date_of_birth?: string | null
           email?: string
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
-          nationality?: string | null
-          passport_number?: string | null
           phone?: string | null
-          role?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Relationships: []
       }
       promo_codes: {
         Row: {
-          applicable_categories: string[] | null
-          applicable_services: string[] | null
           code: string
           created_at: string | null
-          created_by: string | null
           current_uses: number | null
-          description: string | null
-          discount_type: string | null
-          discount_value: number
+          discount_amount: number | null
+          discount_percentage: number | null
           id: string
           is_active: boolean | null
-          is_public: boolean | null
-          max_discount: number | null
           max_uses: number | null
-          max_uses_per_user: number | null
-          min_amount: number | null
-          min_travelers: number | null
-          title: string
-          updated_at: string | null
-          usage_analytics: Json | null
           valid_from: string | null
           valid_until: string | null
         }
         Insert: {
-          applicable_categories?: string[] | null
-          applicable_services?: string[] | null
           code: string
           created_at?: string | null
-          created_by?: string | null
           current_uses?: number | null
-          description?: string | null
-          discount_type?: string | null
-          discount_value: number
+          discount_amount?: number | null
+          discount_percentage?: number | null
           id?: string
           is_active?: boolean | null
-          is_public?: boolean | null
-          max_discount?: number | null
           max_uses?: number | null
-          max_uses_per_user?: number | null
-          min_amount?: number | null
-          min_travelers?: number | null
-          title: string
-          updated_at?: string | null
-          usage_analytics?: Json | null
           valid_from?: string | null
           valid_until?: string | null
         }
         Update: {
-          applicable_categories?: string[] | null
-          applicable_services?: string[] | null
           code?: string
           created_at?: string | null
-          created_by?: string | null
           current_uses?: number | null
-          description?: string | null
-          discount_type?: string | null
-          discount_value?: number
+          discount_amount?: number | null
+          discount_percentage?: number | null
           id?: string
           is_active?: boolean | null
-          is_public?: boolean | null
-          max_discount?: number | null
           max_uses?: number | null
-          max_uses_per_user?: number | null
-          min_amount?: number | null
-          min_travelers?: number | null
-          title?: string
-          updated_at?: string | null
-          usage_analytics?: Json | null
           valid_from?: string | null
           valid_until?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "promo_codes_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       reviews: {
         Row: {
-          admin_notes: string | null
-          admin_response: string | null
           booking_id: string | null
-          cons: string | null
           created_at: string | null
-          helpful_votes: number | null
+          customer_name: string
           id: string
-          is_featured: boolean | null
           is_published: boolean | null
           is_verified: boolean | null
-          moderated_at: string | null
-          moderated_by: string | null
-          pros: string | null
           rating: number | null
-          reported_count: number | null
           review_text: string | null
-          reviewer_email: string | null
-          reviewer_name: string
           service_id: string
           service_type: string
-          title: string | null
-          travel_date: string | null
-          traveler_type: string | null
-          updated_at: string | null
-          user_id: string | null
         }
         Insert: {
-          admin_notes?: string | null
-          admin_response?: string | null
           booking_id?: string | null
-          cons?: string | null
           created_at?: string | null
-          helpful_votes?: number | null
+          customer_name: string
           id?: string
-          is_featured?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null
-          moderated_at?: string | null
-          moderated_by?: string | null
-          pros?: string | null
           rating?: number | null
-          reported_count?: number | null
           review_text?: string | null
-          reviewer_email?: string | null
-          reviewer_name: string
           service_id: string
           service_type: string
-          title?: string | null
-          travel_date?: string | null
-          traveler_type?: string | null
-          updated_at?: string | null
-          user_id?: string | null
         }
         Update: {
-          admin_notes?: string | null
-          admin_response?: string | null
           booking_id?: string | null
-          cons?: string | null
           created_at?: string | null
-          helpful_votes?: number | null
+          customer_name?: string
           id?: string
-          is_featured?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null
-          moderated_at?: string | null
-          moderated_by?: string | null
-          pros?: string | null
           rating?: number | null
-          reported_count?: number | null
           review_text?: string | null
-          reviewer_email?: string | null
-          reviewer_name?: string
           service_id?: string
           service_type?: string
-          title?: string | null
-          travel_date?: string | null
-          traveler_type?: string | null
-          updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "reviews_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_moderated_by_fkey"
-            columns: ["moderated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "new_bookings"
             referencedColumns: ["id"]
           },
         ]
+      }
+      services: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration: string | null
+          features: string[] | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          location: string | null
+          price: number
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          price: number
+          service_type: Database["public"]["Enums"]["service_type"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          price?: number
+          service_type?: Database["public"]["Enums"]["service_type"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       site_settings: {
         Row: {
@@ -725,7 +840,6 @@ export type Database = {
       tour_packages: {
         Row: {
           available_times: string[] | null
-          booking_count: number | null
           cancellation_policy: string | null
           created_at: string | null
           days: number
@@ -743,7 +857,6 @@ export type Database = {
           languages: string[] | null
           location: string | null
           map_location: string | null
-          max_capacity: number | null
           meeting_point: string | null
           nights: number
           overview: string | null
@@ -765,7 +878,6 @@ export type Database = {
         }
         Insert: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           created_at?: string | null
           days: number
@@ -783,7 +895,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_capacity?: number | null
           meeting_point?: string | null
           nights: number
           overview?: string | null
@@ -805,7 +916,6 @@ export type Database = {
         }
         Update: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           created_at?: string | null
           days?: number
@@ -823,7 +933,6 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_capacity?: number | null
           meeting_point?: string | null
           nights?: number
           overview?: string | null
@@ -848,7 +957,6 @@ export type Database = {
       tours: {
         Row: {
           available_times: string[] | null
-          booking_count: number | null
           cancellation_policy: string | null
           category: string | null
           created_at: string | null
@@ -867,10 +975,7 @@ export type Database = {
           languages: string[] | null
           location: string | null
           map_location: string | null
-          max_age: number | null
-          max_capacity: number | null
           meeting_point: string | null
-          min_age: number | null
           overview: string | null
           price_adult: number
           price_child: number
@@ -890,7 +995,6 @@ export type Database = {
         }
         Insert: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           category?: string | null
           created_at?: string | null
@@ -909,10 +1013,7 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_age?: number | null
-          max_capacity?: number | null
           meeting_point?: string | null
-          min_age?: number | null
           overview?: string | null
           price_adult: number
           price_child?: number
@@ -932,7 +1033,6 @@ export type Database = {
         }
         Update: {
           available_times?: string[] | null
-          booking_count?: number | null
           cancellation_policy?: string | null
           category?: string | null
           created_at?: string | null
@@ -951,10 +1051,7 @@ export type Database = {
           languages?: string[] | null
           location?: string | null
           map_location?: string | null
-          max_age?: number | null
-          max_capacity?: number | null
           meeting_point?: string | null
-          min_age?: number | null
           overview?: string | null
           price_adult?: number
           price_child?: number
@@ -974,187 +1071,72 @@ export type Database = {
         }
         Relationships: []
       }
-      transfers: {
+      visa_applications: {
         Row: {
-          advance_booking_hours: number | null
-          amenities: string[] | null
-          available_hours: string[] | null
-          base_price: number
-          created_at: string | null
-          description: string | null
-          distance_km: number | null
-          dropoff_locations: string[] | null
-          duration_minutes: number | null
-          featured_image: string | null
-          features: string[] | null
-          id: string
-          image_urls: string[] | null
-          is_featured: boolean | null
-          luggage_capacity: string | null
-          max_passengers: number | null
-          overview: string | null
-          pickup_locations: string[] | null
-          price_per_hour: number | null
-          price_per_km: number | null
-          rating: number | null
-          route_description: string | null
-          seo_description: string | null
-          seo_keywords: string | null
-          seo_title: string | null
-          slug: string | null
-          status: string | null
-          title: string
-          total_bookings: number | null
-          total_reviews: number | null
-          transfer_type: string | null
-          updated_at: string | null
-          vehicle_type: string | null
-          waiting_charge: number | null
-        }
-        Insert: {
-          advance_booking_hours?: number | null
-          amenities?: string[] | null
-          available_hours?: string[] | null
-          base_price: number
-          created_at?: string | null
-          description?: string | null
-          distance_km?: number | null
-          dropoff_locations?: string[] | null
-          duration_minutes?: number | null
-          featured_image?: string | null
-          features?: string[] | null
-          id?: string
-          image_urls?: string[] | null
-          is_featured?: boolean | null
-          luggage_capacity?: string | null
-          max_passengers?: number | null
-          overview?: string | null
-          pickup_locations?: string[] | null
-          price_per_hour?: number | null
-          price_per_km?: number | null
-          rating?: number | null
-          route_description?: string | null
-          seo_description?: string | null
-          seo_keywords?: string | null
-          seo_title?: string | null
-          slug?: string | null
-          status?: string | null
-          title: string
-          total_bookings?: number | null
-          total_reviews?: number | null
-          transfer_type?: string | null
-          updated_at?: string | null
-          vehicle_type?: string | null
-          waiting_charge?: number | null
-        }
-        Update: {
-          advance_booking_hours?: number | null
-          amenities?: string[] | null
-          available_hours?: string[] | null
-          base_price?: number
-          created_at?: string | null
-          description?: string | null
-          distance_km?: number | null
-          dropoff_locations?: string[] | null
-          duration_minutes?: number | null
-          featured_image?: string | null
-          features?: string[] | null
-          id?: string
-          image_urls?: string[] | null
-          is_featured?: boolean | null
-          luggage_capacity?: string | null
-          max_passengers?: number | null
-          overview?: string | null
-          pickup_locations?: string[] | null
-          price_per_hour?: number | null
-          price_per_km?: number | null
-          rating?: number | null
-          route_description?: string | null
-          seo_description?: string | null
-          seo_keywords?: string | null
-          seo_title?: string | null
-          slug?: string | null
-          status?: string | null
-          title?: string
-          total_bookings?: number | null
-          total_reviews?: number | null
-          transfer_type?: string | null
-          updated_at?: string | null
-          vehicle_type?: string | null
-          waiting_charge?: number | null
-        }
-        Relationships: []
-      }
-      travelers: {
-        Row: {
+          admin_notes: string | null
+          applicant_name: string
+          approval_documents: string[] | null
           booking_id: string | null
           created_at: string | null
-          date_of_birth: string | null
-          first_name: string
-          gender: string | null
           id: string
-          last_name: string
-          meal_preference: string | null
           nationality: string | null
-          passport_expiry: string | null
           passport_number: string | null
-          special_requirements: string | null
-          title: string | null
-          traveler_type: string | null
-          visa_number: string | null
+          status: Database["public"]["Enums"]["visa_status"] | null
+          updated_at: string | null
+          uploaded_documents: string[] | null
+          visa_service_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
+          applicant_name: string
+          approval_documents?: string[] | null
           booking_id?: string | null
           created_at?: string | null
-          date_of_birth?: string | null
-          first_name: string
-          gender?: string | null
           id?: string
-          last_name: string
-          meal_preference?: string | null
           nationality?: string | null
-          passport_expiry?: string | null
           passport_number?: string | null
-          special_requirements?: string | null
-          title?: string | null
-          traveler_type?: string | null
-          visa_number?: string | null
+          status?: Database["public"]["Enums"]["visa_status"] | null
+          updated_at?: string | null
+          uploaded_documents?: string[] | null
+          visa_service_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
+          applicant_name?: string
+          approval_documents?: string[] | null
           booking_id?: string | null
           created_at?: string | null
-          date_of_birth?: string | null
-          first_name?: string
-          gender?: string | null
           id?: string
-          last_name?: string
-          meal_preference?: string | null
           nationality?: string | null
-          passport_expiry?: string | null
           passport_number?: string | null
-          special_requirements?: string | null
-          title?: string | null
-          traveler_type?: string | null
-          visa_number?: string | null
+          status?: Database["public"]["Enums"]["visa_status"] | null
+          updated_at?: string | null
+          uploaded_documents?: string[] | null
+          visa_service_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "travelers_booking_id_fkey"
+            foreignKeyName: "visa_applications_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: "bookings"
+            referencedRelation: "new_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visa_applications_visa_service_id_fkey"
+            columns: ["visa_service_id"]
+            isOneToOne: false
+            referencedRelation: "visa_services"
             referencedColumns: ["id"]
           },
         ]
       }
       visa_services: {
         Row: {
-          booking_count: number | null
           cancellation_policy: string | null
           country: string
           created_at: string | null
           description: string | null
-          estimated_days: number | null
           exclusions: string[] | null
           featured_image: string | null
           gallery_images: string[] | null
@@ -1178,12 +1160,10 @@ export type Database = {
           whats_included: string[] | null
         }
         Insert: {
-          booking_count?: number | null
           cancellation_policy?: string | null
           country: string
           created_at?: string | null
           description?: string | null
-          estimated_days?: number | null
           exclusions?: string[] | null
           featured_image?: string | null
           gallery_images?: string[] | null
@@ -1207,12 +1187,10 @@ export type Database = {
           whats_included?: string[] | null
         }
         Update: {
-          booking_count?: number | null
           cancellation_policy?: string | null
           country?: string
           created_at?: string | null
           description?: string | null
-          estimated_days?: number | null
           exclusions?: string[] | null
           featured_image?: string | null
           gallery_images?: string[] | null
@@ -1234,6 +1212,30 @@ export type Database = {
           updated_at?: string | null
           visa_type?: string
           whats_included?: string[] | null
+        }
+        Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string | null
+          id: string
+          service_id: string
+          service_type: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          service_id: string
+          service_type: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          service_id?: string
+          service_type?: string
+          session_id?: string
         }
         Relationships: []
       }

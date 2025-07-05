@@ -1,268 +1,233 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, Star, Plane, FileText, Ticket } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-
-interface TrendingProduct {
-  id: string;
-  title: string;
-  type: 'tour' | 'package' | 'ticket' | 'visa';
-  price: number;
-  is_trending: boolean;
-  featured_image?: string;
-  rating?: number;
-}
+import { Label } from '@/components/ui/label';
+import { TrendingUp, Eye, Edit } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const TrendingProductsManagement = () => {
-  const [products, setProducts] = useState<TrendingProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const { formatPrice } = useCurrency();
+  const [selectedType, setSelectedType] = useState('all');
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    try {
-      // Load tours
-      const { data: tours } = await supabase
+  // Fetch all products that could be trending
+  const { data: tours } = useQuery({
+    queryKey: ['trending_tours'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('tours')
-        .select('id, title, price_adult, featured_image, rating, is_featured')
-        .eq('status', 'active');
-
-      // Load packages
-      const { data: packages } = await supabase
-        .from('tour_packages')
-        .select('id, title, price_adult, featured_image, rating, is_featured')
-        .eq('status', 'active');
-
-      // Load tickets
-      const { data: tickets } = await supabase
-        .from('attraction_tickets')
-        .select('id, title, price_adult, featured_image, rating, is_featured')
-        .eq('status', 'active');
-
-      // Load visas
-      const { data: visas } = await supabase
-        .from('visa_services')
-        .select('id, country, visa_type, price, featured_image, is_featured')
-        .eq('status', 'active');
-
-      const allProducts: TrendingProduct[] = [
-        ...(tours || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          type: 'tour' as const,
-          price: item.price_adult,
-          is_trending: item.is_featured || false,
-          featured_image: item.featured_image,
-          rating: item.rating || 0
-        })),
-        ...(packages || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          type: 'package' as const,
-          price: item.price_adult,
-          is_trending: item.is_featured || false,
-          featured_image: item.featured_image,
-          rating: item.rating || 0
-        })),
-        ...(tickets || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          type: 'ticket' as const,
-          price: item.price_adult,
-          is_trending: item.is_featured || false,
-          featured_image: item.featured_image,
-          rating: item.rating || 0
-        })),
-        ...(visas || []).map(item => ({
-          id: item.id,
-          title: `${item.country} - ${item.visa_type}`,
-          type: 'visa' as const,
-          price: item.price,
-          is_trending: item.is_featured || false,
-          featured_image: item.featured_image
-        }))
-      ];
-
-      setProducts(allProducts);
-    } catch (error) {
-      console.error('Error loading products:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load products.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleTrending = async (productId: string, type: string, isTrending: boolean) => {
-    try {
-      const tableNames = {
-        'tour': 'tours',
-        'package': 'tour_packages', 
-        'ticket': 'attraction_tickets',
-        'visa': 'visa_services'
-      };
-
-      const tableName = tableNames[type as keyof typeof tableNames];
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
       
-      if (!tableName) {
-        throw new Error('Invalid product type');
-      }
-
-      const { error } = await supabase
-        .from(tableName as any)
-        .update({ is_featured: isTrending })
-        .eq('id', productId);
-
       if (error) throw error;
+      return data?.map(item => ({ ...item, type: 'tour' })) || [];
+    },
+  });
 
-      setProducts(prev => prev.map(product => 
-        product.id === productId 
-          ? { ...product, is_trending: isTrending }
-          : product
-      ));
+  const { data: packages } = useQuery({
+    queryKey: ['trending_packages'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tour_packages')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data?.map(item => ({ ...item, type: 'package' })) || [];
+    },
+  });
 
-      toast({
-        title: "Success",
-        description: `Product ${isTrending ? 'added to' : 'removed from'} trending section.`,
-      });
-    } catch (error) {
-      console.error('Error updating trending status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update trending status.",
-        variant: "destructive",
-      });
-    }
-  };
+  const { data: tickets } = useQuery({
+    queryKey: ['trending_tickets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('attraction_tickets')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data?.map(item => ({ ...item, type: 'ticket' })) || [];
+    },
+  });
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'tour':
-        return <Plane className="h-4 w-4" />;
-      case 'package':
-        return <FileText className="h-4 w-4" />;
-      case 'ticket':
-        return <Ticket className="h-4 w-4" />;
-      case 'visa':
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <Star className="h-4 w-4" />;
-    }
-  };
+  const { data: visas } = useQuery({
+    queryKey: ['trending_visas'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('visa_services')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data?.map(item => ({ ...item, type: 'visa', display_title: `${item.country} ${item.visa_type}` })) || [];
+    },
+  });
+
+  // Combine all products
+  const allProducts = [
+    ...(tours || []),
+    ...(packages || []),
+    ...(tickets || []),
+    ...(visas || [])
+  ];
+
+  // Filter featured products (these appear in trending)
+  const featuredProducts = allProducts.filter(product => product.is_featured);
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'tour':
-        return 'bg-blue-100 text-blue-800';
-      case 'package':
-        return 'bg-green-100 text-green-800';
-      case 'ticket':
-        return 'bg-purple-100 text-purple-800';
-      case 'visa':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'tour': return 'bg-blue-500';
+      case 'package': return 'bg-green-500';
+      case 'visa': return 'bg-purple-500';
+      case 'ticket': return 'bg-orange-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const trendingProducts = products.filter(p => p.is_trending);
+  const toggleFeatured = async (product: any, newFeaturedStatus: boolean) => {
+    let tableName = 'tours';
+    if (product.type === 'package') tableName = 'tour_packages';
+    else if (product.type === 'ticket') tableName = 'attraction_tickets';
+    else if (product.type === 'visa') tableName = 'visa_services';
+
+    const { error } = await supabase
+      .from(tableName as any)
+      .update({ is_featured: newFeaturedStatus })
+      .eq('id', product.id);
+
+    if (!error) {
+      window.location.reload();
+    }
+  };
+
+  const getProductLocation = (product: any) => {
+    if (product.type === 'visa') return product.country;
+    return product.location || 'No location set';
+  };
+
+  const getProductPrice = (product: any) => {
+    if (product.type === 'visa') return product.price;
+    return product.price_adult || product.price || 0;
+  };
+
+  const getProductTitle = (product: any) => {
+    if (product.type === 'visa') return product.display_title || `${product.country} ${product.visa_type}`;
+    return product.title;
+  };
+
+  const getProductRating = (product: any) => {
+    // Visa services don't have rating, so return 0 for them
+    if (product.type === 'visa') return 0;
+    return product.rating || 0;
+  };
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white border border-gray-200">
-        <CardHeader className="bg-gradient-to-r from-pink-600 to-purple-600 text-white">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <TrendingUp className="h-6 w-6" />
+      <Card className="bg-white">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
             Trending Products Management
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="bg-white">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Currently Trending ({trendingProducts.length})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {trendingProducts.map((product) => (
-                <div key={product.id} className="p-4 border border-green-200 bg-green-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge className={`${getTypeColor(product.type)} flex items-center gap-1`}>
-                      {getTypeIcon(product.type)}
-                      {product.type}
-                    </Badge>
-                    <Badge className="bg-green-500">Trending</Badge>
-                  </div>
-                  <h4 className="font-medium text-sm mb-2 truncate">{product.title}</h4>
-                  <div className="flex items-center justify-between">
-                    <span className="text-green-600 font-semibold">{formatPrice(product.price)}</span>
-                    {product.rating && product.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs">{product.rating}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <p className="text-gray-600 mb-4">
+              Featured products automatically appear in the "Trending Now" section on the homepage. 
+              Toggle the featured status to control which products are shown.
+            </p>
+            
+            <div className="flex gap-2 mb-4">
+              <Button 
+                variant={selectedType === 'all' ? 'default' : 'outline'}
+                onClick={() => setSelectedType('all')}
+                size="sm"
+              >
+                All Products ({allProducts.length})
+              </Button>
+              <Button 
+                variant={selectedType === 'featured' ? 'default' : 'outline'}
+                onClick={() => setSelectedType('featured')}
+                size="sm"
+              >
+                Featured Only ({featuredProducts.length})
+              </Button>
             </div>
-            {trendingProducts.length === 0 && (
-              <p className="text-gray-500 text-center py-8">No trending products selected</p>
-            )}
           </div>
 
-          <div>
-            <h3 className="text-lg font-semibold mb-4">All Products</h3>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {products.map((product) => (
-                <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Badge className={`${getTypeColor(product.type)} flex items-center gap-1`}>
-                      {getTypeIcon(product.type)}
-                      {product.type}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(selectedType === 'featured' ? featuredProducts : allProducts).map((product) => (
+              <div key={`${product.type}-${product.id}`} className="border rounded-lg p-4 bg-white shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge className={`${getTypeColor(product.type)} text-white text-xs`}>
+                    {product.type.toUpperCase()}
+                  </Badge>
+                  {product.is_featured && (
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                      ⭐ Trending
                     </Badge>
-                    <div>
-                      <h4 className="font-medium text-sm truncate max-w-48">{product.title}</h4>
-                      <p className="text-sm text-gray-600">{formatPrice(product.price)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {product.rating && product.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs">{product.rating}</span>
-                      </div>
-                    )}
-                    <Switch
-                      checked={product.is_trending}
-                      onCheckedChange={(checked) => 
-                        toggleTrending(product.id, product.type, checked)
-                      }
+                  )}
+                </div>
+
+                <div className="mb-3">
+                  {product.featured_image && (
+                    <img 
+                      src={product.featured_image} 
+                      alt={getProductTitle(product)} 
+                      className="w-full h-32 object-cover rounded mb-3"
                     />
+                  )}
+                  <h4 className="font-semibold truncate">{getProductTitle(product)}</h4>
+                  <p className="text-sm text-gray-600">{getProductLocation(product)}</p>
+                </div>
+
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-lg font-bold text-blue-600">
+                    {formatPrice(getProductPrice(product))}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">Rating: {getProductRating(product)}</span>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={product.is_featured || false}
+                      onCheckedChange={(checked) => toggleFeatured(product, checked)}
+                    />
+                    <Label className="text-sm">Featured in Trending</Label>
+                  </div>
+                </div>
+
+                <div className="mt-3 text-xs text-gray-500">
+                  Created: {new Date(product.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
           </div>
 
-          <Button 
-            onClick={loadProducts} 
-            disabled={loading}
-            className="w-full mt-4"
-            variant="outline"
-          >
-            {loading ? 'Loading...' : 'Refresh Products'}
-          </Button>
+          {(selectedType === 'featured' ? featuredProducts : allProducts).length === 0 && (
+            <div className="text-center py-12">
+              <TrendingUp className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600">
+                {selectedType === 'featured' ? 'No Featured Products' : 'No Products Found'}
+              </h3>
+              <p className="text-gray-500">
+                {selectedType === 'featured' 
+                  ? 'Mark some products as featured to show them in trending section'
+                  : 'Create some products first to manage trending items'
+                }
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
