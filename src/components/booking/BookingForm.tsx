@@ -52,9 +52,19 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
         .select('*')
         .eq('code', promoCode.toUpperCase())
         .eq('is_active', true)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
 
-      if (error || !data) {
+      if (error) {
+        console.error('Error fetching promo code:', error);
+        toast({
+          title: "Error",
+          description: "Failed to apply promo code. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data) {
         toast({
           title: "Invalid Promo Code",
           description: "The promo code you entered is not valid or has expired.",
@@ -87,11 +97,11 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
         return;
       }
 
-      setPromoDiscount(data.discount_value);
+      setPromoDiscount(data.discount_value || 0);
       setPromoApplied(true);
       toast({
         title: "Promo Code Applied!",
-        description: `You saved ${data.discount_type === 'percentage' ? data.discount_value + '%' : '₹' + data.discount_value}!`,
+        description: `You saved ${data.discount_type === 'percentage' ? data.discount_value + '%' : 'AED ' + data.discount_value}!`,
       });
     } catch (error) {
       console.error('Error applying promo code:', error);
@@ -129,26 +139,26 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
     try {
       const { subtotal, discountAmount, total } = calculateTotal();
 
-      // Create booking
+      // Create booking using the new_bookings table
       const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
+        .from('new_bookings')
         .insert({
           service_type: 'tour',
           service_id: tour.id,
           service_title: tour.title,
           customer_name: formData.customerName,
-          customer_email: formData.customerEmail || null,
+          customer_email: formData.customerEmail || '',
           customer_phone: formData.customerPhone || null,
           pickup_location: formData.pickupLocation || null,
           adults_count: formData.adultsCount,
           children_count: formData.childrenCount,
           infants_count: formData.infantsCount,
           travel_date: formData.travelDate || null,
-          travel_time: formData.selectedTime || null,
           selected_language: formData.selectedLanguage,
           base_amount: subtotal,
           discount_amount: discountAmount,
           total_amount: total,
+          final_amount: total,
           special_requests: formData.specialRequests || null,
         })
         .select()
@@ -208,7 +218,7 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
             id="customerPhone"
             value={formData.customerPhone}
             onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-            placeholder="+91 98765 43210"
+            placeholder="+971 50 123 4567"
           />
         </div>
       </div>
@@ -370,33 +380,33 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Adults ({formData.adultsCount})</span>
-              <span>₹{((tour.price_adult || 0) * formData.adultsCount).toLocaleString()}</span>
+              <span>AED {((tour.price_adult || 0) * formData.adultsCount).toLocaleString()}</span>
             </div>
             {formData.childrenCount > 0 && (
               <div className="flex justify-between">
                 <span>Children ({formData.childrenCount})</span>
-                <span>₹{((tour.price_child || 0) * formData.childrenCount).toLocaleString()}</span>
+                <span>AED {((tour.price_child || 0) * formData.childrenCount).toLocaleString()}</span>
               </div>
             )}
             {formData.infantsCount > 0 && (
               <div className="flex justify-between">
                 <span>Infants ({formData.infantsCount})</span>
-                <span>₹{((tour.price_infant || 0) * formData.infantsCount).toLocaleString()}</span>
+                <span>AED {((tour.price_infant || 0) * formData.infantsCount).toLocaleString()}</span>
               </div>
             )}
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>₹{subtotal.toLocaleString()}</span>
+              <span>AED {subtotal.toLocaleString()}</span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount</span>
-                <span>-₹{discountAmount.toLocaleString()}</span>
+                <span>-AED {discountAmount.toLocaleString()}</span>
               </div>
             )}
             <div className="border-t pt-2 flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span>₹{total.toLocaleString()}</span>
+              <span>AED {total.toLocaleString()}</span>
             </div>
           </div>
         </CardContent>
@@ -408,7 +418,7 @@ const BookingForm = ({ tour, onCancel }: BookingFormProps) => {
           Cancel
         </Button>
         <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? 'Processing...' : `Pay ₹${total.toLocaleString()}`}
+          {loading ? 'Processing...' : `Pay AED ${total.toLocaleString()}`}
         </Button>
       </div>
     </form>

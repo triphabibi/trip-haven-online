@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
-import GuestBookingForm from '@/components/booking/GuestBookingForm';
+import ProfessionalBookingFlow from '@/components/booking/ProfessionalBookingFlow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTour } from '@/hooks/useTours';
 import { usePackage } from '@/hooks/usePackages';
@@ -28,45 +28,63 @@ const BookingPage = () => {
     switch (serviceType) {
       case 'tour':
         return tour ? {
+          id: tour.id,
           title: tour.title,
           priceAdult: tour.price_adult,
           priceChild: tour.price_child,
-          priceInfant: tour.price_infant
+          priceInfant: tour.price_infant,
+          image: tour.featured_image,
+          description: tour.description
         } : null;
       case 'package':
         return packageData ? {
+          id: packageData.id,
           title: packageData.title,
           priceAdult: packageData.price_adult,
           priceChild: packageData.price_child,
-          priceInfant: packageData.price_infant
+          priceInfant: packageData.price_infant,
+          image: packageData.featured_image,
+          description: packageData.description
         } : null;
       case 'ticket':
         return ticket ? {
+          id: ticket.id,
           title: ticket.title,
           priceAdult: ticket.price_adult,
           priceChild: ticket.price_child || 0,
-          priceInfant: ticket.price_infant || 0
+          priceInfant: ticket.price_infant || 0,
+          image: ticket.featured_image,
+          description: ticket.description
         } : null;
       case 'visa':
         return visa ? {
+          id: visa.id,
           title: `${visa.country} - ${visa.visa_type}`,
           priceAdult: visa.price,
           priceChild: 0,
-          priceInfant: 0
+          priceInfant: 0,
+          image: visa.featured_image,
+          description: visa.description
         } : null;
       case 'transfer':
         return {
+          id: 'transfer-service',
           title: 'Transfer Service',
           priceAdult: 150,
           priceChild: 0,
-          priceInfant: 0
+          priceInfant: 0,
+          image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+          description: 'Professional transfer service'
         };
       default:
         return {
+          id: 'general-service',
           title: 'General Service',
           priceAdult: 1000,
           priceChild: 0,
-          priceInfant: 0
+          priceInfant: 0,
+          image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
+          description: 'Professional service booking'
         };
     }
   };
@@ -138,29 +156,41 @@ const BookingPage = () => {
     );
   }
 
-  // Use regular booking form for other services
+  // Use professional booking flow for other services
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Complete Your Booking</CardTitle>
-              <p className="text-gray-600">Service: {serviceData.title}</p>
-            </CardHeader>
-            <CardContent>
-              <GuestBookingForm
-                serviceId={serviceId}
-                serviceType={serviceType}
-                serviceTitle={serviceData.title}
-                priceAdult={serviceData.priceAdult}
-                priceChild={serviceData.priceChild}
-                priceInfant={serviceData.priceInfant}
-              />
-            </CardContent>
-          </Card>
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">{serviceData.title}</CardTitle>
+                <p className="text-gray-600">{serviceData.description}</p>
+              </CardHeader>
+              <CardContent>
+                {serviceData.image && (
+                  <img
+                    src={serviceData.image}
+                    alt={serviceData.title}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <ProfessionalBookingFlow
+            bookingData={{
+              serviceId: serviceData.id,
+              serviceType: serviceType,
+              serviceTitle: serviceData.title,
+              priceAdult: serviceData.priceAdult,
+              priceChild: serviceData.priceChild,
+              priceInfant: serviceData.priceInfant
+            }}
+          />
         </div>
       </div>
       

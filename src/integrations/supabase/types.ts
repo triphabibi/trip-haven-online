@@ -129,6 +129,62 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_travelers: {
+        Row: {
+          booking_id: string
+          created_at: string | null
+          date_of_birth: string | null
+          first_name: string
+          gender: string | null
+          id: string
+          last_name: string
+          nationality: string | null
+          passport_expiry: string | null
+          passport_number: string | null
+          special_requirements: string | null
+          title: string | null
+          traveler_type: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string | null
+          date_of_birth?: string | null
+          first_name: string
+          gender?: string | null
+          id?: string
+          last_name: string
+          nationality?: string | null
+          passport_expiry?: string | null
+          passport_number?: string | null
+          special_requirements?: string | null
+          title?: string | null
+          traveler_type: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string | null
+          date_of_birth?: string | null
+          first_name?: string
+          gender?: string | null
+          id?: string
+          last_name?: string
+          nationality?: string | null
+          passport_expiry?: string | null
+          passport_number?: string | null
+          special_requirements?: string | null
+          title?: string | null
+          traveler_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_travelers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "new_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           accessibility_needs: string | null
@@ -351,8 +407,11 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean | null
+          menu_type: string | null
           name: string
           order_index: number | null
+          parent_id: string | null
+          target: string | null
           updated_at: string | null
         }
         Insert: {
@@ -361,8 +420,11 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          menu_type?: string | null
           name: string
           order_index?: number | null
+          parent_id?: string | null
+          target?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -371,8 +433,118 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          menu_type?: string | null
           name?: string
           order_index?: number | null
+          parent_id?: string | null
+          target?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      new_bookings: {
+        Row: {
+          adults_count: number | null
+          base_amount: number
+          booking_reference: string
+          booking_status: string | null
+          cancelled_at: string | null
+          children_count: number | null
+          confirmed_at: string | null
+          created_at: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          discount_amount: number | null
+          final_amount: number
+          gateway_response: Json | null
+          id: string
+          infants_count: number | null
+          payment_gateway: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          pickup_location: string | null
+          selected_language: string | null
+          service_id: string
+          service_title: string
+          service_type: string
+          special_requests: string | null
+          tax_amount: number | null
+          total_amount: number
+          travel_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          adults_count?: number | null
+          base_amount?: number
+          booking_reference: string
+          booking_status?: string | null
+          cancelled_at?: string | null
+          children_count?: number | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          final_amount: number
+          gateway_response?: Json | null
+          id?: string
+          infants_count?: number | null
+          payment_gateway?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          pickup_location?: string | null
+          selected_language?: string | null
+          service_id: string
+          service_title: string
+          service_type: string
+          special_requests?: string | null
+          tax_amount?: number | null
+          total_amount: number
+          travel_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          adults_count?: number | null
+          base_amount?: number
+          booking_reference?: string
+          booking_status?: string | null
+          cancelled_at?: string | null
+          children_count?: number | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          final_amount?: number
+          gateway_response?: Json | null
+          id?: string
+          infants_count?: number | null
+          payment_gateway?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          pickup_location?: string | null
+          selected_language?: string | null
+          service_id?: string
+          service_title?: string
+          service_type?: string
+          special_requests?: string | null
+          tax_amount?: number | null
+          total_amount?: number
+          travel_date?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -428,10 +600,15 @@ export type Database = {
           api_secret: string | null
           configuration: Json | null
           created_at: string | null
+          description: string | null
           display_name: string
           gateway_name: Database["public"]["Enums"]["gateway_type"]
           id: string
           is_enabled: boolean | null
+          max_amount: number | null
+          min_amount: number | null
+          priority: number | null
+          supported_currencies: string[] | null
           test_mode: boolean | null
           updated_at: string | null
         }
@@ -440,10 +617,15 @@ export type Database = {
           api_secret?: string | null
           configuration?: Json | null
           created_at?: string | null
+          description?: string | null
           display_name: string
           gateway_name: Database["public"]["Enums"]["gateway_type"]
           id?: string
           is_enabled?: boolean | null
+          max_amount?: number | null
+          min_amount?: number | null
+          priority?: number | null
+          supported_currencies?: string[] | null
           test_mode?: boolean | null
           updated_at?: string | null
         }
@@ -452,10 +634,15 @@ export type Database = {
           api_secret?: string | null
           configuration?: Json | null
           created_at?: string | null
+          description?: string | null
           display_name?: string
           gateway_name?: Database["public"]["Enums"]["gateway_type"]
           id?: string
           is_enabled?: boolean | null
+          max_amount?: number | null
+          min_amount?: number | null
+          priority?: number | null
+          supported_currencies?: string[] | null
           test_mode?: boolean | null
           updated_at?: string | null
         }
