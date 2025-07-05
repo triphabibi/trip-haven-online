@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,15 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { TrendingUp, Eye, Edit } from 'lucide-react';
+import { TrendingUp, Eye, Edit, Plus, Trash2 } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useToast } from '@/hooks/use-toast';
 
 const TrendingProductsManagement = () => {
   const { formatPrice } = useCurrency();
+  const { toast } = useToast();
   const [selectedType, setSelectedType] = useState('all');
 
   // Fetch all products that could be trending
-  const { data: tours } = useQuery({
+  const { data: tours, refetch: refetchTours } = useQuery({
     queryKey: ['trending_tours'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -28,7 +31,7 @@ const TrendingProductsManagement = () => {
     },
   });
 
-  const { data: packages } = useQuery({
+  const { data: packages, refetch: refetchPackages } = useQuery({
     queryKey: ['trending_packages'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,7 +45,7 @@ const TrendingProductsManagement = () => {
     },
   });
 
-  const { data: tickets } = useQuery({
+  const { data: tickets, refetch: refetchTickets } = useQuery({
     queryKey: ['trending_tickets'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -56,7 +59,7 @@ const TrendingProductsManagement = () => {
     },
   });
 
-  const { data: visas } = useQuery({
+  const { data: visas, refetch: refetchVisas } = useQuery({
     queryKey: ['trending_visas'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -97,13 +100,31 @@ const TrendingProductsManagement = () => {
     else if (product.type === 'ticket') tableName = 'attraction_tickets';
     else if (product.type === 'visa') tableName = 'visa_services';
 
-    const { error } = await supabase
-      .from(tableName as any)
-      .update({ is_featured: newFeaturedStatus })
-      .eq('id', product.id);
+    try {
+      const { error } = await supabase
+        .from(tableName as any)
+        .update({ is_featured: newFeaturedStatus })
+        .eq('id', product.id);
 
-    if (!error) {
-      window.location.reload();
+      if (error) throw error;
+
+      // Refetch data
+      refetchTours();
+      refetchPackages();
+      refetchTickets();
+      refetchVisas();
+
+      toast({
+        title: "Success",
+        description: `Product ${newFeaturedStatus ? 'added to' : 'removed from'} trending section`,
+      });
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trending status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -140,8 +161,8 @@ const TrendingProductsManagement = () => {
         <CardContent className="bg-white">
           <div className="mb-6">
             <p className="text-gray-600 mb-4">
-              Featured products automatically appear in the "Trending Now" section on the homepage. 
-              Toggle the featured status to control which products are shown.
+              Control which products appear in the "Trending Now" section on the homepage. 
+              Toggle the featured status to add or remove products from trending.
             </p>
             
             <div className="flex gap-2 mb-4">
@@ -156,22 +177,23 @@ const TrendingProductsManagement = () => {
                 variant={selectedType === 'featured' ? 'default' : 'outline'}
                 onClick={() => setSelectedType('featured')}
                 size="sm"
+                className="bg-red-500 hover:bg-red-600 text-white"
               >
-                Featured Only ({featuredProducts.length})
+                🔥 Trending Only ({featuredProducts.length})
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(selectedType === 'featured' ? featuredProducts : allProducts).map((product) => (
-              <div key={`${product.type}-${product.id}`} className="border rounded-lg p-4 bg-white shadow-sm">
+              <div key={`${product.type}-${product.id}`} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
                   <Badge className={`${getTypeColor(product.type)} text-white text-xs`}>
                     {product.type.toUpperCase()}
                   </Badge>
                   {product.is_featured && (
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                      ⭐ Trending
+                    <Badge variant="secondary" className="bg-red-100 text-red-800 animate-pulse">
+                      🔥 TRENDING
                     </Badge>
                   )}
                 </div>
@@ -193,7 +215,7 @@ const TrendingProductsManagement = () => {
                     {formatPrice(getProductPrice(product))}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm">Rating: {getProductRating(product)}</span>
+                    <span className="text-sm">⭐ {getProductRating(product)}</span>
                   </div>
                 </div>
 
@@ -203,7 +225,7 @@ const TrendingProductsManagement = () => {
                       checked={product.is_featured || false}
                       onCheckedChange={(checked) => toggleFeatured(product, checked)}
                     />
-                    <Label className="text-sm">Featured in Trending</Label>
+                    <Label className="text-sm">Show in Trending</Label>
                   </div>
                 </div>
 
@@ -218,7 +240,7 @@ const TrendingProductsManagement = () => {
             <div className="text-center py-12">
               <TrendingUp className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600">
-                {selectedType === 'featured' ? 'No Featured Products' : 'No Products Found'}
+                {selectedType === 'featured' ? 'No Trending Products' : 'No Products Found'}
               </h3>
               <p className="text-gray-500">
                 {selectedType === 'featured' 
@@ -228,6 +250,16 @@ const TrendingProductsManagement = () => {
               </p>
             </div>
           )}
+
+          <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <h4 className="font-semibold text-orange-900 mb-2">💡 Pro Tips:</h4>
+            <ul className="text-sm text-orange-800 space-y-1">
+              <li>• Products marked as "Trending" will appear on the homepage</li>
+              <li>• Mix different product types (tours, visas, tickets, packages) for variety</li>
+              <li>• Update trending products regularly to keep content fresh</li>
+              <li>• Featured products get more visibility and bookings</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
     </div>

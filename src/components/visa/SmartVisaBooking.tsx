@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Plus, Minus, Upload, Users, User, Mail, Phone, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -178,197 +177,201 @@ const SmartVisaBooking = ({ visa }: SmartVisaBookingProps) => {
 
   if (step === 1) {
     return (
-      <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white">
-        <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-4">
-          <CardTitle className="text-lg md:text-xl text-center font-bold">
-            {visa.country} - {visa.visa_type}
-          </CardTitle>
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
-            <div className="text-white/80 text-sm">Total for {totalTravelers} travelers</div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-4 space-y-4 bg-white">
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2 font-medium text-gray-700">
-              <Users className="h-4 w-4" />
-              Number of Travelers
-            </Label>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Adults</div>
-                <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTravelers(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
-                  disabled={travelers.adults <= 1}
-                  className="h-8 w-8 p-0 bg-white border-gray-300"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center font-medium text-gray-900">{travelers.adults}</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTravelers(prev => ({ ...prev, adults: prev.adults + 1 }))}
-                  className="h-8 w-8 p-0 bg-white border-gray-300"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+      <div className="w-full max-w-md mx-auto">
+        <Card className="shadow-xl border-0 bg-white">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-4">
+            <CardTitle className="text-lg md:text-xl text-center font-bold">
+              {visa.country} - {visa.visa_type}
+            </CardTitle>
+            <div className="text-center">
+              <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
+              <div className="text-white/80 text-sm">Total for {totalTravelers} travelers</div>
             </div>
-
-            <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Children (including infants)</div>
-                <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTravelers(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
-                  disabled={travelers.children <= 0}
-                  className="h-8 w-8 p-0 bg-white border-gray-300"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center font-medium text-gray-900">{travelers.children}</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTravelers(prev => ({ ...prev, children: prev.children + 1 }))}
-                  className="h-8 w-8 p-0 bg-white border-gray-300"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-3 text-center">Choose Application Method</h3>
-            
+          </CardHeader>
+          
+          <CardContent className="p-4 space-y-4 bg-white">
             <div className="space-y-3">
-              <Button
-                onClick={() => {
-                  setBookingMethod('direct');
-                  setStep(2);
-                }}
-                className="w-full h-auto p-4 bg-blue-600 hover:bg-blue-700 text-white border-0"
-              >
-                <div className="text-left w-full">
-                  <div className="font-semibold text-base">Direct Book & Send Documents</div>
-                  <div className="text-sm text-blue-100 mt-1">Quick booking - send documents later</div>
+              <Label className="flex items-center gap-2 font-medium text-gray-700">
+                <Users className="h-4 w-4" />
+                Number of Travelers
+              </Label>
+              
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-900">Adults</div>
+                  <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
                 </div>
-              </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
+                    disabled={travelers.adults <= 1}
+                    className="h-8 w-8 p-0 bg-white border-gray-300"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-gray-900">{travelers.adults}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, adults: prev.adults + 1 }))}
+                    className="h-8 w-8 p-0 bg-white border-gray-300"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
 
-              <Button
-                onClick={() => {
-                  setBookingMethod('detailed');
-                  initializeDetailedBooking();
-                  setStep(2);
-                }}
-                variant="outline"
-                className="w-full h-auto p-4 bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-900"
-              >
-                <div className="text-left w-full">
-                  <div className="font-semibold text-base">Fill Details and Apply</div>
-                  <div className="text-sm text-gray-600 mt-1">Complete application with documents</div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-900">Children (including infants)</div>
+                  <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
                 </div>
-              </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
+                    disabled={travelers.children <= 0}
+                    className="h-8 w-8 p-0 bg-white border-gray-300"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-gray-900">{travelers.children}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, children: prev.children + 1 }))}
+                    className="h-8 w-8 p-0 bg-white border-gray-300"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+
+            <div className="pt-4 border-t border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3 text-center">Choose Application Method</h3>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    setBookingMethod('direct');
+                    setStep(2);
+                  }}
+                  className="w-full h-auto p-4 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                >
+                  <div className="text-left w-full">
+                    <div className="font-semibold text-base">Direct Book & Send Documents</div>
+                    <div className="text-sm text-blue-100 mt-1">Quick booking - send documents later</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    setBookingMethod('detailed');
+                    initializeDetailedBooking();
+                    setStep(2);
+                  }}
+                  variant="outline"
+                  className="w-full h-auto p-4 bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-900"
+                >
+                  <div className="text-left w-full">
+                    <div className="font-semibold text-base">Fill Details and Apply</div>
+                    <div className="text-sm text-gray-600 mt-1">Complete application with documents</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (step === 2 && bookingMethod === 'direct') {
     return (
-      <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
-          <CardTitle className="text-lg md:text-xl text-center font-bold">Quick Booking</CardTitle>
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
-            <div className="text-white/80 text-sm">For {totalTravelers} travelers</div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-4 space-y-4 bg-white">
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium text-gray-700">
-              <User className="h-4 w-4" />
-              Full Name *
-            </Label>
-            <Input
-              value={directBookingData.fullName}
-              onChange={(e) => setDirectBookingData(prev => ({ ...prev, fullName: e.target.value }))}
-              placeholder="Enter full name"
-              className="h-10 md:h-12 bg-white border-gray-300"
-            />
-          </div>
+      <div className="w-full max-w-md mx-auto">
+        <Card className="shadow-xl border-0 bg-white">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
+            <CardTitle className="text-lg md:text-xl text-center font-bold">Quick Booking</CardTitle>
+            <div className="text-center">
+              <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
+              <div className="text-white/80 text-sm">For {totalTravelers} travelers</div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-4 space-y-4 bg-white">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 font-medium text-gray-700">
+                <User className="h-4 w-4" />
+                Full Name *
+              </Label>
+              <Input
+                value={directBookingData.fullName}
+                onChange={(e) => setDirectBookingData(prev => ({ ...prev, fullName: e.target.value }))}
+                placeholder="Enter full name"
+                className="h-10 md:h-12 bg-white border-gray-300"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium text-gray-700">
-              <Mail className="h-4 w-4" />
-              Email Address *
-            </Label>
-            <Input
-              type="email"
-              value={directBookingData.email}
-              onChange={(e) => setDirectBookingData(prev => ({ ...prev, email: e.target.value }))}
-              placeholder="Enter email address"
-              className="h-10 md:h-12 bg-white border-gray-300"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 font-medium text-gray-700">
+                <Mail className="h-4 w-4" />
+                Email Address *
+              </Label>
+              <Input
+                type="email"
+                value={directBookingData.email}
+                onChange={(e) => setDirectBookingData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+                className="h-10 md:h-12 bg-white border-gray-300"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 font-medium text-gray-700">
-              <Phone className="h-4 w-4" />
-              Mobile Number *
-            </Label>
-            <Input
-              type="tel"
-              value={directBookingData.mobile}
-              onChange={(e) => setDirectBookingData(prev => ({ ...prev, mobile: e.target.value }))}
-              placeholder="Enter mobile number"
-              className="h-10 md:h-12 bg-white border-gray-300"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 font-medium text-gray-700">
+                <Phone className="h-4 w-4" />
+                Mobile Number *
+              </Label>
+              <Input
+                type="tel"
+                value={directBookingData.mobile}
+                onChange={(e) => setDirectBookingData(prev => ({ ...prev, mobile: e.target.value }))}
+                placeholder="Enter mobile number"
+                className="h-10 md:h-12 bg-white border-gray-300"
+              />
+            </div>
 
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-amber-800 text-sm">
-              📧 Please email or WhatsApp the required documents after booking completion.
-            </p>
-          </div>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-amber-800 text-sm">
+                📧 Please email or WhatsApp the required documents after booking completion.
+              </p>
+            </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={() => setStep(1)}
-              variant="outline"
-              className="flex-1 bg-white border-gray-300 text-gray-700"
-            >
-              Back
-            </Button>
-            <Button
-              onClick={handleDirectBooking}
-              className="flex-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-            >
-              Pay & Book - {formatPrice(totalPrice)}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex gap-2 pt-2">
+              <Button
+                onClick={() => setStep(1)}
+                variant="outline"
+                className="flex-1 bg-white border-gray-300 text-gray-700"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleDirectBooking}
+                className="flex-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              >
+                Pay & Book - {formatPrice(totalPrice)}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

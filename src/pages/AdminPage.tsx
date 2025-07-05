@@ -21,6 +21,7 @@ import HomepageSliderManagement from '@/components/admin/HomepageSliderManagemen
 import TrendingProductsManagement from '@/components/admin/TrendingProductsManagement';
 import TransferManagement from '@/components/admin/TransferManagement';
 import SiteSettings from '@/components/admin/SiteSettings';
+import VideoManagement from '@/components/admin/VideoManagement';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -150,7 +151,7 @@ const AdminPage = () => {
         {/* Management Tabs */}
         <Card className="shadow-lg bg-white border border-gray-200">
           <Tabs defaultValue="tours" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-6 lg:grid-cols-13 bg-gray-100 border-b border-gray-200">
+            <TabsList className="grid w-full grid-cols-6 lg:grid-cols-14 bg-gray-100 border-b border-gray-200">
               <TabsTrigger value="tours" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white bg-white text-gray-700">Tours</TabsTrigger>
               <TabsTrigger value="tickets" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white bg-white text-gray-700">Tickets</TabsTrigger>
               <TabsTrigger value="packages" className="data-[state=active]:bg-green-500 data-[state=active]:text-white bg-white text-gray-700">Packages</TabsTrigger>
@@ -159,6 +160,7 @@ const AdminPage = () => {
               <TabsTrigger value="transfers" className="data-[state=active]:bg-teal-500 data-[state=active]:text-white bg-white text-gray-700">Transfers</TabsTrigger>
               <TabsTrigger value="trending" className="data-[state=active]:bg-red-500 data-[state=active]:text-white bg-white text-gray-700">Trending</TabsTrigger>
               <TabsTrigger value="sliders" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white bg-white text-gray-700">Sliders</TabsTrigger>
+              <TabsTrigger value="video" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white bg-white text-gray-700">Video</TabsTrigger>
               <TabsTrigger value="payments" className="data-[state=active]:bg-red-500 data-[state=active]:text-white bg-white text-gray-700">Payments</TabsTrigger>
               <TabsTrigger value="emails" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white bg-white text-gray-700">Emails</TabsTrigger>
               <TabsTrigger value="bulk" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white bg-white text-gray-700">Bulk Upload</TabsTrigger>
@@ -197,6 +199,10 @@ const AdminPage = () => {
 
               <TabsContent value="sliders" className="mt-0">
                 <HomepageSliderManagement />
+              </TabsContent>
+
+              <TabsContent value="video" className="mt-0">
+                <VideoManagement />
               </TabsContent>
 
               <TabsContent value="payments" className="mt-0">

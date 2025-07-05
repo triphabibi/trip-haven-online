@@ -1,7 +1,9 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VideoSectionProps {
   videoUrl?: string;
@@ -10,11 +12,47 @@ interface VideoSectionProps {
 }
 
 const EnhancedVideoSection = ({ 
-  videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Default video
-  title = "Experience Dubai Like Never Before",
-  description = "Watch our exclusive travel experiences and discover why thousands choose TripHabibi"
+  videoUrl: propVideoUrl,
+  title: propTitle,
+  description: propDescription
 }: VideoSectionProps) => {
   const [showVideo, setShowVideo] = useState(false);
+  const [videoSettings, setVideoSettings] = useState({
+    url: propVideoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    title: propTitle || "Experience Dubai Like Never Before",
+    description: propDescription || "Watch our exclusive travel experiences and discover why thousands choose TripHabibi"
+  });
+
+  useEffect(() => {
+    fetchVideoSettings();
+  }, []);
+
+  const fetchVideoSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .in('setting_key', ['homepage_video_url', 'homepage_video_title', 'homepage_video_description']);
+      
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const settings = { ...videoSettings };
+        data.forEach(setting => {
+          if (setting.setting_key === 'homepage_video_url' && setting.setting_value) {
+            settings.url = setting.setting_value;
+          } else if (setting.setting_key === 'homepage_video_title' && setting.setting_value) {
+            settings.title = setting.setting_value;
+          } else if (setting.setting_key === 'homepage_video_description' && setting.setting_value) {
+            settings.description = setting.setting_value;
+          }
+        });
+        setVideoSettings(settings);
+      }
+    } catch (error) {
+      console.error('Error fetching video settings:', error);
+    }
+  };
 
   // Extract YouTube video ID from URL
   const getYouTubeId = (url: string) => {
@@ -23,7 +61,7 @@ const EnhancedVideoSection = ({
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const videoId = getYouTubeId(videoUrl);
+  const videoId = getYouTubeId(videoSettings.url);
   const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
   return (
@@ -31,10 +69,10 @@ const EnhancedVideoSection = ({
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-4xl font-bold mb-4">
-            🎬 See Dubai Through Our Eyes
+            🎬 {videoSettings.title}
           </h2>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            {description}
+            {videoSettings.description}
           </p>
         </div>
 
@@ -58,8 +96,8 @@ const EnhancedVideoSection = ({
                 
                 {/* Video Info Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                  <h3 className="text-xl md:text-2xl font-bold mb-2">{title}</h3>
-                  <p className="text-gray-300 text-sm md:text-base">Click to watch our exclusive Dubai experience</p>
+                  <h3 className="text-xl md:text-2xl font-bold mb-2">{videoSettings.title}</h3>
+                  <p className="text-gray-300 text-sm md:text-base">Click to watch our exclusive experience</p>
                 </div>
               </div>
             </Card>
@@ -77,7 +115,7 @@ const EnhancedVideoSection = ({
                 <div className="aspect-video">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-                    title={title}
+                    title={videoSettings.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full"
