@@ -11,43 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Eye, MapPin, Calendar, Users, DollarSign, Upload, X } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
-
-interface TourForm {
-  title: string;
-  slug: string;
-  description: string;
-  overview: string;
-  location: string;
-  duration: string;
-  price_adult: number;
-  price_child: number;
-  price_infant: number;
-  category: string;
-  highlights: string[];
-  whats_included: string[];
-  exclusions: string[];
-  languages: string[];
-  available_times: string[];
-  itinerary: any;
-  cancellation_policy: string;
-  refund_policy: string;
-  terms_conditions: string;
-  meeting_point: string;
-  map_location: string;
-  seo_title: string;
-  seo_description: string;
-  seo_keywords: string;
-  is_featured: boolean;
-  status: 'active' | 'inactive';
-  image_urls: string[];
-  featured_image: string;
-  gallery_images: string[];
-  instant_confirmation: boolean;
-  free_cancellation: boolean;
-  rating: number;
-  total_reviews: number;
-  youtube_video_url: string;
-}
+import ItineraryEditor from './itinerary/ItineraryEditor';
 
 const generateSlug = (title: string): string => {
   return title
@@ -60,7 +24,7 @@ const EnhancedTourManagement = () => {
   const [selectedTour, setSelectedTour] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
-  const [formData, setFormData] = useState<TourForm>({
+  const [formData, setFormData] = useState({
     title: '',
     slug: '',
     description: '',
@@ -76,16 +40,7 @@ const EnhancedTourManagement = () => {
     exclusions: [],
     languages: ['English'],
     available_times: [],
-    itinerary: {
-      days: [
-        {
-          day: 1,
-          title: 'Day 1 - Arrival',
-          description: 'Arrival and check-in',
-          activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
-        }
-      ]
-    },
+    itinerary: { days: [] },
     cancellation_policy: 'Free cancellation up to 24 hours before the experience starts (local time)',
     refund_policy: 'Full refund for cancellations made 24+ hours in advance',
     terms_conditions: 'Standard terms and conditions apply',
@@ -96,13 +51,10 @@ const EnhancedTourManagement = () => {
     seo_keywords: '',
     is_featured: false,
     status: 'active',
-    image_urls: [],
     featured_image: '',
     gallery_images: [],
     instant_confirmation: true,
     free_cancellation: true,
-    rating: 0,
-    total_reviews: 0,
     youtube_video_url: ''
   });
 
@@ -135,8 +87,7 @@ const EnhancedTourManagement = () => {
   };
 
   const createTourMutation = useMutation({
-    mutationFn: async (tourData: Omit<TourForm, 'rating' | 'total_reviews'>) => {
-      // Ensure slug is generated
+    mutationFn: async (tourData: any) => {
       if (!tourData.slug && tourData.title) {
         tourData.slug = generateSlug(tourData.title);
       }
@@ -152,25 +103,17 @@ const EnhancedTourManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin_tours'] });
-      toast({
-        title: "Success",
-        description: "Tour created successfully with auto-generated slug",
-      });
+      toast({ title: "Success", description: "Tour created successfully with auto-generated slug" });
       resetForm();
       setActiveTab('list');
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
   const updateTourMutation = useMutation({
-    mutationFn: async ({ id, ...tourData }: { id: string } & Omit<TourForm, 'rating' | 'total_reviews'>) => {
-      // Ensure slug is generated
+    mutationFn: async ({ id, ...tourData }: { id: string } & any) => {
       if (!tourData.slug && tourData.title) {
         tourData.slug = generateSlug(tourData.title);
       }
@@ -187,21 +130,14 @@ const EnhancedTourManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin_tours'] });
-      toast({
-        title: "Success",
-        description: "Tour updated successfully",
-      });
+      toast({ title: "Success", description: "Tour updated successfully" });
       setIsEditing(false);
       setSelectedTour(null);
       resetForm();
       setActiveTab('list');
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -216,17 +152,10 @@ const EnhancedTourManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin_tours'] });
-      toast({
-        title: "Success",
-        description: "Tour deleted successfully",
-      });
+      toast({ title: "Success", description: "Tour deleted successfully" });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -247,16 +176,7 @@ const EnhancedTourManagement = () => {
       exclusions: [],
       languages: ['English'],
       available_times: [],
-      itinerary: {
-        days: [
-          {
-            day: 1,
-            title: 'Day 1 - Arrival',
-            description: 'Arrival and check-in',
-            activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
-          }
-        ]
-      },
+      itinerary: { days: [] },
       cancellation_policy: 'Free cancellation up to 24 hours before the experience starts (local time)',
       refund_policy: 'Full refund for cancellations made 24+ hours in advance',
       terms_conditions: 'Standard terms and conditions apply',
@@ -267,13 +187,10 @@ const EnhancedTourManagement = () => {
       seo_keywords: '',
       is_featured: false,
       status: 'active',
-      image_urls: [],
       featured_image: '',
       gallery_images: [],
       instant_confirmation: true,
       free_cancellation: true,
-      rating: 0,
-      total_reviews: 0,
       youtube_video_url: ''
     });
     setIsEditing(false);
@@ -282,12 +199,11 @@ const EnhancedTourManagement = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { rating, total_reviews, ...submitData } = formData;
     
     if (isEditing && selectedTour) {
-      updateTourMutation.mutate({ id: selectedTour.id, ...submitData });
+      updateTourMutation.mutate({ id: selectedTour.id, ...formData });
     } else {
-      createTourMutation.mutate(submitData);
+      createTourMutation.mutate(formData);
     }
   };
 
@@ -309,16 +225,7 @@ const EnhancedTourManagement = () => {
       exclusions: tour.exclusions || [],
       languages: tour.languages || ['English'],
       available_times: tour.available_times || [],
-      itinerary: tour.itinerary || {
-        days: [
-          {
-            day: 1,
-            title: 'Day 1 - Arrival',
-            description: 'Arrival and check-in',
-            activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner']
-          }
-        ]
-      },
+      itinerary: tour.itinerary || { days: [] },
       cancellation_policy: tour.cancellation_policy || 'Free cancellation up to 24 hours before the experience starts (local time)',
       refund_policy: tour.refund_policy || 'Full refund for cancellations made 24+ hours in advance',
       terms_conditions: tour.terms_conditions || 'Standard terms and conditions apply',
@@ -329,30 +236,22 @@ const EnhancedTourManagement = () => {
       seo_keywords: tour.seo_keywords || '',
       is_featured: tour.is_featured || false,
       status: tour.status || 'active',
-      image_urls: tour.image_urls || [],
       featured_image: tour.featured_image || '',
       gallery_images: tour.gallery_images || [],
       instant_confirmation: tour.instant_confirmation !== false,
       free_cancellation: tour.free_cancellation !== false,
-      rating: tour.rating || 0,
-      total_reviews: tour.total_reviews || 0,
       youtube_video_url: tour.youtube_video_url || ''
     });
     setIsEditing(true);
     setActiveTab('form');
   };
 
-  const handleArrayFieldChange = (field: keyof TourForm, value: string) => {
+  const handleArrayFieldChange = (field: string, value: string) => {
     const items = value.split('\n').filter(item => item.trim());
     setFormData(prev => ({ ...prev, [field]: items }));
   };
 
-  const handleNewTour = () => {
-    resetForm();
-    setActiveTab('form');
-  };
-
-  const addImageUrl = (field: 'image_urls' | 'gallery_images') => {
+  const addImageUrl = (field: 'gallery_images') => {
     const url = prompt('Enter image URL:');
     if (url) {
       setFormData(prev => ({
@@ -362,36 +261,10 @@ const EnhancedTourManagement = () => {
     }
   };
 
-  const removeImageUrl = (field: 'image_urls' | 'gallery_images', index: number) => {
+  const removeImageUrl = (field: 'gallery_images', index: number) => {
     setFormData(prev => ({
       ...prev,
       [field]: (prev[field] as string[]).filter((_, i) => i !== index)
-    }));
-  };
-
-  const addItineraryDay = () => {
-    const currentDays = formData.itinerary?.days || [];
-    const newDay = {
-      day: currentDays.length + 1,
-      title: `Day ${currentDays.length + 1}`,
-      description: '',
-      activities: []
-    };
-    setFormData(prev => ({
-      ...prev,
-      itinerary: {
-        ...prev.itinerary,
-        days: [...currentDays, newDay]
-      }
-    }));
-  };
-
-  const updateItineraryDay = (index: number, field: string, value: any) => {
-    const currentDays = [...(formData.itinerary?.days || [])];
-    currentDays[index] = { ...currentDays[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      itinerary: { ...prev.itinerary, days: currentDays }
     }));
   };
 
@@ -410,7 +283,7 @@ const EnhancedTourManagement = () => {
       <Card className="bg-white">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list">Tour List ({tours?.length || 0})</TabsTrigger>
+            <TabsTrigger value="list">Tours ({tours?.length || 0})</TabsTrigger>
             <TabsTrigger value="form">{isEditing ? 'Edit Tour' : 'Create New Tour'}</TabsTrigger>
           </TabsList>
 
@@ -420,7 +293,7 @@ const EnhancedTourManagement = () => {
                 <Eye className="h-5 w-5" />
                 Tours Management
               </CardTitle>
-              <Button onClick={handleNewTour} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={() => { resetForm(); setActiveTab('form'); }} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Tour
               </Button>
@@ -428,6 +301,7 @@ const EnhancedTourManagement = () => {
             <CardContent className="bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tours?.map((tour) => (
+                  
                   <div key={tour.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold truncate text-lg">{tour.title}</h4>
@@ -488,7 +362,7 @@ const EnhancedTourManagement = () => {
                       <h3 className="text-xl font-semibold text-gray-600">No Tours Yet</h3>
                       <p className="text-gray-500">Create your first tour to get started</p>
                     </div>
-                    <Button onClick={handleNewTour} className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={() => { resetForm(); setActiveTab('form'); }} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
                       Create First Tour
                     </Button>
@@ -639,49 +513,13 @@ const EnhancedTourManagement = () => {
                     </div>
                   </div>
 
-                  {/* Itinerary */}
+                  {/* Itinerary Section */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Detailed Itinerary</h3>
-                    
-                    {formData.itinerary?.days?.map((day: any, index: number) => (
-                      <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                        <div className="grid grid-cols-2 gap-4 mb-3">
-                          <div>
-                            <Label>Day {day.day} Title</Label>
-                            <Input
-                              value={day.title}
-                              onChange={(e) => updateItineraryDay(index, 'title', e.target.value)}
-                              className="bg-white"
-                              placeholder={`Day ${day.day} title`}
-                            />
-                          </div>
-                          <div>
-                            <Label>Day {day.day} Description</Label>
-                            <Input
-                              value={day.description}
-                              onChange={(e) => updateItineraryDay(index, 'description', e.target.value)}
-                              className="bg-white"
-                              placeholder="Brief description"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label>Activities (one per line)</Label>
-                          <Textarea
-                            value={day.activities?.join('\n') || ''}
-                            onChange={(e) => updateItineraryDay(index, 'activities', e.target.value.split('\n').filter(a => a.trim()))}
-                            className="bg-white"
-                            rows={3}
-                            placeholder="Activity 1&#10;Activity 2&#10;Activity 3"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <Button type="button" variant="outline" onClick={addItineraryDay} className="w-full">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Another Day
-                    </Button>
+                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Itinerary</h3>
+                    <ItineraryEditor
+                      itinerary={formData.itinerary}
+                      onItineraryChange={(itinerary) => setFormData(prev => ({ ...prev, itinerary }))}
+                    />
                   </div>
 
                   {/* Pricing */}
@@ -777,86 +615,6 @@ const EnhancedTourManagement = () => {
                         className="bg-white"
                         rows={3}
                         placeholder="9:00 AM&#10;2:00 PM&#10;6:00 PM"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Policies */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Policies & Terms</h3>
-                    
-                    <div>
-                      <Label htmlFor="cancellation_policy">Cancellation Policy</Label>
-                      <Textarea
-                        id="cancellation_policy"
-                        value={formData.cancellation_policy}
-                        onChange={(e) => setFormData(prev => ({ ...prev, cancellation_policy: e.target.value }))}
-                        className="bg-white"
-                        rows={3}
-                        placeholder="Describe the cancellation policy"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="refund_policy">Refund Policy</Label>
-                      <Textarea
-                        id="refund_policy"
-                        value={formData.refund_policy}
-                        onChange={(e) => setFormData(prev => ({ ...prev, refund_policy: e.target.value }))}
-                        className="bg-white"
-                        rows={3}
-                        placeholder="Describe the refund policy"
-                      />
-                    </div>
-                  </div>
-
-                  {/* SEO Fields */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">SEO Settings</h3>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="seo_title">SEO Title</Label>
-                        <Input
-                          id="seo_title"
-                          value={formData.seo_title}
-                          onChange={(e) => setFormData(prev => ({ ...prev, seo_title: e.target.value }))}
-                          className="bg-white"
-                          placeholder="SEO optimized title"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="category">Category</Label>
-                        <Input
-                          id="category"
-                          value={formData.category}
-                          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                          className="bg-white"
-                          placeholder="tour, adventure, cultural"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="seo_description">SEO Meta Description</Label>
-                      <Textarea
-                        id="seo_description"
-                        value={formData.seo_description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, seo_description: e.target.value }))}
-                        className="bg-white"
-                        rows={2}
-                        placeholder="SEO meta description (150-160 characters)"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="seo_keywords">SEO Keywords</Label>
-                      <Input
-                        id="seo_keywords"
-                        value={formData.seo_keywords}
-                        onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords: e.target.value }))}
-                        className="bg-white"
-                        placeholder="keyword1, keyword2, keyword3"
                       />
                     </div>
                   </div>

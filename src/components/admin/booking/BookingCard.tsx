@@ -1,90 +1,150 @@
 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import BookingActions from './BookingActions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, User, Phone, Mail, MapPin, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 
-interface Booking {
-  id: string;
-  customer_name: string;
-  booking_reference: string;
-  final_amount: number;
-  customer_email?: string;
-  customer_phone?: string;
-  adults_count: number;
-  children_count: number;
-  travel_date?: string;
-  pickup_location?: string;
-  booking_status: BookingStatus;
-  payment_status: string;
-}
-
 interface BookingCardProps {
-  booking: Booking;
+  booking: any;
   onUpdateStatus: (bookingId: string, newStatus: BookingStatus) => void;
 }
 
 const BookingCard = ({ booking, onUpdateStatus }: BookingCardProps) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { formatPrice } = useCurrency();
+
+  // Fetch service details based on booking type and service_id
+  const { data: serviceDetails } = useQuery({
+    queryKey: ['service_details', booking.service_id, booking.booking_type],
+    queryFn: async () => {
+      let tableName = 'tours';
+      
+      if (booking.booking_type === 'visa') {
+        tableName = 'visa_services';
+      } else if (booking.booking_type === 'package') {
+        tableName = 'tour_packages';
+      } else if (booking.booking_type === 'ticket') {
+        tableName = 'attraction_tickets';
+      }
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('title')
+        .eq('id', booking.service_id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking.service_id,
+  });
+
+  const handleStatusUpdate = async (newStatus: BookingStatus) => {
+    setIsUpdating(true);
+    await onUpdateStatus(booking.id, newStatus);
+    setIsUpdating(false);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'confirmed': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
   return (
-    <div className="border rounded-lg p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold">{booking.customer_name}</h3>
-            <Badge 
-              variant={
-                booking.booking_status === 'confirmed' ? 'default' :
-                booking.booking_status === 'pending' ? 'secondary' :
-                booking.booking_status === 'cancelled' ? 'destructive' : 'outline'
-              }
-            >
-              {booking.booking_status}
-            </Badge>
-            <Badge 
-              variant={
-                booking.payment_status === 'completed' ? 'default' :
-                booking.payment_status === 'pending' ? 'secondary' : 'destructive'
-              }
-            >
-              {booking.payment_status}
-            </Badge>
+    <Card className="mb-4">
+      <CardContent className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-lg">{booking.booking_reference}</h3>
+                <p className="text-sm text-gray-600">
+                  {serviceDetails?.title || `${booking.booking_type} Service`}
+                </p>
+              </div>
+              <Badge className={getStatusColor(booking.booking_status)}>
+                {booking.booking_status}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-gray-400" />
+                <span>{booking.customer_name}</span>
+              </div>
+              {booking.customer_email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  <span>{booking.customer_email}</span>
+                </div>
+              )}
+              {booking.customer_phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-gray-400" />
+                  <span>{booking.customer_phone}</span>
+                </div>
+              )}
+              {booking.travel_date && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <span>{new Date(booking.travel_date).toLocaleDateString()}</span>
+                </div>
+              )}
+              {booking.pickup_location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <span>{booking.pickup_location}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-gray-400" />
+                <span className="font-medium">{formatPrice(booking.final_amount)}</span>
+              </div>
+            </div>
+
+            {booking.special_requests && (
+              <div className="text-sm">
+                <span className="font-medium text-gray-700">Special Requests: </span>
+                <span className="text-gray-600">{booking.special_requests}</span>
+              </div>
+            )}
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600">
-            <div>
-              <span className="font-medium">Reference:</span> {booking.booking_reference}
-            </div>
-            <div>
-              <span className="font-medium">Amount:</span> ₹{booking.final_amount}
-            </div>
-            <div>
-              <span className="font-medium">Email:</span> {booking.customer_email || 'N/A'}
-            </div>
-            <div>
-              <span className="font-medium">Phone:</span> {booking.customer_phone || 'N/A'}
-            </div>
-            <div>
-              <span className="font-medium">Adults:</span> {booking.adults_count}
-            </div>
-            <div>
-              <span className="font-medium">Children:</span> {booking.children_count}
-            </div>
-            <div>
-              <span className="font-medium">Travel Date:</span> {booking.travel_date || 'N/A'}
-            </div>
-            <div>
-              <span className="font-medium">Pickup:</span> {booking.pickup_location || 'N/A'}
-            </div>
+
+          <div className="flex flex-col gap-2 min-w-[200px]">
+            <Select
+              value={booking.booking_status}
+              onValueChange={handleStatusUpdate}
+              disabled={isUpdating}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <p className="text-xs text-gray-500 text-center">
+              {new Date(booking.created_at).toLocaleDateString()}
+            </p>
           </div>
         </div>
-
-        <BookingActions 
-          bookingId={booking.id}
-          bookingStatus={booking.booking_status}
-          onUpdateStatus={onUpdateStatus}
-        />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
