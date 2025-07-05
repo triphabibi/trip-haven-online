@@ -25,6 +25,7 @@ interface PaymentGateway {
 const PaymentGatewaySettings = () => {
   const [gateways, setGateways] = useState<PaymentGateway[]>([]);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,13 +33,18 @@ const PaymentGatewaySettings = () => {
   }, []);
 
   const fetchGateways = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('payment_gateways')
         .select('*')
         .order('gateway_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching gateways:', error);
+        initializeDefaultGateways();
+        return;
+      }
       
       if (data && data.length > 0) {
         setGateways(data);
@@ -48,6 +54,8 @@ const PaymentGatewaySettings = () => {
     } catch (error) {
       console.error('Error fetching gateways:', error);
       initializeDefaultGateways();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,39 +147,53 @@ const PaymentGatewaySettings = () => {
   };
 
   const saveGateways = async () => {
-    setLoading(true);
+    setSaving(true);
     try {
-      // First delete all existing gateways
-      await supabase.from('payment_gateways').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-
-      // Then insert all gateways
-      const { error } = await supabase
+      // Delete existing gateways first
+      const { error: deleteError } = await supabase
         .from('payment_gateways')
-        .insert(gateways.map(gateway => ({
-          gateway_name: gateway.gateway_name,
-          display_name: gateway.display_name,
-          is_enabled: gateway.is_enabled,
-          test_mode: gateway.test_mode,
-          api_key: gateway.api_key,
-          api_secret: gateway.api_secret,
-          configuration: gateway.configuration || {}
-        })));
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
 
-      if (error) throw error;
+      if (deleteError) {
+        console.error('Error deleting existing gateways:', deleteError);
+      }
+
+      // Insert all gateways
+      const gatewaysToInsert = gateways.map(gateway => ({
+        gateway_name: gateway.gateway_name,
+        display_name: gateway.display_name,
+        is_enabled: gateway.is_enabled,
+        test_mode: gateway.test_mode,
+        api_key: gateway.api_key || '',
+        api_secret: gateway.api_secret || '',
+        configuration: gateway.configuration || {}
+      }));
+
+      const { error: insertError } = await supabase
+        .from('payment_gateways')
+        .insert(gatewaysToInsert);
+
+      if (insertError) {
+        throw insertError;
+      }
 
       toast({
         title: "Success",
         description: "Payment gateway settings saved successfully",
       });
+
+      // Refresh the data
+      await fetchGateways();
     } catch (error) {
       console.error('Error saving gateways:', error);
       toast({
         title: "Error",
-        description: "Failed to save payment gateway settings",
+        description: "Failed to save payment gateway settings. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -207,7 +229,7 @@ const PaymentGatewaySettings = () => {
                   <Label htmlFor={`api_key_${gateway.gateway_name}`} className="font-medium">API Key</Label>
                   <Input
                     id={`api_key_${gateway.gateway_name}`}
-                    type="password"
+                    type="text"
                     value={gateway.api_key}
                     onChange={(e) => updateGateway(gateway.gateway_name, 'api_key', e.target.value)}
                     placeholder="Enter API Key"
@@ -282,6 +304,26 @@ const PaymentGatewaySettings = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-white">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Wallet className="h-6 w-6" />
+              Payment Gateway Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="text-center py-8">
+              <div className="text-lg">Loading payment gateway settings...</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="bg-white">
@@ -298,10 +340,10 @@ const PaymentGatewaySettings = () => {
           
           <Button 
             onClick={saveGateways} 
-            disabled={loading}
+            disabled={saving}
             className="w-full mt-6 h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
-            {loading ? 'Saving...' : 'Save All Payment Settings'}
+            {saving ? 'Saving...' : 'Save All Payment Settings'}
           </Button>
         </CardContent>
       </Card>

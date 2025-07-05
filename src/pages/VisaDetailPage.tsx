@@ -1,8 +1,8 @@
+
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useVisa } from '@/hooks/useVisas';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import VisaBookingForm from '@/components/visa/VisaBookingForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Globe, FileText, CheckCircle, AlertCircle, Users } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import Loading from '@/components/common/Loading';
-import ModernVisaBooking from '@/components/visa/ModernVisaBooking';
 import SmartVisaBooking from '@/components/visa/SmartVisaBooking';
 
 const VisaDetailPage = () => {
@@ -112,12 +111,6 @@ const VisaDetailPage = () => {
                   >
                     Process
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="apply" 
-                    className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
-                  >
-                    Apply Now
-                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -202,69 +195,14 @@ const VisaDetailPage = () => {
                     </div>
                   </div>
                 </TabsContent>
-
-                <TabsContent value="apply" className="mt-0">
-                  <SmartVisaBooking service={visa} />
-                </TabsContent>
               </div>
             </Tabs>
           </div>
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            {/* Mobile Quick Info */}
-            <div className="md:hidden mb-8 sticky top-4 z-10">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-4 rounded-2xl text-white text-center mb-4 shadow-xl">
-                <h3 className="text-lg font-bold mb-2">Apply for {visa.country} Visa</h3>
-                <div className="text-2xl font-bold mb-2">{formatPrice(visa.price)}</div>
-                <p className="text-white/80 text-sm">Expert assistance included</p>
-                <Button 
-                  className="mt-3 w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
-                  onClick={() => document.querySelector('[data-booking-form]')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Apply Now
-                </Button>
-              </div>
-            </div>
-            
-            {/* Desktop Sidebar */}
-            <div className="hidden md:block sticky top-8">
-              <Card className="shadow-lg border-gray-200">
-                <CardContent className="p-6">
-                  <div className="text-center mb-6">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">{formatPrice(visa.price)}</div>
-                    <p className="text-gray-600">per person</p>
-                  </div>
-                  
-                  <div className="space-y-4 mb-6">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Processing Time:</span>
-                      <span className="font-medium">{visa.processing_time}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Documents Required:</span>
-                      <span className="font-medium">{visa.requirements?.length || 0}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Expert assistance included</span>
-                    </div>
-                    <Button 
-                      size="lg" 
-                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                      onClick={() => {
-                        const applyTab = document.querySelector('[data-state="inactive"][value="apply"]') as HTMLElement;
-                        if (applyTab) applyTab.click();
-                      }}
-                    >
-                      Apply Now
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="sticky top-8">
+              <SmartVisaBooking visa={visa} />
             </div>
           </div>
         </div>
