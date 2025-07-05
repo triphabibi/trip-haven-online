@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useVisa } from '@/hooks/useVisas';
 import Header from '@/components/layout/Header';
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Globe, FileText, CheckCircle } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Loading from '@/components/common/Loading';
-import SmartVisaBooking from '@/components/visa/SmartVisaBooking';
+import EnhancedVisaBooking from '@/components/visa/EnhancedVisaBooking';
 
 const VisaDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,7 +19,7 @@ const VisaDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 w-full">
         <Header />
         <Loading message="Loading visa details..." />
         <Footer />
@@ -28,7 +29,7 @@ const VisaDetailPage = () => {
 
   if (error || !visa) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 w-full">
         <Header />
         <div className="w-full px-4 py-8">
           <div className="max-w-7xl mx-auto">
@@ -48,13 +49,13 @@ const VisaDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full">
       <Header />
       
-      <main className="w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
+      <main className="w-full px-4 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4 sm:mb-6">
+          <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
             <Link to="/" className="hover:text-blue-600 transition-colors font-medium">Home</Link>
             <span>/</span>
             <Link to="/visas" className="hover:text-blue-600 transition-colors font-medium">Visa Services</Link>
@@ -62,30 +63,30 @@ const VisaDetailPage = () => {
             <span className="text-gray-900 font-medium truncate">{visa.country} {visa.visa_type}</span>
           </nav>
 
-          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            <div className="lg:col-span-2 space-y-8">
               {/* Header Section */}
-              <div className="mb-6 sm:mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              <div className="mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Globe className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">{visa.country} {visa.visa_type}</h1>
+                    <h1 className="text-4xl font-bold text-gray-900">{visa.country} {visa.visa_type}</h1>
                     {visa.is_featured && (
                       <Badge className="bg-yellow-500 mt-2">Featured Service</Badge>
                     )}
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                <div className="flex flex-wrap items-center gap-6 text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
                     <span>Processing: {visa.processing_time}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
                     <span>{visa.requirements?.length || 0} documents required</span>
                   </div>
                 </div>
@@ -96,72 +97,72 @@ const VisaDetailPage = () => {
                   <TabsList className="h-auto p-0 bg-transparent w-full justify-start rounded-none overflow-x-auto">
                     <TabsTrigger 
                       value="overview" 
-                      className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
+                      className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
                     >
                       Overview
                     </TabsTrigger>
                     <TabsTrigger 
                       value="requirements" 
-                      className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
+                      className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
                     >
                       Requirements
                     </TabsTrigger>
                     <TabsTrigger 
                       value="process" 
-                      className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm lg:text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
+                      className="px-6 py-4 text-base font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent whitespace-nowrap"
                     >
                       Process
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
-                <div className="p-3 sm:p-4 lg:p-8">
+                <div className="p-8">
                   <TabsContent value="overview" className="mt-0">
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div>
-                        <h3 className="text-xl font-semibold mb-4">About This Visa</h3>
-                        <p className="text-gray-600 leading-relaxed">
+                        <h3 className="text-2xl font-semibold mb-4">About This Visa</h3>
+                        <p className="text-gray-600 leading-relaxed text-lg">
                           {visa.description || `Get your ${visa.visa_type} visa for ${visa.country} processed quickly and efficiently. Our expert team will handle all the paperwork and ensure your application meets all requirements.`}
                         </p>
                       </div>
                       
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
-                          <div className="flex items-center gap-3 mb-3">
-                            <Clock className="h-5 w-5 text-blue-600" />
-                            <h4 className="font-semibold text-gray-900">Processing Time</h4>
+                      <div className="grid md:grid-cols-2 gap-8">
+                        <div className="bg-blue-50 p-8 rounded-lg">
+                          <div className="flex items-center gap-3 mb-4">
+                            <Clock className="h-6 w-6 text-blue-600" />
+                            <h4 className="font-semibold text-gray-900 text-lg">Processing Time</h4>
                           </div>
-                          <p className="text-gray-700">{visa.processing_time}</p>
+                          <p className="text-gray-700 text-lg">{visa.processing_time}</p>
                         </div>
                         
-                        <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
-                          <div className="flex items-center gap-3 mb-3">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <h4 className="font-semibold text-gray-900">Service Fee</h4>
+                        <div className="bg-green-50 p-8 rounded-lg">
+                          <div className="flex items-center gap-3 mb-4">
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                            <h4 className="font-semibold text-gray-900 text-lg">Service Fee</h4>
                           </div>
-                          <p className="text-2xl font-bold text-green-600">{formatPrice(visa.price)}</p>
+                          <p className="text-3xl font-bold text-green-600">{formatPrice(visa.price)}</p>
                         </div>
                       </div>
                     </div>
                   </TabsContent>
 
                   <TabsContent value="requirements" className="mt-0">
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div>
-                        <h3 className="text-xl font-semibold mb-4">Required Documents</h3>
-                        <p className="text-gray-600 mb-6">Please prepare the following documents for your visa application:</p>
+                        <h3 className="text-2xl font-semibold mb-4">Required Documents</h3>
+                        <p className="text-gray-600 mb-8 text-lg">Please prepare the following documents for your visa application:</p>
                       </div>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {visa.requirements?.map((requirement, index) => (
-                          <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                            <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
-                            <span className="text-gray-700">{requirement}</span>
+                          <div key={index} className="flex items-start gap-4 p-6 bg-gray-50 rounded-lg">
+                            <FileText className="h-6 w-6 text-blue-600 mt-1" />
+                            <span className="text-gray-700 text-lg">{requirement}</span>
                           </div>
                         )) || (
-                          <div className="text-gray-500 text-center py-8">
-                            <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                            <p>Document requirements will be provided after booking.</p>
+                          <div className="text-gray-500 text-center py-12">
+                            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                            <p className="text-lg">Document requirements will be provided after booking.</p>
                           </div>
                         )}
                       </div>
@@ -169,13 +170,13 @@ const VisaDetailPage = () => {
                   </TabsContent>
 
                   <TabsContent value="process" className="mt-0">
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div>
-                        <h3 className="text-xl font-semibold mb-4">Application Process</h3>
-                        <p className="text-gray-600 mb-6">Follow these simple steps to get your visa:</p>
+                        <h3 className="text-2xl font-semibold mb-4">Application Process</h3>
+                        <p className="text-gray-600 mb-8 text-lg">Follow these simple steps to get your visa:</p>
                       </div>
                       
-                      <div className="space-y-6">
+                      <div className="space-y-8">
                         {[
                           { step: 1, title: "Submit Application", description: "Fill out the application form and upload required documents" },
                           { step: 2, title: "Document Review", description: "Our experts review your documents for completeness and accuracy" },
@@ -183,13 +184,13 @@ const VisaDetailPage = () => {
                           { step: 4, title: "Visa Processing", description: "Embassy processes your application" },
                           { step: 5, title: "Visa Collection", description: "Collect your approved visa or receive it by courier" }
                         ].map((item) => (
-                          <div key={item.step} className="flex gap-4">
-                            <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                          <div key={item.step} className="flex gap-6">
+                            <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
                               {item.step}
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
-                              <p className="text-gray-600">{item.description}</p>
+                              <h4 className="font-semibold text-gray-900 mb-2 text-lg">{item.title}</h4>
+                              <p className="text-gray-600 text-lg">{item.description}</p>
                             </div>
                           </div>
                         ))}
@@ -202,8 +203,8 @@ const VisaDetailPage = () => {
 
             {/* Booking Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-6 sm:top-8">
-                <SmartVisaBooking visa={visa} />
+              <div className="sticky top-8">
+                <EnhancedVisaBooking visa={visa} />
               </div>
             </div>
           </div>

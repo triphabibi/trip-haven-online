@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,389 +6,619 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Upload, Users, CreditCard, CheckCircle, MessageCircle, Phone } from 'lucide-react';
+import { Plus, Minus, Users, User, Mail, Phone, FileText, Calendar, Globe, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface EnhancedVisaBookingProps {
-  service: {
+  visa: {
     id: string;
     country: string;
     visa_type: string;
     price: number;
-    processing_time: string;
-    requirements?: string[];
   };
 }
 
-const EnhancedVisaBooking = ({ service }: EnhancedVisaBookingProps) => {
-  const [activeTab, setActiveTab] = useState('normal');
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+const EnhancedVisaBooking = ({ visa }: EnhancedVisaBookingProps) => {
+  const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
   
-  // Point 9 & 11: Support for multiple travelers
-  const [travelers, setTravelers] = useState([
-    { type: 'adult', name: '', passport: '', nationality: '', dateOfBirth: '' }
-  ]);
-  
-  const [formData, setFormData] = useState({
-    customer_email: '',
-    customer_phone: '',
-    adults_count: 1,
-    children_count: 0,
-    travel_purpose: 'tourism',
-    intended_arrival: '',
-    intended_departure: '',
-    special_requests: ''
+  const [travelers, setTravelers] = useState({ adults: 1, children: 0 });
+  const [bookingData, setBookingData] = useState({
+    // Primary Contact
+    fullName: '',
+    email: '',
+    mobile: '',
+    
+    // Visa Details
+    nationality: '',
+    passportNumber: '',
+    dateOfBirth: '',
+    passportExpiry: '',
+    passportIssueDate: '',
+    passportIssuePlace: '',
+    placeOfBirth: '',
+    
+    // Travel Information
+    purposeOfVisit: '',
+    intendedTravelDate: '',
+    durationOfStay: '',
+    previousVisits: '',
+    accommodationDetails: '',
+    
+    // Personal Information
+    occupation: '',
+    employer: '',
+    monthlyIncome: '',
+    maritalStatus: '',
+    fatherName: '',
+    motherName: '',
+    
+    // Emergency Contact
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
+    
+    // Address Information
+    currentAddress: '',
+    permanentAddress: '',
+    
+    // Additional Information
+    specialRequests: '',
+    
+    // Travel History
+    visitedCountries: '',
+    rejectedVisas: '',
+    
+    // Financial Information
+    bankStatement: false,
+    incomeProof: false,
+    
+    // Documents Checklist
+    hasPassportCopy: false,
+    hasPhotograph: false,
+    hasFinancialDocs: false,
+    additionalDocuments: ''
   });
 
-  const addTraveler = (type: 'adult' | 'child') => {
-    setTravelers(prev => [...prev, {
-      type,
-      name: '',
-      passport: '',
-      nationality: '',
-      dateOfBirth: ''
-    }]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const totalTravelers = travelers.adults + travelers.children;
+  const totalPrice = totalTravelers * visa.price;
+
+  const nationalities = [
+    'Indian', 'Pakistani', 'Bangladeshi', 'Sri Lankan', 'Nepali', 'Afghan',
+    'American', 'British', 'Canadian', 'Australian', 'German', 'French',
+    'Italian', 'Spanish', 'Russian', 'Chinese', 'Japanese', 'Korean',
+    'Filipino', 'Indonesian', 'Malaysian', 'Thai', 'Vietnamese', 'Other'
+  ];
+
+  const purposeOptions = [
+    'Tourism', 'Business', 'Family Visit', 'Medical Treatment', 
+    'Conference/Meeting', 'Education', 'Transit', 'Employment', 'Other'
+  ];
+
+  const maritalOptions = ['Single', 'Married', 'Divorced', 'Widowed'];
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
     
-    if (type === 'adult') {
-      setFormData(prev => ({ ...prev, adults_count: prev.adults_count + 1 }));
-    } else {
-      setFormData(prev => ({ ...prev, children_count: prev.children_count + 1 }));
-    }
-  };
-
-  const updateTraveler = (index: number, field: string, value: string) => {
-    setTravelers(prev => prev.map((traveler, i) => 
-      i === index ? { ...traveler, [field]: value } : traveler
-    ));
-  };
-
-  const handleQuickBooking = () => {
-    // Point 11: Quick booking option
-    const totalPax = formData.adults_count + formData.children_count;
-    const totalAmount = totalPax * service.price;
+    // Required fields validation
+    if (!bookingData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!bookingData.email.trim()) newErrors.email = 'Email is required';
+    if (!bookingData.mobile.trim()) newErrors.mobile = 'Mobile number is required';
+    if (!bookingData.nationality) newErrors.nationality = 'Nationality is required';
+    if (!bookingData.passportNumber.trim()) newErrors.passportNumber = 'Passport number is required';
+    if (!bookingData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!bookingData.passportExpiry) newErrors.passportExpiry = 'Passport expiry is required';
+    if (!bookingData.purposeOfVisit) newErrors.purposeOfVisit = 'Purpose of visit is required';
+    if (!bookingData.occupation.trim()) newErrors.occupation = 'Occupation is required';
+    if (!bookingData.currentAddress.trim()) newErrors.currentAddress = 'Current address is required';
     
-    toast({
-      title: "🚀 Quick Booking Initiated!",
-      description: `Total: ₹${totalAmount.toLocaleString()} for ${totalPax} travelers. We'll contact you for documents.`,
-    });
-
-    // Redirect to payment or WhatsApp
-    const message = `Hi! I want to book ${service.country} ${service.visa_type} visa for ${totalPax} people. Total: ₹${totalAmount.toLocaleString()}. I'll send documents later.`;
-    window.open(`https://wa.me/919125009662?text=${encodeURIComponent(message)}`, '_blank');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleNormalSubmit = async () => {
-    setLoading(true);
-    try {
-      const totalAmount = (formData.adults_count + formData.children_count) * service.price;
-      const bookingReference = `VS${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-      const { error } = await supabase
-        .from('new_bookings')
-        .insert({
-          booking_reference: bookingReference,
-          service_id: service.id,
-          booking_type: 'visa',
-          customer_name: travelers[0]?.name || 'Guest',
-          customer_email: formData.customer_email,
-          customer_phone: formData.customer_phone,
-          adults_count: formData.adults_count,
-          children_count: formData.children_count,
-          total_amount: totalAmount,
-          final_amount: totalAmount,
-          travel_date: formData.intended_arrival,
-          special_requests: formData.special_requests,
-          booking_status: 'pending',
-          payment_status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "🎉 Visa Application Submitted!",
-        description: `Reference: ${bookingReference}. Redirecting to payment...`,
+  const handleBooking = () => {
+    if (validateForm()) {
+      const queryParams = new URLSearchParams({
+        type: 'visa',
+        id: visa.id,
+        adults: travelers.adults.toString(),
+        children: travelers.children.toString(),
+        name: bookingData.fullName,
+        email: bookingData.email,
+        mobile: bookingData.mobile,
+        nationality: bookingData.nationality,
+        passport: bookingData.passportNumber,
+        dob: bookingData.dateOfBirth,
+        expiry: bookingData.passportExpiry,
+        purpose: bookingData.purposeOfVisit,
+        amount: totalPrice.toString()
       });
 
-      // Point 8: Redirect to payment
-      setTimeout(() => {
-        window.location.href = `/payment?ref=${bookingReference}`;
-      }, 2000);
-
-    } catch (error) {
-      console.error('Visa application error:', error);
+      navigate(`/booking?${queryParams.toString()}`);
+      
       toast({
-        title: "Application Failed",
-        description: "Please try again or contact support.",
-        variant: "destructive",
+        title: "Processing Visa Application",
+        description: "Redirecting to payment options...",
       });
-    } finally {
-      setLoading(false);
     }
   };
-
-  const renderQuickBooking = () => (
-    <div className="space-y-6" data-booking-form>
-      <div className="bg-gradient-to-r from-green-500 to-blue-600 p-6 rounded-2xl text-white">
-        <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-          ⚡ Quick Visa Booking
-        </h3>
-        <p className="text-white/90">
-          Too busy to fill forms? Just select travelers, pay, and send documents later!
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label className="flex items-center gap-2 text-lg">
-            👥 Adults (18+)
-          </Label>
-          <Input
-            type="number"
-            min="1"
-            value={formData.adults_count}
-            onChange={(e) => setFormData(prev => ({ ...prev, adults_count: parseInt(e.target.value) || 1 }))}
-            className="text-lg p-4 bg-white border-gray-300 focus:border-green-500"
-          />
-          <p className="text-sm text-gray-600 mt-1">₹{service.price.toLocaleString()} each</p>
-        </div>
-        
-        <div>
-          <Label className="flex items-center gap-2 text-lg">
-            👶 Children (0-17)
-          </Label>
-          <Input
-            type="number"
-            min="0"
-            value={formData.children_count}
-            onChange={(e) => setFormData(prev => ({ ...prev, children_count: parseInt(e.target.value) || 0 }))}
-            className="text-lg p-4 bg-white border-gray-300 focus:border-green-500"
-          />
-          <p className="text-sm text-gray-600 mt-1">₹{service.price.toLocaleString()} each</p>
-        </div>
-      </div>
-
-      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-        <h4 className="font-semibold text-yellow-800 mb-2">📋 What you'll need to send later:</h4>
-        <ul className="text-sm text-yellow-700 space-y-1">
-          <li>• Passport copies (high-quality PDF/JPG)</li>
-          <li>• Photos (white background, recent)</li>
-          <li>• Flight bookings (if available)</li>
-          <li>• Hotel confirmations</li>
-        </ul>
-      </div>
-
-      <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h4 className="font-bold text-blue-900">Total Amount</h4>
-            <p className="text-blue-700">
-              {formData.adults_count} Adults + {formData.children_count} Children
-            </p>
-          </div>
-          <div className="text-2xl font-bold text-blue-600">
-            ₹{((formData.adults_count + formData.children_count) * service.price).toLocaleString()}
-          </div>
-        </div>
-        
-        <div className="flex gap-3">
-          <Button 
-            onClick={handleQuickBooking}
-            className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-lg py-3"
-          >
-            💳 Pay Now, Documents Later
-          </Button>
-          
-          <Button 
-            onClick={() => window.open('https://wa.me/919125009662', '_blank')}
-            className="bg-green-600 hover:bg-green-700 px-6"
-          >
-            <MessageCircle className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderNormalForm = () => (
-    <div className="space-y-6">
-      {step === 1 && (
-        <div>
-          <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 rounded-2xl text-white mb-6">
-            <h3 className="text-xl font-bold mb-2">
-              📋 Visa Application - {service.country}
-            </h3>
-            <p className="text-white/90">{service.visa_type} • {service.processing_time}</p>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-semibold text-lg flex items-center gap-2">
-              👥 Add All Travelers
-            </h4>
-            
-            {travelers.map((traveler, index) => (
-              <Card key={index} className="p-4 border-2 border-dashed border-gray-200">
-                <h5 className="font-medium mb-3 flex items-center gap-2">
-                  {traveler.type === 'adult' ? '👤' : '👶'} 
-                  Traveler #{index + 1} ({traveler.type})
-                </h5>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    placeholder="Full name (as in passport)"
-                    value={traveler.name}
-                    onChange={(e) => updateTraveler(index, 'name', e.target.value)}
-                    className="bg-white border-gray-300"
-                  />
-                  <Input
-                    placeholder="Passport number"
-                    value={traveler.passport}
-                    onChange={(e) => updateTraveler(index, 'passport', e.target.value)}
-                    className="bg-white border-gray-300"
-                  />
-                  <Input
-                    placeholder="Nationality"
-                    value={traveler.nationality}
-                    onChange={(e) => updateTraveler(index, 'nationality', e.target.value)}
-                    className="bg-white border-gray-300"
-                  />
-                  <Input
-                    type="date"
-                    placeholder="Date of birth"
-                    value={traveler.dateOfBirth}
-                    onChange={(e) => updateTraveler(index, 'dateOfBirth', e.target.value)}
-                    className="bg-white border-gray-300"
-                  />
-                </div>
-              </Card>
-            ))}
-            
-            <div className="flex gap-2">
-              <Button 
-                onClick={() => addTraveler('adult')}
-                variant="outline"
-                className="flex-1"
-              >
-                ➕ Add Adult
-              </Button>
-              <Button 
-                onClick={() => addTraveler('child')}
-                variant="outline"
-                className="flex-1"
-              >
-                ➕ Add Child
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">📞 Contact Information</h4>
-          </div>
-          
-          <Input
-            type="email"
-            placeholder="📧 Email address"
-            value={formData.customer_email}
-            onChange={(e) => setFormData(prev => ({ ...prev, customer_email: e.target.value }))}
-            className="bg-white border-gray-300 focus:border-blue-500"
-          />
-          
-          <Input
-            type="tel"
-            placeholder="📞 Phone number"
-            value={formData.customer_phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, customer_phone: e.target.value }))}
-            className="bg-white border-gray-300 focus:border-blue-500"
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              type="date"
-              placeholder="Intended arrival"
-              value={formData.intended_arrival}
-              onChange={(e) => setFormData(prev => ({ ...prev, intended_arrival: e.target.value }))}
-              className="bg-white border-gray-300"
-            />
-            <Input
-              type="date"
-              placeholder="Intended departure"
-              value={formData.intended_departure}
-              onChange={(e) => setFormData(prev => ({ ...prev, intended_departure: e.target.value }))}
-              className="bg-white border-gray-300"
-            />
-          </div>
-
-          <Textarea
-            placeholder="💬 Special requests or additional information..."
-            value={formData.special_requests}
-            onChange={(e) => setFormData(prev => ({ ...prev, special_requests: e.target.value }))}
-            className="bg-white border-gray-300"
-            rows={3}
-          />
-        </div>
-      )}
-
-      <div className="flex justify-between">
-        {step > 1 && (
-          <Button variant="outline" onClick={() => setStep(step - 1)}>
-            ← Previous
-          </Button>
-        )}
-        <div className="ml-auto">
-          {step < 2 ? (
-            <Button onClick={() => setStep(step + 1)} className="bg-purple-600 hover:bg-purple-700">
-              Next →
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleNormalSubmit}
-              disabled={loading}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              {loading ? '⏳ Processing...' : `💳 Submit Application - ₹${((formData.adults_count + formData.children_count) * service.price).toLocaleString()}`}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-2xl border-0">
-      <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
-        <CardTitle className="text-center">
-          🌍 {service.country} Visa Application
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="quick" className="text-sm font-medium">
-              ⚡ Quick Booking
-            </TabsTrigger>
-            <TabsTrigger value="normal" className="text-sm font-medium">
-              📋 Full Application
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="quick">
-            {renderQuickBooking()}
-          </TabsContent>
-          
-          <TabsContent value="normal">
-            {renderNormalForm()}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <Card className="shadow-2xl border-0 bg-white">
+        <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-6">
+          <CardTitle className="text-2xl text-center font-bold">
+            Apply for {visa.country} {visa.visa_type}
+          </CardTitle>
+          <div className="text-center mt-2">
+            <div className="text-3xl font-bold">{formatPrice(totalPrice)}</div>
+            <div className="text-white/80">Total for {totalTravelers} travelers</div>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="p-8 space-y-8 bg-white max-h-[80vh] overflow-y-auto">
+          {/* Travelers Section */}
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2 font-semibold text-gray-800 text-lg">
+              <Users className="h-5 w-5" />
+              Number of Travelers
+            </Label>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div>
+                  <div className="font-semibold text-gray-900">Adults (18+)</div>
+                  <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
+                    disabled={travelers.adults <= 1}
+                    className="h-10 w-10 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-12 text-center font-semibold text-lg">{travelers.adults}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, adults: prev.adults + 1 }))}
+                    className="h-10 w-10 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div>
+                  <div className="font-semibold text-gray-900">Children (Under 18)</div>
+                  <div className="text-sm text-gray-600">{formatPrice(visa.price)} each</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
+                    disabled={travelers.children <= 0}
+                    className="h-10 w-10 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-12 text-center font-semibold text-lg">{travelers.children}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelers(prev => ({ ...prev, children: prev.children + 1 }))}
+                    className="h-10 w-10 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Primary Contact Information */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Primary Contact Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">
+                  Full Name (As per Passport) *
+                </Label>
+                <Input
+                  value={bookingData.fullName}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, fullName: e.target.value }))}
+                  placeholder="Enter full name as per passport"
+                  className={`h-12 ${errors.fullName ? 'border-red-500' : ''}`}
+                />
+                {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">
+                  Email Address *
+                </Label>
+                <Input
+                  type="email"
+                  value={bookingData.email}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter email address"
+                  className={`h-12 ${errors.email ? 'border-red-500' : ''}`}
+                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">
+                  Mobile Number *
+                </Label>
+                <Input
+                  type="tel"
+                  value={bookingData.mobile}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, mobile: e.target.value }))}
+                  placeholder="Enter mobile number with country code"
+                  className={`h-12 ${errors.mobile ? 'border-red-500' : ''}`}
+                />
+                {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Occupation *</Label>
+                <Input
+                  value={bookingData.occupation}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, occupation: e.target.value }))}
+                  placeholder="Enter your occupation"
+                  className={`h-12 ${errors.occupation ? 'border-red-500' : ''}`}
+                />
+                {errors.occupation && <p className="text-red-500 text-sm mt-1">{errors.occupation}</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* Passport & Personal Details */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Passport & Personal Details
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Nationality *</Label>
+                <Select 
+                  value={bookingData.nationality} 
+                  onValueChange={(value) => setBookingData(prev => ({ ...prev, nationality: value }))}
+                >
+                  <SelectTrigger className={`h-12 ${errors.nationality ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder="Select nationality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {nationalities.map((nat) => (
+                      <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Passport Number *</Label>
+                <Input
+                  value={bookingData.passportNumber}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, passportNumber: e.target.value }))}
+                  placeholder="Enter passport number"
+                  className={`h-12 ${errors.passportNumber ? 'border-red-500' : ''}`}
+                />
+                {errors.passportNumber && <p className="text-red-500 text-sm mt-1">{errors.passportNumber}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Date of Birth *</Label>
+                <Input
+                  type="date"
+                  value={bookingData.dateOfBirth}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                  className={`h-12 ${errors.dateOfBirth ? 'border-red-500' : ''}`}
+                />
+                {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Passport Expiry Date *</Label>
+                <Input
+                  type="date"
+                  value={bookingData.passportExpiry}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, passportExpiry: e.target.value }))}
+                  className={`h-12 ${errors.passportExpiry ? 'border-red-500' : ''}`}
+                />
+                {errors.passportExpiry && <p className="text-red-500 text-sm mt-1">{errors.passportExpiry}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Passport Issue Date</Label>
+                <Input
+                  type="date"
+                  value={bookingData.passportIssueDate}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, passportIssueDate: e.target.value }))}
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Passport Issue Place</Label>
+                <Input
+                  value={bookingData.passportIssuePlace}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, passportIssuePlace: e.target.value }))}
+                  placeholder="Enter passport issue place"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Place of Birth</Label>
+                <Input
+                  value={bookingData.placeOfBirth}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, placeOfBirth: e.target.value }))}
+                  placeholder="Enter place of birth"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Marital Status</Label>
+                <Select 
+                  value={bookingData.maritalStatus} 
+                  onValueChange={(value) => setBookingData(prev => ({ ...prev, maritalStatus: value }))}
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select marital status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {maritalOptions.map((status) => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Travel Information */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Travel Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Purpose of Visit *</Label>
+                <Select 
+                  value={bookingData.purposeOfVisit} 
+                  onValueChange={(value) => setBookingData(prev => ({ ...prev, purposeOfVisit: value }))}
+                >
+                  <SelectTrigger className={`h-12 ${errors.purposeOfVisit ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder="Select purpose" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {purposeOptions.map((purpose) => (
+                      <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.purposeOfVisit && <p className="text-red-500 text-sm mt-1">{errors.purposeOfVisit}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Intended Travel Date</Label>
+                <Input
+                  type="date"
+                  value={bookingData.intendedTravelDate}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, intendedTravelDate: e.target.value }))}
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Duration of Stay</Label>
+                <Input
+                  value={bookingData.durationOfStay}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, durationOfStay: e.target.value }))}
+                  placeholder="e.g., 7 days, 2 weeks"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Previous Visits to {visa.country}</Label>
+                <Input
+                  value={bookingData.previousVisits}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, previousVisits: e.target.value }))}
+                  placeholder="e.g., First time, 2019, Multiple times"
+                  className="h-12"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Address Information */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Address Information
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Current Address *</Label>
+                <Textarea
+                  value={bookingData.currentAddress}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, currentAddress: e.target.value }))}
+                  placeholder="Enter your current residential address"
+                  className={`min-h-20 ${errors.currentAddress ? 'border-red-500' : ''}`}
+                />
+                {errors.currentAddress && <p className="text-red-500 text-sm mt-1">{errors.currentAddress}</p>}
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Permanent Address</Label>
+                <Textarea
+                  value={bookingData.permanentAddress}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, permanentAddress: e.target.value }))}
+                  placeholder="Enter permanent address (if different from current)"
+                  className="min-h-20"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Family Information */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl">Family Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Father's Full Name</Label>
+                <Input
+                  value={bookingData.fatherName}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, fatherName: e.target.value }))}
+                  placeholder="Enter father's full name"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Mother's Full Name</Label>
+                <Input
+                  value={bookingData.motherName}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, motherName: e.target.value }))}
+                  placeholder="Enter mother's full name"
+                  className="h-12"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Emergency Contact */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              Emergency Contact
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Contact Name</Label>
+                <Input
+                  value={bookingData.emergencyContactName}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, emergencyContactName: e.target.value }))}
+                  placeholder="Emergency contact name"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Contact Phone</Label>
+                <Input
+                  type="tel"
+                  value={bookingData.emergencyContactPhone}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, emergencyContactPhone: e.target.value }))}
+                  placeholder="Emergency contact phone"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Relationship</Label>
+                <Input
+                  value={bookingData.emergencyContactRelation}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, emergencyContactRelation: e.target.value }))}
+                  placeholder="e.g., Father, Mother, Spouse"
+                  className="h-12"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information */}
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="font-bold text-gray-900 text-xl">Financial Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Monthly Income</Label>
+                <Input
+                  value={bookingData.monthlyIncome}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, monthlyIncome: e.target.value }))}
+                  placeholder="Enter monthly income"
+                  className="h-12"
+                />
+              </div>
+
+              <div>
+                <Label className="font-semibold text-gray-700 mb-2 block">Employer/Company</Label>
+                <Input
+                  value={bookingData.employer}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, employer: e.target.value }))}
+                  placeholder="Enter employer/company name"
+                  className="h-12"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Special Requests */}
+          <div className="space-y-4 border-t pt-6">
+            <Label className="font-semibold text-gray-700 text-lg">Special Requests or Additional Information</Label>
+            <Textarea
+              value={bookingData.specialRequests}
+              onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
+              placeholder="Any special requirements, medical conditions, additional travelers, or questions..."
+              className="min-h-24"
+            />
+          </div>
+
+          {/* Document Notice */}
+          <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-900 mb-2">📋 Document Collection Process</h4>
+            <p className="text-blue-800 text-sm">
+              After booking confirmation, our visa experts will contact you via email/WhatsApp with:
+            </p>
+            <ul className="text-blue-800 text-sm mt-2 space-y-1 list-disc list-inside">
+              <li>Complete document checklist specific to your visa type</li>
+              <li>Document format and size requirements</li>
+              <li>Step-by-step application guidance</li>
+              <li>Secure document upload links</li>
+            </ul>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            onClick={handleBooking}
+            className="w-full h-16 text-xl font-bold bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white shadow-lg"
+          >
+            Apply Now - {formatPrice(totalPrice)}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
