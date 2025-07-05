@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,12 +33,14 @@ const VisaManagement = () => {
     },
   });
 
+  // For now, we'll use a simplified applications view since visa_applications table doesn't exist
   const { data: applications } = useQuery({
-    queryKey: ['visa_applications'],
+    queryKey: ['visa_bookings'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('visa_applications')
-        .select('*, visa_services(country, visa_type)')
+        .from('bookings')
+        .select('*')
+        .eq('service_type', 'visa')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -45,22 +48,21 @@ const VisaManagement = () => {
     },
   });
 
-  const updateApplicationStatus = async (applicationId: string, status: 'pending' | 'approved' | 'rejected' | 'processing', adminNotes?: string) => {
+  const updateApplicationStatus = async (bookingId: string, status: 'pending' | 'confirmed' | 'cancelled' | 'completed') => {
     try {
       const { error } = await supabase
-        .from('visa_applications')
+        .from('bookings')
         .update({ 
-          status,
-          admin_notes: adminNotes || null,
+          booking_status: status,
           updated_at: new Date().toISOString()
         })
-        .eq('id', applicationId);
+        .eq('id', bookingId);
 
       if (error) throw error;
 
       toast({
         title: "Status Updated",
-        description: `Application status changed to ${status}`,
+        description: `Booking status changed to ${status}`,
       });
 
       refetch();
@@ -68,7 +70,7 @@ const VisaManagement = () => {
       console.error('Error updating status:', error);
       toast({
         title: "Error",
-        description: "Failed to update application status",
+        description: "Failed to update booking status",
         variant: "destructive",
       });
     }
@@ -76,9 +78,9 @@ const VisaManagement = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      case 'processing': return 'bg-yellow-500';
+      case 'confirmed': return 'bg-green-500';
+      case 'cancelled': return 'bg-red-500';
+      case 'completed': return 'bg-blue-500';
       default: return 'bg-gray-500';
     }
   };
@@ -116,24 +118,24 @@ const VisaManagement = () => {
                   <div key={application.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <h4 className="font-semibold">{application.applicant_name}</h4>
+                        <h4 className="font-semibold">{application.customer_name}</h4>
                         <p className="text-sm text-gray-600">
-                          {application.visa_services?.country} - {application.visa_services?.visa_type}
+                          {application.service_title}
                         </p>
                       </div>
-                      <Badge className={getStatusColor(application.status)}>
-                        {application.status}
+                      <Badge className={getStatusColor(application.booking_status)}>
+                        {application.booking_status}
                       </Badge>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
-                        <span className="text-gray-600">Passport:</span>
-                        <span className="ml-2">{application.passport_number || 'N/A'}</span>
+                        <span className="text-gray-600">Email:</span>
+                        <span className="ml-2">{application.customer_email || 'N/A'}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Nationality:</span>
-                        <span className="ml-2">{application.nationality || 'N/A'}</span>
+                        <span className="text-gray-600">Phone:</span>
+                        <span className="ml-2">{application.customer_phone || 'N/A'}</span>
                       </div>
                     </div>
 
@@ -141,25 +143,25 @@ const VisaManagement = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateApplicationStatus(application.id, 'approved')}
+                        onClick={() => updateApplicationStatus(application.id, 'confirmed')}
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
-                        Approve
+                        Confirm
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                        onClick={() => updateApplicationStatus(application.id, 'cancelled')}
                       >
                         <XCircle className="h-4 w-4 mr-1" />
-                        Reject
+                        Cancel
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateApplicationStatus(application.id, 'processing')}
+                        onClick={() => updateApplicationStatus(application.id, 'completed')}
                       >
-                        Processing
+                        Complete
                       </Button>
                     </div>
                   </div>

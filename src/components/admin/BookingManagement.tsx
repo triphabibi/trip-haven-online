@@ -22,7 +22,7 @@ const BookingManagement = () => {
   const fetchBookings = async () => {
     try {
       const { data, error } = await supabase
-        .from('new_bookings')
+        .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -43,7 +43,7 @@ const BookingManagement = () => {
   const updateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
     try {
       const { error } = await supabase
-        .from('new_bookings')
+        .from('bookings')
         .update({ booking_status: newStatus })
         .eq('id', bookingId);
 
@@ -66,9 +66,9 @@ const BookingManagement = () => {
   };
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = booking.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          booking.customer_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.booking_reference.toLowerCase().includes(searchTerm.toLowerCase());
+                         booking.booking_reference?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || booking.booking_status === statusFilter;
     
@@ -79,12 +79,12 @@ const BookingManagement = () => {
     const csvContent = [
       ['Reference', 'Customer', 'Email', 'Phone', 'Amount', 'Status', 'Date'].join(','),
       ...filteredBookings.map(booking => [
-        booking.booking_reference,
-        booking.customer_name,
+        booking.booking_reference || '',
+        booking.customer_name || '',
         booking.customer_email || '',
         booking.customer_phone || '',
-        booking.final_amount,
-        booking.booking_status,
+        booking.total_amount || 0,
+        booking.booking_status || '',
         new Date(booking.created_at).toLocaleDateString()
       ].join(','))
     ].join('\n');
