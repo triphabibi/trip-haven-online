@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
-import GuestBookingForm from '@/components/booking/GuestBookingForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useTour } from '@/hooks/useTours';
 import { usePackage } from '@/hooks/usePackages';
 import { useTicket } from '@/hooks/useTickets';
@@ -14,6 +14,7 @@ import Loading from '@/components/common/Loading';
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const serviceType = searchParams.get('type') || 'general';
   const serviceId = searchParams.get('id') || 'sample-service-id';
 
@@ -23,6 +24,31 @@ const BookingPage = () => {
   const { data: visa, isLoading: visaLoading } = useVisa(serviceType === 'visa' ? serviceId : '');
 
   const isLoading = tourLoading || packageLoading || ticketLoading || visaLoading;
+
+  // Get booking details from URL params
+  const bookingDetails = {
+    name: searchParams.get('name') || '',
+    email: searchParams.get('email') || '',
+    mobile: searchParams.get('mobile') || '',
+    amount: parseFloat(searchParams.get('amount') || '0'),
+    adults: parseInt(searchParams.get('adults') || '1'),
+    children: parseInt(searchParams.get('children') || '0'),
+    infants: parseInt(searchParams.get('infants') || '0'),
+    date: searchParams.get('date') || '',
+    time: searchParams.get('time') || '',
+  };
+
+  useEffect(() => {
+    // If we have all required booking details, redirect directly to payment
+    if (bookingDetails.name && bookingDetails.email && bookingDetails.amount > 0) {
+      // Simulate payment gateway redirect
+      setTimeout(() => {
+        alert(`Redirecting to payment gateway for ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED' }).format(bookingDetails.amount)}`);
+        // In real implementation, redirect to actual payment gateway
+        navigate('/payment-success');
+      }, 1000);
+    }
+  }, [bookingDetails, navigate]);
 
   const getServiceData = () => {
     switch (serviceType) {
@@ -54,13 +80,6 @@ const BookingPage = () => {
           priceChild: 0,
           priceInfant: 0
         } : null;
-      case 'transfer':
-        return {
-          title: 'Transfer Service',
-          priceAdult: 150,
-          priceChild: 0,
-          priceInfant: 0
-        };
       default:
         return {
           title: 'General Service',
@@ -77,7 +96,7 @@ const BookingPage = () => {
     return (
       <div className="min-h-screen">
         <Header />
-        <Loading message="Loading booking details..." />
+        <Loading message="Processing booking..." />
         <Footer />
       </div>
     );
@@ -98,7 +117,38 @@ const BookingPage = () => {
     );
   }
 
-  // Use simplified ticket booking form for tickets
+  // If we have booking details, show processing message
+  if (bookingDetails.name && bookingDetails.email) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <Card>
+              <CardHeader>
+                <CardTitle>Processing Your Booking</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <h2 className="text-xl font-semibold">{serviceData.title}</h2>
+                  <p className="text-gray-600">Redirecting to secure payment gateway...</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED' }).format(bookingDetails.amount)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
+
+  // For tickets, use the specialized booking form
   if (serviceType === 'ticket' && ticket) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -138,27 +188,20 @@ const BookingPage = () => {
     );
   }
 
-  // Use regular booking form for other services
+  // Fallback - redirect back to service page
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto text-center">
           <Card>
             <CardHeader>
-              <CardTitle>Complete Your Booking</CardTitle>
-              <p className="text-gray-600">Service: {serviceData.title}</p>
+              <CardTitle>Booking Error</CardTitle>
             </CardHeader>
             <CardContent>
-              <GuestBookingForm
-                serviceId={serviceId}
-                serviceType={serviceType}
-                serviceTitle={serviceData.title}
-                priceAdult={serviceData.priceAdult}
-                priceChild={serviceData.priceChild}
-                priceInfant={serviceData.priceInfant}
-              />
+              <p className="text-gray-600 mb-4">Please fill out the booking form first.</p>
+              <Button onClick={() => navigate(-1)}>Go Back</Button>
             </CardContent>
           </Card>
         </div>
