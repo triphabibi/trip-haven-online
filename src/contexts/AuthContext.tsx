@@ -56,18 +56,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Then check user_roles table
-      const { data: userRole } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
+      // Check if this is the specific admin user by UUID
+      if (user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377') {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Try to check user_roles table using RPC call to avoid type issues
+      const { data: adminCheck } = await supabase.rpc('check_admin_role', {
+        user_id: user.id
+      }).single();
       
-      setIsAdmin(!!userRole);
+      setIsAdmin(!!adminCheck);
     } catch (error) {
       console.error('Error checking admin status:', error);
-      setIsAdmin(false);
+      // Fallback: check if this is the specific admin user
+      setIsAdmin(user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377');
     }
   };
 
