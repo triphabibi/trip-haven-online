@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, UserPlus, LogIn } from 'lucide-react';
+import AdminCredentials from '@/components/auth/AdminCredentials';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -61,7 +62,7 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="shadow-xl">
+        <Card className="shadow-xl bg-white">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-900">
               TripHabibi Admin
@@ -71,7 +72,7 @@ const AuthPage = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="bg-white">
             <Tabs value={isLogin ? "login" : "signup"} onValueChange={(value) => setIsLogin(value === "login")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login" className="flex items-center gap-2">
@@ -95,6 +96,7 @@ const AuthPage = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                       required={!isLogin}
                       placeholder="Enter your full name"
+                      className="bg-white"
                     />
                   </div>
                 </TabsContent>
@@ -108,6 +110,7 @@ const AuthPage = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     required
                     placeholder="admin@triphabibi.in"
+                    className="bg-white"
                   />
                 </div>
                 
@@ -121,6 +124,7 @@ const AuthPage = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                       required
                       placeholder="Enter your password"
+                      className="bg-white pr-10"
                     />
                     <Button
                       type="button"
@@ -144,16 +148,7 @@ const AuthPage = () => {
               </form>
             </Tabs>
             
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700 font-medium">Demo Admin Credentials:</p>
-              <p className="text-xs text-blue-600 mt-1">
-                Email: admin@triphabibi.in<br />
-                Password: admin123
-              </p>
-              <p className="text-xs text-blue-500 mt-2">
-                Note: Create this account via signup first
-              </p>
-            </div>
+            <AdminCredentials />
           </CardContent>
         </Card>
       </div>
