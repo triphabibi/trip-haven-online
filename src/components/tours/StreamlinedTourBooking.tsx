@@ -84,52 +84,52 @@ const StreamlinedTourBooking = ({ tour }: StreamlinedTourBookingProps) => {
         <div className="space-y-4">
           <Label className="text-sm font-semibold text-gray-700">Number of Travelers</Label>
           
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Users className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium">Adults</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setAdults(Math.max(1, adults - 1))}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
                 <Minus className="h-3 w-3" />
               </Button>
-              <span className="font-semibold w-8 text-center">{adults}</span>
+              <span className="font-semibold w-6 text-center flex-shrink-0">{adults}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setAdults(adults + 1)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
                 <Plus className="h-3 w-3" />
               </Button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Users className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium">Children</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setChildren(Math.max(0, children - 1))}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
                 <Minus className="h-3 w-3" />
               </Button>
-              <span className="font-semibold w-8 text-center">{children}</span>
+              <span className="font-semibold w-6 text-center flex-shrink-0">{children}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setChildren(children + 1)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
                 <Plus className="h-3 w-3" />
               </Button>
