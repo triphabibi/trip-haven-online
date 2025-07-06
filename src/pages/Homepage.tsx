@@ -11,7 +11,6 @@ import OptimizedFeaturedTours from '@/components/homepage/OptimizedFeaturedTours
 import TrendingSection from '@/components/homepage/TrendingSection';
 import CompactAnimatedStats from '@/components/homepage/CompactAnimatedStats';
 import EnhancedVideoSection from '@/components/homepage/EnhancedVideoSection';
-import EnhancedFooter from '@/components/layout/EnhancedFooter';
 import VoiceAIAssistant from '@/components/common/VoiceAIAssistant';
 import WhatsAppButton from '@/components/common/WhatsAppButton';
 import ScrollToTop from '@/components/common/ScrollToTop';
@@ -128,14 +127,13 @@ const Homepage = () => {
           {/* Customer Reviews - Point 30: Will be added in next update */}
         </main>
         
-        {/* Enhanced Footer - Point 19: Mobile optimized */}
-        <EnhancedFooter />
+        {/* Regular Footer - without the navigation footer */}
+        <Footer />
         
         {/* Fixed Components */}
         <WhatsAppButton />
         <VoiceAIAssistant />
         <ScrollToTop />
-        <EnhancedMobileTabBar />
         <StickyMobileCTA />
         <NotificationSystem />
       </div>

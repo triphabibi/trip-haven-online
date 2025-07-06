@@ -34,7 +34,10 @@ const ContentManagementSystem = () => {
     contact_phone: '',
     address: '',
     currency: 'AED',
-    maintenance_mode: false
+    maintenance_mode: false,
+    meta_title: '',
+    meta_description: '',
+    meta_keywords: ''
   });
 
   const { data: settings, isLoading } = useQuery({
@@ -192,7 +195,7 @@ const ContentManagementSystem = () => {
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="maintenance_mode"
-                      checked={siteSettings.maintenance_mode === 'true'}
+                      checked={siteSettings.maintenance_mode === true || siteSettings.maintenance_mode === 'true'}
                       onCheckedChange={(checked) => handleSettingUpdate('maintenance_mode', checked)}
                     />
                     <Label htmlFor="maintenance_mode">Maintenance Mode</Label>
@@ -228,7 +231,7 @@ const ContentManagementSystem = () => {
                   <Label htmlFor="meta_title">Default Meta Title</Label>
                   <Input
                     id="meta_title"
-                    value={siteSettings.meta_title || ''}
+                    value={siteSettings.meta_title}
                     onChange={(e) => handleSettingUpdate('meta_title', e.target.value)}
                     placeholder="TripHabibi - Your Premier Travel Partner"
                   />
@@ -238,7 +241,7 @@ const ContentManagementSystem = () => {
                   <Label htmlFor="meta_description">Default Meta Description</Label>
                   <Textarea
                     id="meta_description"
-                    value={siteSettings.meta_description || ''}
+                    value={siteSettings.meta_description}
                     onChange={(e) => handleSettingUpdate('meta_description', e.target.value)}
                     placeholder="Discover amazing tours, visa services, and travel packages with TripHabibi"
                     rows={3}
@@ -249,7 +252,7 @@ const ContentManagementSystem = () => {
                   <Label htmlFor="meta_keywords">Default Meta Keywords</Label>
                   <Input
                     id="meta_keywords"
-                    value={siteSettings.meta_keywords || ''}
+                    value={siteSettings.meta_keywords}
                     onChange={(e) => handleSettingUpdate('meta_keywords', e.target.value)}
                     placeholder="travel, tourism, tours, visa, Dubai, UAE"
                   />
