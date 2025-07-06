@@ -12,14 +12,11 @@ import TourItinerary from '@/components/tours/TourItinerary';
 import TourInclusions from '@/components/tours/TourInclusions';
 import TourReviews from '@/components/tours/TourReviews';
 import TourFAQ from '@/components/tours/TourFAQ';
-import ProfessionalBookingFlow from '@/components/booking/ProfessionalBookingFlow';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import IntegratedBookingFlow from '@/components/booking/IntegratedBookingFlow';
 
 const TourDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: tour, isLoading, error } = useTour(id || '');
-  const [showBooking, setShowBooking] = useState(false);
 
   if (isLoading) {
     return (
@@ -46,28 +43,6 @@ const TourDetailPage = () => {
     );
   }
 
-  if (showBooking) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <ProfessionalBookingFlow
-            bookingData={{
-              serviceId: tour.id,
-              serviceType: 'tour',
-              serviceTitle: tour.title,
-              priceAdult: tour.price_adult,
-              priceChild: tour.price_child,
-              priceInfant: tour.price_infant
-            }}
-            onComplete={() => setShowBooking(false)}
-          />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen">
       <Header />
@@ -83,43 +58,21 @@ const TourDetailPage = () => {
               <TourHighlights tour={tour} />
               <TourItinerary tour={tour} />
               <TourInclusions tour={tour} />
-            <TourReviews tourId={tour.id} rating={tour.rating} totalReviews={tour.total_reviews} />
-            <TourFAQ />
+              <TourReviews tourId={tour.id} rating={tour.rating} totalReviews={tour.total_reviews} />
+              <TourFAQ />
             </div>
             
             <div className="lg:col-span-1">
-              <div className="sticky top-8 space-y-4">
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-blue-600">
-                      AED {tour.price_adult.toLocaleString()}
-                    </div>
-                    <p className="text-gray-600">per adult</p>
-                  </div>
-                  
-                  <Button 
-                    onClick={() => setShowBooking(true)}
-                    className="w-full h-12 text-lg font-semibold"
-                    size="lg"
-                  >
-                    Book Now
-                  </Button>
-                  
-                  <div className="mt-4 space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>Duration:</span>
-                      <span>{tour.duration}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Group size:</span>
-                      <span>Up to {tour.max_capacity} people</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Languages:</span>
-                      <span>{tour.languages?.join(', ')}</span>
-                    </div>
-                  </div>
-                </div>
+              <div className="sticky top-8">
+                <IntegratedBookingFlow
+                  serviceId={tour.id}
+                  serviceType="tour"
+                  serviceTitle={tour.title}
+                  priceAdult={tour.price_adult}
+                  priceChild={tour.price_child}
+                  priceInfant={tour.price_infant}
+                  serviceImage={tour.featured_image || tour.image_urls?.[0]}
+                />
               </div>
             </div>
           </div>
