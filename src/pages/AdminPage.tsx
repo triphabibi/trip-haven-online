@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -7,10 +6,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Loading from '@/components/common/Loading';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -31,9 +33,9 @@ const AdminPage = () => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error || !profile) throw error || new Error('Profile not found');
 
-      if (profile?.role === 'admin' || profile?.is_admin) {
+      if (profile.role === 'admin' || profile.is_admin === true) {
         setIsAdmin(true);
       } else {
         toast({
@@ -41,14 +43,18 @@ const AdminPage = () => {
           description: "You don't have admin privileges.",
           variant: "destructive",
         });
+
+        // Redirect to login page
+        navigate('/auth');
       }
     } catch (error) {
       console.error('Error checking admin access:', error);
       toast({
         title: "Error",
-        description: "Failed to verify admin access",
+        description: "Failed to verify admin access.",
         variant: "destructive",
       });
+      navigate('/auth'); // fallback redirect
     } finally {
       setLoading(false);
     }
