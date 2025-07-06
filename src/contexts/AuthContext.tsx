@@ -44,20 +44,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      // First check profiles table for backward compatibility
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.role === 'admin') {
+      // Check if this is the specific admin user by UUID first
+      if (user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377') {
         setIsAdmin(true);
         return;
       }
 
-      // Check if this is the specific admin user by UUID
-      if (user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377') {
+      // Check profiles table for admin role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.role === 'admin' || profile?.is_admin) {
         setIsAdmin(true);
         return;
       }

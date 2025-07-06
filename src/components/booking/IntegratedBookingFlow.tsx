@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import ModularPaymentGateway from './ModularPaymentGateway';
-import { CalendarDays, Users, Phone, Mail, User } from 'lucide-react';
+import { CreditCard, Wallet, Banknote, Star, Clock, Users, MapPin } from 'lucide-react';
 
 interface IntegratedBookingFlowProps {
   serviceId: string;
@@ -29,11 +30,6 @@ const IntegratedBookingFlow = ({
   priceInfant = 0,
   serviceImage
 }: IntegratedBookingFlowProps) => {
-  const [step, setStep] = useState(1);
-  const [bookingId, setBookingId] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -45,6 +41,9 @@ const IntegratedBookingFlow = ({
     pickupLocation: '',
     specialRequests: ''
   });
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const calculateTotal = () => {
     return (formData.adults * priceAdult) + 
@@ -52,7 +51,7 @@ const IntegratedBookingFlow = ({
            (formData.infants * priceInfant);
   };
 
-  const handleBookingSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -78,20 +77,38 @@ const IntegratedBookingFlow = ({
           final_amount: totalAmount,
           special_requests: formData.specialRequests,
           booking_status: 'pending',
-          payment_status: 'pending'
+          payment_status: 'pending',
+          payment_gateway: paymentMethod
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setBookingId(data.id);
-      setStep(2);
-      
       toast({
         title: "Booking Created!",
-        description: `Booking reference: ${data.booking_reference}`,
+        description: `Booking reference: ${data.booking_reference}. Redirecting to payment...`,
       });
+
+      // Simulate payment redirect based on selected method
+      setTimeout(() => {
+        if (paymentMethod === 'razorpay') {
+          toast({
+            title: "Redirecting to Razorpay",
+            description: "Please complete your payment",
+          });
+        } else if (paymentMethod === 'stripe') {
+          toast({
+            title: "Redirecting to Stripe",
+            description: "Please complete your payment",
+          });
+        } else {
+          toast({
+            title: "Cash Payment Selected",
+            description: "Please pay at pickup location",
+          });
+        }
+      }, 1500);
 
     } catch (error: any) {
       toast({
@@ -104,99 +121,41 @@ const IntegratedBookingFlow = ({
     }
   };
 
-  const handlePaymentSuccess = (paymentId: string, gateway: string) => {
-    toast({
-      title: "Payment Successful!",
-      description: `Your booking has been confirmed. Payment ID: ${paymentId}`,
-    });
-    
-    // Redirect to confirmation page or reset form
-    setTimeout(() => {
-      window.location.href = '/booking-history';
-    }, 2000);
-  };
-
-  const handlePaymentError = (error: string) => {
-    toast({
-      title: "Payment Failed",
-      description: error,
-      variant: "destructive",
-    });
-    
-    // Allow user to try again
-    setStep(1);
-  };
-
-  if (step === 2 && bookingId) {
-    return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Booking Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Booking Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="font-medium">{serviceTitle}</span>
+  return (
+    <div className="space-y-6">
+      {/* Service Summary Card */}
+      <Card>
+        <CardContent className="p-4">
+          {serviceImage && (
+            <img src={serviceImage} alt={serviceTitle} className="w-full h-32 object-cover rounded-lg mb-3" />
+          )}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg">{serviceTitle}</h3>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                <span>4.8 (127 reviews)</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>{formData.customerName}</span>
-                <span>{formData.customerEmail}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Travelers: {formData.adults + formData.children + formData.infants}</span>
-                <span>{formData.travelDate}</span>
-              </div>
-              <div className="border-t pt-3">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total Amount:</span>
-                  <span className="text-blue-600">AED {calculateTotal().toFixed(2)}</span>
-                </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>Full Day</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Payment Gateway */}
-        <ModularPaymentGateway
-          bookingId={bookingId}
-          amount={calculateTotal()}
-          customerName={formData.customerName}
-          customerEmail={formData.customerEmail}
-          customerPhone={formData.customerPhone}
-          onSuccess={handlePaymentSuccess}
-          onError={handlePaymentError}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto">
+      {/* Booking Form */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Book {serviceTitle}
-          </CardTitle>
-          {serviceImage && (
-            <img
-              src={serviceImage}
-              alt={serviceTitle}
-              className="w-full h-48 object-cover rounded-lg mt-4"
-            />
-          )}
+          <CardTitle>Book Your Experience</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleBookingSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="customerName" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Full Name *
-                </Label>
+                <Label htmlFor="customerName">Full Name *</Label>
                 <Input
                   id="customerName"
                   value={formData.customerName}
@@ -204,12 +163,8 @@ const IntegratedBookingFlow = ({
                   required
                 />
               </div>
-              
               <div>
-                <Label htmlFor="customerEmail" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email *
-                </Label>
+                <Label htmlFor="customerEmail">Email *</Label>
                 <Input
                   id="customerEmail"
                   type="email"
@@ -218,24 +173,16 @@ const IntegratedBookingFlow = ({
                   required
                 />
               </div>
-              
               <div>
-                <Label htmlFor="customerPhone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Phone Number
-                </Label>
+                <Label htmlFor="customerPhone">Phone</Label>
                 <Input
                   id="customerPhone"
                   value={formData.customerPhone}
                   onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
                 />
               </div>
-              
               <div>
-                <Label htmlFor="travelDate" className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4" />
-                  Travel Date
-                </Label>
+                <Label htmlFor="travelDate">Travel Date</Label>
                 <Input
                   id="travelDate"
                   type="date"
@@ -246,109 +193,131 @@ const IntegratedBookingFlow = ({
             </div>
 
             {/* Group Size */}
-            <div>
-              <Label className="flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4" />
-                Group Size
-              </Label>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="adults" className="text-sm">Adults</Label>
-                  <Select 
-                    value={formData.adults.toString()} 
-                    onValueChange={(value) => setFormData({ ...formData, adults: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1,2,3,4,5,6,7,8].map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">AED {priceAdult} each</p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="children" className="text-sm">Children</Label>
-                  <Select 
-                    value={formData.children.toString()} 
-                    onValueChange={(value) => setFormData({ ...formData, children: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0,1,2,3,4].map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">AED {priceChild} each</p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="infants" className="text-sm">Infants</Label>
-                  <Select 
-                    value={formData.infants.toString()} 
-                    onValueChange={(value) => setFormData({ ...formData, infants: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0,1,2,3].map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">AED {priceInfant} each</p>
-                </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="adults">Adults</Label>
+                <Select value={formData.adults.toString()} onValueChange={(value) => setFormData({ ...formData, adults: parseInt(value) })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1,2,3,4,5,6,7,8].map(num => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="children">Children</Label>
+                <Select value={formData.children.toString()} onValueChange={(value) => setFormData({ ...formData, children: parseInt(value) })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0,1,2,3,4].map(num => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="infants">Infants</Label>
+                <Select value={formData.infants.toString()} onValueChange={(value) => setFormData({ ...formData, infants: parseInt(value) })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0,1,2,3].map(num => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             {/* Additional Details */}
-            <div>
-              <Label htmlFor="pickupLocation">Pickup Location (Optional)</Label>
-              <Input
-                id="pickupLocation"
-                value={formData.pickupLocation}
-                onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
-                placeholder="Enter pickup location"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="specialRequests">Special Requests (Optional)</Label>
-              <Input
-                id="specialRequests"
-                value={formData.specialRequests}
-                onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
-                placeholder="Any special requirements"
-              />
-            </div>
-
-            {/* Total & Submit */}
-            <div className="border-t pt-6">
-              <div className="flex justify-between items-center mb-6">
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">Total Amount</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    AED {calculateTotal().toFixed(2)}
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="pickupLocation">Pickup Location</Label>
+                <Input
+                  id="pickupLocation"
+                  value={formData.pickupLocation}
+                  onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
+                  placeholder="Hotel name or address"
+                />
               </div>
               
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-lg font-semibold" 
-                disabled={isSubmitting}
-                size="lg"
-              >
-                {isSubmitting ? 'Creating Booking...' : `Proceed to Payment - AED ${calculateTotal().toFixed(2)}`}
-              </Button>
+              <div>
+                <Label htmlFor="specialRequests">Special Requests</Label>
+                <Textarea
+                  id="specialRequests"
+                  value={formData.specialRequests}
+                  onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
+                  placeholder="Any special requirements..."
+                  rows={3}
+                />
+              </div>
             </div>
+
+            {/* Payment Method Selection */}
+            <div>
+              <Label className="text-base font-semibold">Payment Method</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-3">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="razorpay" id="razorpay" />
+                  <Label htmlFor="razorpay" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Wallet className="h-4 w-4 text-blue-600" />
+                    Razorpay (UPI, Cards, Net Banking)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="stripe" id="stripe" />
+                  <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <CreditCard className="h-4 w-4 text-purple-600" />
+                    Stripe (International Cards)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="cash" id="cash" />
+                  <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Banknote className="h-4 w-4 text-green-600" />
+                    Cash on Delivery
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Price Summary */}
+            <div className="border-t pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span>Adults ({formData.adults} × AED {priceAdult})</span>
+                <span>AED {formData.adults * priceAdult}</span>
+              </div>
+              {formData.children > 0 && (
+                <div className="flex justify-between">
+                  <span>Children ({formData.children} × AED {priceChild})</span>
+                  <span>AED {formData.children * priceChild}</span>
+                </div>
+              )}
+              {formData.infants > 0 && (
+                <div className="flex justify-between">
+                  <span>Infants ({formData.infants} × AED {priceInfant})</span>
+                  <span>AED {formData.infants * priceInfant}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg border-t pt-2">
+                <span>Total:</span>
+                <span className="text-blue-600">AED {calculateTotal()}</span>
+              </div>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-12 text-lg font-semibold" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : `Book Now - AED ${calculateTotal()}`}
+            </Button>
           </form>
         </CardContent>
       </Card>
