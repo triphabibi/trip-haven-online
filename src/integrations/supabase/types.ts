@@ -486,7 +486,7 @@ export type Database = {
         Insert: {
           adults_count?: number | null
           base_amount?: number
-          booking_reference: string
+          booking_reference?: string
           booking_status?: string | null
           cancelled_at?: string | null
           children_count?: number | null

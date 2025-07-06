@@ -43,7 +43,7 @@ const BookingPage = () => {
           priceAdult: packageData.price_adult,
           priceChild: packageData.price_child,
           priceInfant: packageData.price_infant,
-          image: packageData.featured_image,
+          image: packageData.image_urls?.[0] || '/placeholder.svg',
           description: packageData.description
         } : null;
       case 'ticket':
@@ -53,7 +53,7 @@ const BookingPage = () => {
           priceAdult: ticket.price_adult,
           priceChild: ticket.price_child || 0,
           priceInfant: ticket.price_infant || 0,
-          image: ticket.featured_image,
+          image: ticket.image_urls?.[0] || '/placeholder.svg',
           description: ticket.description
         } : null;
       case 'visa':
@@ -63,7 +63,7 @@ const BookingPage = () => {
           priceAdult: visa.price,
           priceChild: 0,
           priceInfant: 0,
-          image: visa.featured_image,
+          image: visa.image_urls?.[0] || '/placeholder.svg',
           description: visa.description
         } : null;
       case 'transfer':

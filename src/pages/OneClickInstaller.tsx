@@ -487,31 +487,33 @@ const OneClickInstaller = () => {
       
       const promoCodes = [
         {
+          title: 'Welcome Discount',
           code: 'WELCOME10',
           discount_type: 'percentage',
           discount_value: 10,
           max_uses: 100,
           current_uses: 0,
-          applicable_to: ['tour', 'package'],
+          applicable_categories: ['tour', 'package'],
           is_active: true,
           valid_from: new Date().toISOString(),
-          valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+          valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         },
         {
+          title: 'First Time Discount',
           code: 'FIRST500',
           discount_type: 'fixed',
           discount_value: 500,
           max_uses: 50,
           current_uses: 0,
-          applicable_to: ['tour', 'package', 'visa'],
+          applicable_categories: ['tour', 'package', 'visa'],
           is_active: true,
           valid_from: new Date().toISOString(),
-          valid_until: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString() // 60 days from now
+          valid_until: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
         }
       ];
 
       for (const promo of promoCodes) {
-        await supabase.from('new_promo_codes').insert(promo);
+        await supabase.from('promo_codes').insert(promo);
       }
 
       setProgress(100);

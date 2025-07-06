@@ -72,24 +72,23 @@ const EnhancedTourBooking = ({ tour }: EnhancedTourBookingProps) => {
     setLoading(true);
     try {
       const totalAmount = calculateTotal();
-      const bookingReference = `TR${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
       const { error } = await supabase
         .from('new_bookings')
         .insert({
-          booking_reference: bookingReference,
           service_id: tour.id,
-          booking_type: 'tour',
+          service_type: 'tour',
+          service_title: tour.title,
           customer_name: formData.customer_name,
           customer_email: formData.customer_email,
           customer_phone: formData.customer_phone,
           adults_count: formData.adults_count,
           children_count: formData.children_count,
           infants_count: formData.infants_count,
+          base_amount: totalAmount,
           total_amount: totalAmount,
           final_amount: totalAmount,
           travel_date: formData.travel_date,
-          selected_time: formData.selected_time,
           pickup_location: formData.pickup_location,
           special_requests: formData.special_requests,
           booking_status: 'pending',
@@ -100,7 +99,7 @@ const EnhancedTourBooking = ({ tour }: EnhancedTourBookingProps) => {
 
       toast({
         title: "🎉 Booking Submitted!",
-        description: `Reference: ${bookingReference}. We'll contact you shortly!`,
+        description: `Your booking has been submitted successfully!`,
       });
 
       setStep(4); // Success step

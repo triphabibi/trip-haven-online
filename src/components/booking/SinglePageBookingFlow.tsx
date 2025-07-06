@@ -1,34 +1,31 @@
-
 import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { CreditCard, Wallet, Banknote } from 'lucide-react';
 
-interface BookingFormProps {
+interface SinglePageBookingFlowProps {
   serviceId: string;
   serviceType: string;
   serviceTitle: string;
   priceAdult: number;
   priceChild?: number;
   priceInfant?: number;
-  onSuccess?: (bookingId: string) => void;
 }
 
-const BookingForm = ({ 
-  serviceId, 
-  serviceType, 
-  serviceTitle, 
-  priceAdult, 
-  priceChild = 0, 
-  priceInfant = 0,
-  onSuccess 
-}: BookingFormProps) => {
+const SinglePageBookingFlow = ({
+  serviceId,
+  serviceType,
+  serviceTitle,
+  priceAdult,
+  priceChild = 0,
+  priceInfant = 0
+}: SinglePageBookingFlowProps) => {
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -38,32 +35,16 @@ const BookingForm = ({
     children: 0,
     infants: 0,
     pickupLocation: '',
-    specialRequests: '',
-    promoCode: ''
+    specialRequests: ''
   });
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // Fetch promo codes
-  const { data: promoCodes } = useQuery({
-    queryKey: ['promo_codes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .eq('is_active', true)
-        .eq('is_public', true);
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
   const calculateTotal = () => {
-    const adultTotal = formData.adults * priceAdult;
-    const childTotal = formData.children * (priceChild || 0);
-    const infantTotal = formData.infants * (priceInfant || 0);
-    return adultTotal + childTotal + infantTotal;
+    return (formData.adults * priceAdult) + 
+           (formData.children * priceChild) + 
+           (formData.infants * priceInfant);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +73,8 @@ const BookingForm = ({
           final_amount: totalAmount,
           special_requests: formData.specialRequests,
           booking_status: 'pending',
-          payment_status: 'pending'
+          payment_status: 'pending',
+          payment_gateway: paymentMethod
         })
         .select()
         .single();
@@ -100,25 +82,26 @@ const BookingForm = ({
       if (error) throw error;
 
       toast({
-        title: "Booking Submitted Successfully!",
-        description: `Your booking reference is ${data.booking_reference}`,
+        title: "Booking Created!",
+        description: `Booking reference: ${data.booking_reference}. Redirecting to payment...`,
       });
 
-      onSuccess?.(data.id);
-
-      // Reset form
-      setFormData({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        travelDate: '',
-        adults: 1,
-        children: 0,
-        infants: 0,
-        pickupLocation: '',
-        specialRequests: '',
-        promoCode: ''
-      });
+      // Redirect to payment gateway
+      setTimeout(() => {
+        if (paymentMethod === 'razorpay') {
+          // Integrate Razorpay
+          window.location.href = `/payment/razorpay?booking=${data.id}`;
+        } else if (paymentMethod === 'stripe') {
+          // Integrate Stripe
+          window.location.href = `/payment/stripe?booking=${data.id}`;
+        } else {
+          // Cash payment
+          toast({
+            title: "Cash Payment Selected",
+            description: "Please pay at pickup location",
+          });
+        }
+      }, 1500);
 
     } catch (error: any) {
       toast({
@@ -132,16 +115,14 @@ const BookingForm = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Book {serviceTitle}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Customer Information</h3>
-            
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Book {serviceTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Customer Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="customerName">Full Name *</Label>
@@ -149,11 +130,9 @@ const BookingForm = ({
                   id="customerName"
                   value={formData.customerName}
                   onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                  placeholder="John Doe"
                   required
                 />
               </div>
-              
               <div>
                 <Label htmlFor="customerEmail">Email *</Label>
                 <Input
@@ -161,23 +140,17 @@ const BookingForm = ({
                   type="email"
                   value={formData.customerEmail}
                   onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                  placeholder="john@example.com"
                   required
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="customerPhone">Phone</Label>
                 <Input
                   id="customerPhone"
                   value={formData.customerPhone}
                   onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                  placeholder="+1 234 567 8900"
                 />
               </div>
-              
               <div>
                 <Label htmlFor="travelDate">Travel Date</Label>
                 <Input
@@ -188,12 +161,8 @@ const BookingForm = ({
                 />
               </div>
             </div>
-          </div>
 
-          {/* Group Size */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Group Size</h3>
-            
+            {/* Group Size */}
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="adults">Adults</Label>
@@ -208,24 +177,9 @@ const BookingForm = ({
                   </SelectContent>
                 </Select>
               </div>
-              
               <div>
                 <Label htmlFor="children">Children</Label>
                 <Select value={formData.children.toString()} onValueChange={(value) => setFormData({ ...formData, children: parseInt(value) })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0,1,2,3,4,5,6].map(num => (
-                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="infants">Infants</Label>
-                <Select value={formData.infants.toString()} onValueChange={(value) => setFormData({ ...formData, infants: parseInt(value) })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -236,76 +190,71 @@ const BookingForm = ({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </div>
-
-          {/* Additional Details */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="pickupLocation">Pickup Location</Label>
-              <Input
-                id="pickupLocation"
-                value={formData.pickupLocation}
-                onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
-                placeholder="Hotel name or address"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="promoCode">Promo Code</Label>
-              <Input
-                id="promoCode"
-                value={formData.promoCode}
-                onChange={(e) => setFormData({ ...formData, promoCode: e.target.value })}
-                placeholder="Enter promo code"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="specialRequests">Special Requests</Label>
-              <Textarea
-                id="specialRequests"
-                value={formData.specialRequests}
-                onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
-                placeholder="Any special requirements or requests..."
-                rows={3}
-              />
-            </div>
-          </div>
-
-          {/* Price Summary */}
-          <div className="border-t pt-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Adults ({formData.adults} × {priceAdult})</span>
-                <span>{formData.adults * priceAdult}</span>
-              </div>
-              {formData.children > 0 && (
-                <div className="flex justify-between">
-                  <span>Children ({formData.children} × {priceChild})</span>
-                  <span>{formData.children * (priceChild || 0)}</span>
-                </div>
-              )}
-              {formData.infants > 0 && (
-                <div className="flex justify-between">
-                  <span>Infants ({formData.infants} × {priceInfant})</span>
-                  <span>{formData.infants * (priceInfant || 0)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span>Total:</span>
-                <span>AED {calculateTotal()}</span>
+              <div>
+                <Label htmlFor="infants">Infants</Label>
+                <Select value={formData.infants.toString()} onValueChange={(value) => setFormData({ ...formData, infants: parseInt(value) })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0,1,2,3].map(num => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
 
-          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : 'Submit Booking'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            {/* Payment Method Selection */}
+            <div>
+              <Label>Payment Method</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="razorpay" id="razorpay" />
+                  <Label htmlFor="razorpay" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Wallet className="h-4 w-4 text-blue-600" />
+                    Razorpay (UPI, Cards, Net Banking)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="stripe" id="stripe" />
+                  <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <CreditCard className="h-4 w-4 text-purple-600" />
+                    Stripe (International Cards)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="cash" id="cash" />
+                  <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Banknote className="h-4 w-4 text-green-600" />
+                    Cash on Delivery
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Total & Submit */}
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-semibold">Total:</span>
+                <span className="text-xl font-bold text-blue-600">
+                  AED {calculateTotal().toFixed(2)}
+                </span>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-lg font-semibold" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : `Book Now - AED ${calculateTotal().toFixed(2)}`}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-export default BookingForm;
+export default SinglePageBookingFlow;

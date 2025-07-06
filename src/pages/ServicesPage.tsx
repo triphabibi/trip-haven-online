@@ -21,9 +21,9 @@ const ServicesPage = () => {
   const fetchServices = async () => {
     try {
       const { data, error } = await supabase
-        .from('services')
+        .from('tours')
         .select('*')
-        .eq('is_active', true)
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

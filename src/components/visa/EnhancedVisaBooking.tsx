@@ -84,14 +84,13 @@ const EnhancedVisaBooking = ({ service }: EnhancedVisaBookingProps) => {
     setLoading(true);
     try {
       const totalAmount = (formData.adults_count + formData.children_count) * service.price;
-      const bookingReference = `VS${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
       const { error } = await supabase
         .from('new_bookings')
         .insert({
-          booking_reference: bookingReference,
           service_id: service.id,
-          booking_type: 'visa',
+          service_type: 'visa',
+          service_title: service.country + ' ' + service.visa_type,
           customer_name: travelers[0]?.name || 'Guest',
           customer_email: formData.customer_email,
           customer_phone: formData.customer_phone,
@@ -109,12 +108,12 @@ const EnhancedVisaBooking = ({ service }: EnhancedVisaBookingProps) => {
 
       toast({
         title: "🎉 Visa Application Submitted!",
-        description: `Reference: ${bookingReference}. Redirecting to payment...`,
+        description: `Your application has been submitted successfully!`,
       });
 
-      // Point 8: Redirect to payment
+      // Redirect to payment
       setTimeout(() => {
-        window.location.href = `/payment?ref=${bookingReference}`;
+        window.location.href = `/payment`;
       }, 2000);
 
     } catch (error) {

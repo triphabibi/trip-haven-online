@@ -83,8 +83,8 @@ const TourDetailPage = () => {
               <TourHighlights tour={tour} />
               <TourItinerary tour={tour} />
               <TourInclusions tour={tour} />
-              <TourReviews tour={tour} />
-              <TourFAQ tour={tour} />
+            <TourReviews tourId={tour.id} rating={tour.rating} totalReviews={tour.total_reviews} />
+            <TourFAQ />
             </div>
             
             <div className="lg:col-span-1">

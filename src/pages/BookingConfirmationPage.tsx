@@ -35,28 +35,28 @@ const BookingConfirmationPage = () => {
 
       // Fetch service details based on booking type
       let serviceData = null;
-      if (bookingData.booking_type === 'tour') {
+      if (bookingData.service_type === 'tour') {
         const { data } = await supabase
           .from('tours')
           .select('*')
           .eq('id', bookingData.service_id)
           .single();
         serviceData = data;
-      } else if (bookingData.booking_type === 'package') {
+      } else if (bookingData.service_type === 'package') {
         const { data } = await supabase
           .from('tour_packages')
           .select('*')
           .eq('id', bookingData.service_id)
           .single();
         serviceData = data;
-      } else if (bookingData.booking_type === 'ticket') {
+      } else if (bookingData.service_type === 'ticket') {
         const { data } = await supabase
           .from('attraction_tickets')
           .select('*')
           .eq('id', bookingData.service_id)
           .single();
         serviceData = data;
-      } else if (bookingData.booking_type === 'visa') {
+      } else if (bookingData.service_type === 'visa') {
         const { data } = await supabase
           .from('visa_services')
           .select('*')
@@ -139,7 +139,7 @@ const BookingConfirmationPage = () => {
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-semibold text-lg mb-2">{service?.title}</h3>
-                <Badge className="capitalize">{booking.booking_type}</Badge>
+                <Badge className="capitalize">{booking.service_type}</Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
