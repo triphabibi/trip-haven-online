@@ -97,6 +97,12 @@ const ContentManagementSystem = () => {
     updateSettingMutation.mutate({ key, value: value.toString() });
   };
 
+  // Helper function to safely check boolean values
+  const isBooleanTrue = (value: string | boolean): boolean => {
+    if (typeof value === 'boolean') return value;
+    return value === 'true';
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Loading content management...</div>;
   }
@@ -195,7 +201,7 @@ const ContentManagementSystem = () => {
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="maintenance_mode"
-                      checked={siteSettings.maintenance_mode === true || siteSettings.maintenance_mode === 'true'}
+                      checked={isBooleanTrue(siteSettings.maintenance_mode)}
                       onCheckedChange={(checked) => handleSettingUpdate('maintenance_mode', checked)}
                     />
                     <Label htmlFor="maintenance_mode">Maintenance Mode</Label>
