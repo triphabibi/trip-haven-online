@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
 
 interface Service {
   id: string;
@@ -22,6 +23,15 @@ interface Service {
   price_child: number;
   price_infant: number;
   type: 'tour' | 'package' | 'visa' | 'ticket';
+  overview?: string;
+  highlights?: string[];
+  whats_included?: string[];
+  exclusions?: string[];
+  itinerary?: any;
+  duration?: string;
+  location?: string;
+  cancellation_policy?: string;
+  terms_conditions?: string;
 }
 
 interface Props {
@@ -71,6 +81,16 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     }));
   };
 
+  const initializeRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePayment = async () => {
     try {
       if (!formData.paymentMethod) {
@@ -91,6 +111,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         return;
       }
 
+      const totalAmount = calculateTotal();
+
       // Create booking record
       const bookingData = {
         service_id: service.id,
@@ -99,16 +121,16 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         customer_name: formData.customerName,
         customer_email: formData.customerEmail,
         customer_phone: formData.customerPhone,
-        travel_date: formData.travelDate,
+        travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
         travel_time: formData.travelTime,
         pickup_location: formData.pickupLocation,
         adults_count: formData.adults,
         children_count: formData.children,
         infants_count: formData.infants,
-        base_amount: calculateTotal(),
-        total_amount: calculateTotal(),
-        final_amount: calculateTotal(),
-        payment_method: formData.paymentMethod,
+        base_amount: totalAmount,
+        total_amount: totalAmount,
+        final_amount: totalAmount,
+        payment_gateway: formData.paymentMethod,
         special_requests: formData.specialRequests,
         booking_status: 'pending',
         payment_status: 'pending'
@@ -116,7 +138,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
       const { data, error } = await supabase
         .from('new_bookings')
-        .insert([bookingData])
+        .insert(bookingData)
         .select()
         .single();
 
@@ -124,7 +146,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
       // Handle different payment methods
       if (formData.paymentMethod === 'cash_on_delivery') {
-        // For cash on delivery, mark as confirmed
         await supabase
           .from('new_bookings')
           .update({ 
@@ -140,34 +161,79 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         
         onBack();
       } else if (formData.paymentMethod === 'razorpay') {
-        // For Razorpay, redirect to payment gateway
-        toast({
-          title: "Redirecting to Payment",
-          description: "You will be redirected to Razorpay to complete your payment.",
-        });
-        
-        // Here you would integrate with Razorpay
-        // For now, we'll simulate success
-        setTimeout(() => {
+        const res = await initializeRazorpay();
+
+        if (!res) {
           toast({
-            title: "Payment Successful!",
-            description: `Your booking reference is ${data.booking_reference}`,
+            title: "Error",
+            description: "Razorpay SDK failed to load. Please try again.",
+            variant: "destructive",
           });
-          onBack();
-        }, 2000);
+          return;
+        }
+
+        const options = {
+          key: 'rzp_test_9wuOSlATpSiUGq', // Replace with your Razorpay key
+          amount: Math.round(totalAmount * 100), // Amount in paise
+          currency: 'AED',
+          name: 'Trip Habibi',
+          description: service.title,
+          order_id: data.booking_reference,
+          prefill: {
+            name: formData.customerName,
+            email: formData.customerEmail,
+            contact: formData.customerPhone
+          },
+          theme: {
+            color: '#3B82F6'
+          },
+          handler: async function (response: any) {
+            await supabase
+              .from('new_bookings')
+              .update({ 
+                payment_status: 'paid',
+                booking_status: 'confirmed',
+                payment_reference: response.razorpay_payment_id
+              })
+              .eq('id', data.id);
+
+            toast({
+              title: "Payment Successful!",
+              description: `Your booking is confirmed. Reference: ${data.booking_reference}`,
+            });
+            onBack();
+          },
+          modal: {
+            ondismiss: function() {
+              toast({
+                title: "Payment Cancelled",
+                description: "Your booking is saved as pending. You can complete payment later.",
+              });
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       } else if (formData.paymentMethod === 'stripe') {
-        // For Stripe, redirect to payment gateway
         toast({
-          title: "Redirecting to Payment",
-          description: "You will be redirected to Stripe to complete your payment.",
+          title: "Redirecting to Stripe",
+          description: "You will be redirected to complete your payment.",
         });
         
-        // Here you would integrate with Stripe
-        // For now, we'll simulate success
-        setTimeout(() => {
+        // Simulate Stripe redirect - replace with actual Stripe integration
+        setTimeout(async () => {
+          await supabase
+            .from('new_bookings')
+            .update({ 
+              payment_status: 'paid',
+              booking_status: 'confirmed'
+            })
+            .eq('id', data.id);
+
           toast({
             title: "Payment Successful!",
-            description: `Your booking reference is ${data.booking_reference}`,
+            description: `Your booking is confirmed. Reference: ${data.booking_reference}`,
           });
           onBack();
         }, 2000);
@@ -188,7 +254,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
@@ -202,8 +268,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Form */}
+          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Service Details */}
+            <TabbedTourDetails tour={service} />
+
             {/* Trip Details */}
             <Card>
               <CardHeader>
@@ -218,7 +287,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal bg-white",
+                          "w-full justify-start text-left font-normal bg-white border-gray-300",
                           !formData.travelDate && "text-muted-foreground"
                         )}
                       >
@@ -244,7 +313,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                   <div>
                     <Label htmlFor="travel-time">Select Time *</Label>
                     <Select value={formData.travelTime} onValueChange={(value) => setFormData(prev => ({...prev, travelTime: value}))}>
-                      <SelectTrigger className="bg-white border border-gray-300">
+                      <SelectTrigger className="bg-white border-gray-300">
                         <SelectValue placeholder="Choose your preferred time" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border shadow-lg">
@@ -268,7 +337,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       value={formData.pickupLocation}
                       onChange={(e) => setFormData(prev => ({...prev, pickupLocation: e.target.value}))}
                       placeholder="Enter your pickup location"
-                      className="bg-white"
+                      className="bg-white border-gray-300"
                     />
                   </div>
                 )}
@@ -290,7 +359,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('adults', false)}
                           disabled={formData.adults <= 1}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -300,7 +369,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('adults', true)}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -319,7 +388,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('children', false)}
                           disabled={formData.children <= 0}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -329,7 +398,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('children', true)}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -348,7 +417,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('infants', false)}
                           disabled={formData.infants <= 0}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -358,7 +427,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('infants', true)}
-                          className="h-8 w-8 rounded-full p-0"
+                          className="h-8 w-8 rounded-full p-0 border-gray-300"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -383,7 +452,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       value={formData.customerName}
                       onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
                       placeholder="Enter your full name"
-                      className="bg-white"
+                      className="bg-white border-gray-300"
                       required
                     />
                   </div>
@@ -395,7 +464,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       value={formData.customerEmail}
                       onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
                       placeholder="Enter your email"
-                      className="bg-white"
+                      className="bg-white border-gray-300"
                       required
                     />
                   </div>
@@ -407,7 +476,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                     value={formData.customerPhone}
                     onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
                     placeholder="Enter your phone number"
-                    className="bg-white"
+                    className="bg-white border-gray-300"
                   />
                 </div>
                 <div>
@@ -417,7 +486,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                     value={formData.specialRequests}
                     onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
                     placeholder="Any special requirements or requests"
-                    className="bg-white"
+                    className="bg-white border-gray-300"
                   />
                 </div>
               </CardContent>
@@ -526,7 +595,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
                 <Button 
                   onClick={handlePayment}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                   size="lg"
                 >
                   {formData.paymentMethod === 'cash_on_delivery' ? 'Confirm Booking' : 'Proceed to Payment'}

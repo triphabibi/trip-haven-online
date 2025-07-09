@@ -6,8 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { MapPin, Clock, Users, Star, Calendar, Shield, CheckCircle } from 'lucide-react';
+import { MapPin, Clock, Star, CheckCircle, Shield } from 'lucide-react';
 import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -73,12 +72,42 @@ const TourDetailPage = () => {
           price_adult: tour.price_adult,
           price_child: tour.price_child,
           price_infant: tour.price_infant,
-          type: 'tour'
+          type: 'tour',
+          overview: tour.overview,
+          highlights: tour.highlights,
+          whats_included: tour.whats_included,
+          exclusions: tour.exclusions,
+          itinerary: tour.itinerary,
+          duration: tour.duration,
+          location: tour.location,
+          cancellation_policy: tour.cancellation_policy,
+          terms_conditions: tour.terms_conditions
         }}
         onBack={() => setShowBooking(false)}
       />
     );
   }
+
+  // Parse itinerary safely
+  const parseItinerary = (itinerary: any) => {
+    if (!itinerary) return null;
+    
+    if (typeof itinerary === 'string') {
+      try {
+        return JSON.parse(itinerary);
+      } catch {
+        return null;
+      }
+    }
+    
+    if (typeof itinerary === 'object' && itinerary.days) {
+      return itinerary;
+    }
+    
+    return null;
+  };
+
+  const parsedItinerary = parseItinerary(tour.itinerary);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,12 +240,12 @@ const TourDetailPage = () => {
             )}
 
             {/* Itinerary */}
-            {tour.itinerary && tour.itinerary.days && tour.itinerary.days.length > 0 && (
+            {parsedItinerary && parsedItinerary.days && parsedItinerary.days.length > 0 && (
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold mb-4">Itinerary</h2>
                   <div className="space-y-4">
-                    {tour.itinerary.days.map((day: any, index: number) => (
+                    {parsedItinerary.days.map((day: any, index: number) => (
                       <div key={index} className="border-l-2 border-blue-200 pl-4">
                         <h3 className="font-medium text-lg">Day {index + 1}: {day.title}</h3>
                         <p className="text-gray-600 mt-1">{day.description}</p>
