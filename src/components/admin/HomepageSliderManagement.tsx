@@ -10,19 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-
-interface HomepageSlider {
-  id: string;
-  title: string;
-  subtitle: string;
-  image_url: string;
-  link_url: string;
-  button_text: string;
-  display_order: number;
-  is_active: boolean;
-  cta_button_color: string;
-  background_overlay_opacity: number;
-}
+import { HomepageSlider } from '@/types/tourism';
 
 const HomepageSliderManagement = () => {
   const [editingSlider, setEditingSlider] = useState<HomepageSlider | null>(null);
@@ -56,7 +44,17 @@ const HomepageSliderManagement = () => {
   });
 
   const createSliderMutation = useMutation({
-    mutationFn: async (sliderData: Partial<HomepageSlider>) => {
+    mutationFn: async (sliderData: {
+      title: string;
+      subtitle?: string;
+      image_url: string;
+      link_url?: string;
+      button_text: string;
+      display_order: number;
+      is_active: boolean;
+      cta_button_color: string;
+      background_overlay_opacity: number;
+    }) => {
       const { data, error } = await supabase
         .from('homepage_sliders')
         .insert(sliderData)
@@ -77,7 +75,17 @@ const HomepageSliderManagement = () => {
   });
 
   const updateSliderMutation = useMutation({
-    mutationFn: async ({ id, ...sliderData }: Partial<HomepageSlider> & { id: string }) => {
+    mutationFn: async ({ id, ...sliderData }: { id: string } & {
+      title: string;
+      subtitle?: string;
+      image_url: string;
+      link_url?: string;
+      button_text: string;
+      display_order: number;
+      is_active: boolean;
+      cta_button_color: string;
+      background_overlay_opacity: number;
+    }) => {
       const { data, error } = await supabase
         .from('homepage_sliders')
         .update(sliderData)
@@ -153,10 +161,22 @@ const HomepageSliderManagement = () => {
       return;
     }
 
+    const submitData = {
+      title: formData.title,
+      subtitle: formData.subtitle || undefined,
+      image_url: formData.image_url,
+      link_url: formData.link_url || undefined,
+      button_text: formData.button_text,
+      display_order: formData.display_order,
+      is_active: formData.is_active,
+      cta_button_color: formData.cta_button_color,
+      background_overlay_opacity: formData.background_overlay_opacity
+    };
+
     if (editingSlider) {
-      updateSliderMutation.mutate({ id: editingSlider.id, ...formData });
+      updateSliderMutation.mutate({ id: editingSlider.id, ...submitData });
     } else {
-      createSliderMutation.mutate(formData);
+      createSliderMutation.mutate(submitData);
     }
   };
 

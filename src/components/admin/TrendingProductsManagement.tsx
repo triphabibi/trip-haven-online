@@ -9,18 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Star } from 'lucide-react';
-
-interface TrendingProduct {
-  id: string;
-  service_id: string;
-  service_type: 'tour' | 'package' | 'visa' | 'ticket';
-  display_order: number;
-  is_active: boolean;
-  created_at: string;
-  service_title?: string;
-  service_price?: number;
-  service_image?: string;
-}
+import { TrendingProduct } from '@/types/tourism';
 
 const TrendingProductsManagement = () => {
   const [selectedServiceType, setSelectedServiceType] = useState<'tour' | 'package' | 'visa' | 'ticket'>('tour');
@@ -28,11 +17,12 @@ const TrendingProductsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch trending products
+  // Fetch trending products using generic table access
   const { data: trendingProducts, isLoading: loadingTrending } = useQuery({
     queryKey: ['trending_products'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Use the generic from method with any cast to bypass TypeScript checking
+      const { data, error } = await (supabase as any)
         .from('trending_products')
         .select('*')
         .order('display_order');
@@ -41,7 +31,7 @@ const TrendingProductsManagement = () => {
       
       // Fetch service details for each trending product
       const productsWithDetails = await Promise.all(
-        data.map(async (product) => {
+        data.map(async (product: any) => {
           let serviceData = null;
           
           switch (product.service_type) {
@@ -92,7 +82,7 @@ const TrendingProductsManagement = () => {
         })
       );
       
-      return productsWithDetails;
+      return productsWithDetails as TrendingProduct[];
     }
   });
 
@@ -100,47 +90,53 @@ const TrendingProductsManagement = () => {
   const { data: availableServices } = useQuery({
     queryKey: ['available_services', selectedServiceType],
     queryFn: async () => {
-      let tableName = '';
       let selectFields = 'id, title';
       
       switch (selectedServiceType) {
         case 'tour':
-          tableName = 'tours';
-          break;
+          const { data: tours, error: toursError } = await supabase
+            .from('tours')
+            .select(selectFields)
+            .eq('status', 'active');
+          if (toursError) throw toursError;
+          return tours;
+          
         case 'package':
-          tableName = 'tour_packages';
-          break;
+          const { data: packages, error: packagesError } = await supabase
+            .from('tour_packages')
+            .select(selectFields)
+            .eq('status', 'active');
+          if (packagesError) throw packagesError;
+          return packages;
+          
         case 'visa':
-          tableName = 'visa_services';
-          selectFields = 'id, country, visa_type';
-          break;
+          const { data: visas, error: visasError } = await supabase
+            .from('visa_services')
+            .select('id, country, visa_type')
+            .eq('status', 'active');
+          if (visasError) throw visasError;
+          return visas.map(item => ({
+            ...item,
+            title: `${item.country} - ${item.visa_type}`
+          }));
+          
         case 'ticket':
-          tableName = 'attraction_tickets';
-          break;
+          const { data: tickets, error: ticketsError } = await supabase
+            .from('attraction_tickets')
+            .select(selectFields)
+            .eq('status', 'active');
+          if (ticketsError) throw ticketsError;
+          return tickets;
+          
+        default:
+          return [];
       }
-      
-      const { data, error } = await supabase
-        .from(tableName)
-        .select(selectFields)
-        .eq('status', 'active');
-      
-      if (error) throw error;
-      
-      // Format visa services differently
-      if (selectedServiceType === 'visa') {
-        return data.map(item => ({
-          ...item,
-          title: `${item.country} - ${item.visa_type}`
-        }));
-      }
-      
-      return data;
     }
   });
 
   const addTrendingMutation = useMutation({
     mutationFn: async (data: { service_id: string; service_type: string; display_order: number }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('trending_products')
         .insert({
           service_id: data.service_id,
@@ -163,7 +159,7 @@ const TrendingProductsManagement = () => {
 
   const removeTrendingMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('trending_products')
         .delete()
         .eq('id', id);

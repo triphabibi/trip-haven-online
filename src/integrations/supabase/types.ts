@@ -1351,6 +1351,36 @@ export type Database = {
           },
         ]
       }
+      trending_products: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          service_id: string
+          service_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          service_id: string
+          service_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          service_id?: string
+          service_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       visa_services: {
         Row: {
           booking_count: number | null

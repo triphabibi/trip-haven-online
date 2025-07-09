@@ -1,4 +1,3 @@
-
 export interface Tour {
   id: string;
   title: string;
@@ -138,10 +137,26 @@ export interface HomepageSlider {
   subtitle?: string;
   image_url: string;
   link_url?: string;
-  button_text?: string;
+  button_text: string;
+  display_order: number;
+  is_active: boolean;
+  cta_button_color: string;
+  background_overlay_opacity: number;
+  created_at?: string;
+}
+
+export interface TrendingProduct {
+  id: string;
+  service_id: string;
+  service_type: 'tour' | 'package' | 'visa' | 'ticket';
   display_order: number;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
+  // Additional fields from joined service data
+  service_title?: string;
+  service_price?: number;
+  service_image?: string;
 }
 
 export interface SiteSetting {
