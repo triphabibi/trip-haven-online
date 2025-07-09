@@ -37,18 +37,15 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
 
   const hideWidget = () => {
     setIsVisible(false);
-    // Show again after page refresh
     sessionStorage.setItem('ctaHidden', 'true');
   };
 
   useEffect(() => {
-    // Check if was hidden in current session
     const wasHidden = sessionStorage.getItem('ctaHidden');
     if (wasHidden) {
       setIsVisible(false);
     }
 
-    // Show widget again on page refresh
     const handleBeforeUnload = () => {
       sessionStorage.removeItem('ctaHidden');
     };
@@ -61,10 +58,9 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
 
   return (
     <>
-      {/* Sticky Widget - Always visible on all pages */}
+      {/* Fixed Sticky Widgets - Desktop & Mobile */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        
-        {/* AI Chat Button */}
+        {/* AI Chat Button - Right Side */}
         <div className="relative">
           <Button
             onClick={() => setShowAIChat(!showAIChat)}
@@ -94,8 +90,10 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
             </div>
           )}
         </div>
+      </div>
 
-        {/* WhatsApp Button */}
+      {/* WhatsApp Button - Left Side */}
+      <div className="fixed bottom-4 left-4 z-50">
         <Button
           onClick={handleWhatsApp}
           className="bg-green-500 hover:bg-green-600 rounded-full w-14 h-14 shadow-lg animate-pulse"
@@ -134,15 +132,6 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
 
               {/* Contact Actions */}
               <div className="flex items-center gap-2 mb-3">
-                <Button
-                  size="sm"
-                  onClick={handleWhatsApp}
-                  className="flex-1 bg-green-500 border-green-500 text-white hover:bg-green-600"
-                >
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                  WhatsApp
-                </Button>
-                
                 <Button
                   size="sm"
                   onClick={handleCall}

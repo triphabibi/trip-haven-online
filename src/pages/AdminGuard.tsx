@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase'; // adjust if different
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminGuard = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -12,22 +13,30 @@ const AdminGuard = ({ children }: { children: React.ReactNode }) => {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        navigate('/auth'); // Not logged in
+        navigate('/auth');
         return;
       }
 
+      // Check if this is the specific admin user by email
+      if (user.email === 'admin@triphabibi.in') {
+        setIsAdmin(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check profiles table for admin role
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single();
 
-      if (profile?.role !== 'admin') {
-        navigate('/auth'); // Not an admin
-        return;
+      if (profile?.role === 'admin' || profile?.is_admin) {
+        setIsAdmin(true);
+      } else {
+        navigate('/auth');
       }
-
-      setIsAdmin(true);
+      
       setLoading(false);
     };
 
