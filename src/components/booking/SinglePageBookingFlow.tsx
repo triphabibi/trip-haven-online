@@ -5,434 +5,537 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { CalendarIcon, ArrowLeft, CreditCard, Wallet, Banknote, Plus, Minus } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { CreditCard, Wallet, Banknote, Star, Clock, Users, MapPin, Plus, Minus } from 'lucide-react';
 
-interface SinglePageBookingFlowProps {
-  serviceId: string;
-  serviceType: string;
-  serviceTitle: string;
-  priceAdult: number;
-  priceChild?: number;
-  priceInfant?: number;
-  serviceImage?: string;
+interface Service {
+  id: string;
+  title: string;
+  price_adult: number;
+  price_child: number;
+  price_infant: number;
+  type: 'tour' | 'package' | 'visa' | 'ticket';
 }
 
-const SinglePageBookingFlow = ({
-  serviceId,
-  serviceType,
-  serviceTitle,
-  priceAdult,
-  priceChild = 0,
-  priceInfant = 0,
-  serviceImage
-}: SinglePageBookingFlowProps) => {
+interface Props {
+  service: Service;
+  onBack: () => void;
+}
+
+const SinglePageBookingFlow = ({ service, onBack }: Props) => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    leadGuestName: '',
-    leadGuestEmail: '',
-    leadGuestMobile: '',
-    travelDate: '',
+    // Trip details
+    travelDate: undefined as Date | undefined,
     travelTime: '',
+    pickupLocation: '',
     adults: 1,
     children: 0,
     infants: 0,
-    pickupLocation: '',
+    
+    // Guest details
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    
+    // Payment
+    paymentMethod: '',
+    
+    // Additional
     specialRequests: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState('razorpay');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
-  const isToursOrPackages = serviceType === 'tour' || serviceType === 'package';
-
   const calculateTotal = () => {
-    return (formData.adults * priceAdult) + 
-           (formData.children * priceChild) + 
-           (formData.infants * priceInfant);
+    const adultTotal = formData.adults * service.price_adult;
+    const childTotal = formData.children * service.price_child;
+    const infantTotal = formData.infants * service.price_infant;
+    return adultTotal + childTotal + infantTotal;
   };
 
-  const updateCounter = (field: 'adults' | 'children' | 'infants', increment: boolean) => {
+  const adjustCount = (type: 'adults' | 'children' | 'infants', increment: boolean) => {
     setFormData(prev => ({
       ...prev,
-      [field]: Math.max(increment ? prev[field] + 1 : prev[field] - 1, field === 'adults' ? 1 : 0)
+      [type]: increment 
+        ? prev[type] + 1 
+        : Math.max(type === 'adults' ? 1 : 0, prev[type] - 1)
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  const handlePayment = async () => {
     try {
-      const totalAmount = calculateTotal();
-      
+      if (!formData.paymentMethod) {
+        toast({
+          title: "Error",
+          description: "Please select a payment method",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.customerName || !formData.customerEmail) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create booking record
       const bookingData = {
-        service_type: serviceType,
-        service_id: serviceId,
-        service_title: serviceTitle,
-        customer_name: formData.leadGuestName,
-        customer_email: formData.leadGuestEmail,
-        customer_phone: formData.leadGuestMobile,
-        lead_guest_name: formData.leadGuestName,
-        lead_guest_email: formData.leadGuestEmail,
-        lead_guest_mobile: formData.leadGuestMobile,
-        travel_date: formData.travelDate || null,
-        travel_time: formData.travelTime || null,
+        service_id: service.id,
+        service_type: service.type,
+        service_title: service.title,
+        customer_name: formData.customerName,
+        customer_email: formData.customerEmail,
+        customer_phone: formData.customerPhone,
+        travel_date: formData.travelDate,
+        travel_time: formData.travelTime,
+        pickup_location: formData.pickupLocation,
         adults_count: formData.adults,
         children_count: formData.children,
         infants_count: formData.infants,
-        pickup_location: formData.pickupLocation,
-        base_amount: totalAmount,
-        total_amount: totalAmount,
-        final_amount: totalAmount,
+        base_amount: calculateTotal(),
+        total_amount: calculateTotal(),
+        final_amount: calculateTotal(),
+        payment_method: formData.paymentMethod,
         special_requests: formData.specialRequests,
         booking_status: 'pending',
-        payment_status: 'pending',
-        payment_gateway: paymentMethod
+        payment_status: 'pending'
       };
-
-      console.log('Submitting booking data:', bookingData);
 
       const { data, error } = await supabase
         .from('new_bookings')
-        .insert(bookingData)
+        .insert([bookingData])
         .select()
         .single();
 
-      if (error) {
-        console.error('Booking error:', error);
-        throw error;
+      if (error) throw error;
+
+      // Handle different payment methods
+      if (formData.paymentMethod === 'cash_on_delivery') {
+        // For cash on delivery, mark as confirmed
+        await supabase
+          .from('new_bookings')
+          .update({ 
+            payment_status: 'confirmed',
+            booking_status: 'confirmed'
+          })
+          .eq('id', data.id);
+
+        toast({
+          title: "Booking Confirmed!",
+          description: `Your booking reference is ${data.booking_reference}. You can pay upon arrival.`,
+        });
+        
+        onBack();
+      } else if (formData.paymentMethod === 'razorpay') {
+        // For Razorpay, redirect to payment gateway
+        toast({
+          title: "Redirecting to Payment",
+          description: "You will be redirected to Razorpay to complete your payment.",
+        });
+        
+        // Here you would integrate with Razorpay
+        // For now, we'll simulate success
+        setTimeout(() => {
+          toast({
+            title: "Payment Successful!",
+            description: `Your booking reference is ${data.booking_reference}`,
+          });
+          onBack();
+        }, 2000);
+      } else if (formData.paymentMethod === 'stripe') {
+        // For Stripe, redirect to payment gateway
+        toast({
+          title: "Redirecting to Payment",
+          description: "You will be redirected to Stripe to complete your payment.",
+        });
+        
+        // Here you would integrate with Stripe
+        // For now, we'll simulate success
+        setTimeout(() => {
+          toast({
+            title: "Payment Successful!",
+            description: `Your booking reference is ${data.booking_reference}`,
+          });
+          onBack();
+        }, 2000);
       }
 
-      console.log('Booking created:', data);
-
-      toast({
-        title: "Booking Created!",
-        description: `Booking reference: ${data.booking_reference}. Redirecting to payment...`,
-      });
-
-      // Simulate payment redirect
-      setTimeout(() => {
-        if (paymentMethod === 'razorpay') {
-          toast({
-            title: "Redirecting to Razorpay",
-            description: "Please complete your payment",
-          });
-        } else if (paymentMethod === 'stripe') {
-          toast({
-            title: "Redirecting to Stripe", 
-            description: "Please complete your payment",
-          });
-        } else {
-          toast({
-            title: "Cash Payment Selected",
-            description: "Please pay at pickup location",
-          });
-        }
-      }, 1500);
-
-    } catch (error: any) {
-      console.error('Full booking error:', error);
+    } catch (error) {
+      console.error('Booking error:', error);
       toast({
         title: "Booking Failed",
-        description: error.message || "Please try again",
+        description: "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  const showTimeField = service.type === 'tour';
+  const showPickupField = service.type === 'tour';
+
   return (
-    <div className="space-y-6">
-      {/* Service Summary Card */}
-      <Card>
-        <CardContent className="p-4">
-          {serviceImage && (
-            <img src={serviceImage} alt={serviceTitle} className="w-full h-32 object-cover rounded-lg mb-3" />
-          )}
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">{serviceTitle}</h3>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span>4.8 (127 reviews)</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>Full Day</span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Book {service.title}</h1>
+            <p className="text-gray-600">Complete your booking in just a few steps</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Booking Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Book Your Experience</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* Travel Date */}
-            <div>
-              <Label htmlFor="travelDate">Choose Date *</Label>
-              <Input
-                id="travelDate"
-                type="date"
-                value={formData.travelDate}
-                onChange={(e) => setFormData({ ...formData, travelDate: e.target.value })}
-                required
-                className="mt-1"
-              />
-            </div>
-
-            {/* Group Size with +/- buttons */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Number of Travelers</Label>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Adults */}
-                <div className="flex items-center justify-between border rounded-lg p-3">
-                  <div>
-                    <span className="font-medium">Adults</span>
-                    <div className="text-sm text-gray-600">AED {priceAdult}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('adults', false)}
-                      disabled={formData.adults <= 1}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center font-medium">{formData.adults}</span>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('adults', true)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Children */}
-                <div className="flex items-center justify-between border rounded-lg p-3">
-                  <div>
-                    <span className="font-medium">Children</span>
-                    <div className="text-sm text-gray-600">AED {priceChild}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('children', false)}
-                      disabled={formData.children <= 0}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center font-medium">{formData.children}</span>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('children', true)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Infants */}
-                <div className="flex items-center justify-between border rounded-lg p-3">
-                  <div>
-                    <span className="font-medium">Infants</span>
-                    <div className="text-sm text-gray-600">AED {priceInfant}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('infants', false)}
-                      disabled={formData.infants <= 0}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center font-medium">{formData.infants}</span>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateCounter('infants', true)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pickup Time - Only for Tours/Packages */}
-            {isToursOrPackages && (
-              <div>
-                <Label htmlFor="travelTime">Pickup Time *</Label>
-                <Select value={formData.travelTime} onValueChange={(value) => setFormData({ ...formData, travelTime: value })}>
-                  <SelectTrigger className="mt-1 bg-white">
-                    <SelectValue placeholder="Select pickup time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="07:00">07:00 AM</SelectItem>
-                    <SelectItem value="08:00">08:00 AM</SelectItem>
-                    <SelectItem value="09:00">09:00 AM</SelectItem>
-                    <SelectItem value="10:00">10:00 AM</SelectItem>
-                    <SelectItem value="14:00">02:00 PM</SelectItem>
-                    <SelectItem value="15:00">03:00 PM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Pickup Location */}
-            <div>
-              <Label htmlFor="pickupLocation">Pickup Location</Label>
-              <Input
-                id="pickupLocation"
-                value={formData.pickupLocation}
-                onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
-                placeholder="Hotel name or address"
-                className="mt-1"
-              />
-            </div>
-
-            {/* Lead Guest Details */}
-            <div className="space-y-4">
-              <Label className="text-base font-medium">Lead Guest Details</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Trip Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Trip Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Travel Date */}
                 <div>
-                  <Label htmlFor="leadGuestName">Full Name *</Label>
+                  <Label htmlFor="travel-date">Travel Date *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal bg-white",
+                          !formData.travelDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.travelDate ? format(formData.travelDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-white border shadow-lg" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.travelDate}
+                        onSelect={(date) => setFormData(prev => ({...prev, travelDate: date}))}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className="pointer-events-auto bg-white"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Travel Time - Only for tours */}
+                {showTimeField && (
+                  <div>
+                    <Label htmlFor="travel-time">Select Time *</Label>
+                    <Select value={formData.travelTime} onValueChange={(value) => setFormData(prev => ({...prev, travelTime: value}))}>
+                      <SelectTrigger className="bg-white border border-gray-300">
+                        <SelectValue placeholder="Choose your preferred time" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg">
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Pickup Location - Only for tours */}
+                {showPickupField && (
+                  <div>
+                    <Label htmlFor="pickup">Pickup Location</Label>
+                    <Input
+                      id="pickup"
+                      value={formData.pickupLocation}
+                      onChange={(e) => setFormData(prev => ({...prev, pickupLocation: e.target.value}))}
+                      placeholder="Enter your pickup location"
+                      className="bg-white"
+                    />
+                  </div>
+                )}
+
+                {/* Travelers */}
+                <div className="space-y-4">
+                  <Label>Number of Travelers</Label>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                      <div>
+                        <div className="font-medium">Adults</div>
+                        <div className="text-sm text-gray-600">{formatPrice(service.price_adult)} each</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('adults', false)}
+                          disabled={formData.adults <= 1}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="font-medium w-8 text-center">{formData.adults}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('adults', true)}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                      <div>
+                        <div className="font-medium">Children (2-12 years)</div>
+                        <div className="text-sm text-gray-600">{formatPrice(service.price_child)} each</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('children', false)}
+                          disabled={formData.children <= 0}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="font-medium w-8 text-center">{formData.children}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('children', true)}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                      <div>
+                        <div className="font-medium">Infants (0-2 years)</div>
+                        <div className="text-sm text-gray-600">{formatPrice(service.price_infant)} each</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('infants', false)}
+                          disabled={formData.infants <= 0}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="font-medium w-8 text-center">{formData.infants}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => adjustCount('infants', true)}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Guest Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Guest Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.customerName}
+                      onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
+                      placeholder="Enter your full name"
+                      className="bg-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.customerEmail}
+                      onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
+                      placeholder="Enter your email"
+                      className="bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input
-                    id="leadGuestName"
-                    value={formData.leadGuestName}
-                    onChange={(e) => setFormData({ ...formData, leadGuestName: e.target.value })}
-                    required
-                    className="mt-1"
+                    id="phone"
+                    value={formData.customerPhone}
+                    onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
+                    placeholder="Enter your phone number"
+                    className="bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="leadGuestEmail">Email *</Label>
-                  <Input
-                    id="leadGuestEmail"
-                    type="email"
-                    value={formData.leadGuestEmail}
-                    onChange={(e) => setFormData({ ...formData, leadGuestEmail: e.target.value })}
-                    required
-                    className="mt-1"
+                  <Label htmlFor="requests">Special Requests</Label>
+                  <Textarea
+                    id="requests"
+                    value={formData.specialRequests}
+                    onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
+                    placeholder="Any special requirements or requests"
+                    className="bg-white"
                   />
                 </div>
-              </div>
-              <div>
-                <Label htmlFor="leadGuestMobile">Mobile Number *</Label>
-                <Input
-                  id="leadGuestMobile"
-                  value={formData.leadGuestMobile}
-                  onChange={(e) => setFormData({ ...formData, leadGuestMobile: e.target.value })}
-                  placeholder="+971 XX XXX XXXX"
-                  required
-                  className="mt-1"
-                />
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Special Requests */}
-            <div>
-              <Label htmlFor="specialRequests">Special Requests</Label>
-              <Textarea
-                id="specialRequests"
-                value={formData.specialRequests}
-                onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
-                placeholder="Any special requirements..."
-                rows={3}
-                className="mt-1"
-              />
-            </div>
+            {/* Payment Methods */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Method</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      formData.paymentMethod === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'razorpay'}))}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <div className="font-medium">Razorpay</div>
+                        <div className="text-sm text-gray-600">Pay securely with credit/debit cards, UPI, wallets</div>
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Payment Method Selection */}
-            <div>
-              <Label className="text-base font-semibold">Select Payment Method</Label>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-3">
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="razorpay" id="razorpay" />
-                  <Label htmlFor="razorpay" className="flex items-center gap-2 cursor-pointer flex-1">
-                    <Wallet className="h-4 w-4 text-blue-600" />
-                    Razorpay (UPI, Cards, Net Banking)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="stripe" id="stripe" />
-                  <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer flex-1">
-                    <CreditCard className="h-4 w-4 text-purple-600" />
-                    Stripe (International Cards)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="cash" id="cash" />
-                  <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
-                    <Banknote className="h-4 w-4 text-green-600" />
-                    Cash on Delivery
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      formData.paymentMethod === 'stripe' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'stripe'}))}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Wallet className="h-5 w-5 text-purple-600" />
+                      <div>
+                        <div className="font-medium">Stripe</div>
+                        <div className="text-sm text-gray-600">International payment processing</div>
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Price Summary */}
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between">
-                <span>Adults ({formData.adults} × AED {priceAdult})</span>
-                <span>AED {formData.adults * priceAdult}</span>
-              </div>
-              {formData.children > 0 && (
-                <div className="flex justify-between">
-                  <span>Children ({formData.children} × AED {priceChild})</span>
-                  <span>AED {formData.children * priceChild}</span>
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      formData.paymentMethod === 'cash_on_delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'cash_on_delivery'}))}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Banknote className="h-5 w-5 text-green-600" />
+                      <div>
+                        <div className="font-medium">Pay Later</div>
+                        <div className="text-sm text-gray-600">Pay when you arrive or meet our representative</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-              {formData.infants > 0 && (
-                <div className="flex justify-between">
-                  <span>Infants ({formData.infants} × AED {priceInfant})</span>
-                  <span>AED {formData.infants * priceInfant}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span>Total:</span>
-                <span className="text-blue-600">AED {calculateTotal()}</span>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-lg font-semibold" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Processing...' : `Proceed to Payment - AED ${calculateTotal()}`}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          {/* Booking Summary */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle>Booking Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium">{service.title}</h3>
+                  {formData.travelDate && (
+                    <p className="text-sm text-gray-600">
+                      {format(formData.travelDate, "PPP")}
+                      {formData.travelTime && ` at ${formData.travelTime}`}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {formData.adults > 0 && (
+                    <div className="flex justify-between">
+                      <span>{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
+                      <span>{formatPrice(formData.adults * service.price_adult)}</span>
+                    </div>
+                  )}
+                  {formData.children > 0 && (
+                    <div className="flex justify-between">
+                      <span>{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
+                      <span>{formatPrice(formData.children * service.price_child)}</span>
+                    </div>
+                  )}
+                  {formData.infants > 0 && (
+                    <div className="flex justify-between">
+                      <span>{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
+                      <span>{formatPrice(formData.infants * service.price_infant)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={handlePayment}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                >
+                  {formData.paymentMethod === 'cash_on_delivery' ? 'Confirm Booking' : 'Proceed to Payment'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

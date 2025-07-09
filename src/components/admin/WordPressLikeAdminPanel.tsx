@@ -13,6 +13,9 @@ import AdminDashboardStats from './AdminDashboardStats';
 import BulkUpload from './BulkUpload';
 import AdminSidebar from './AdminSidebar';
 import AdminQuickActions from './AdminQuickActions';
+import TrendingProductsManagement from './TrendingProductsManagement';
+import TransferManagement from './TransferManagement';
+import OkToBoardManagement from './OkToBoardManagement';
 
 const WordPressLikeAdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -46,25 +49,10 @@ const WordPressLikeAdminPanel = () => {
           {activeTab === 'payments' && <PaymentGatewayManagement />}
           {activeTab === 'content' && <ContentManagementSystem />}
           {activeTab === 'bulk-upload' && <BulkUpload />}
+          {activeTab === 'trending' && <TrendingProductsManagement />}
+          {activeTab === 'transfers' && <TransferManagement />}
+          {activeTab === 'ok-to-board' && <OkToBoardManagement />}
           
-          {activeTab === 'transfers' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plane className="h-5 w-5" />
-                  Transfer Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Plane className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Transfer Management</h3>
-                  <p className="text-gray-500">Transfer management coming soon...</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {activeTab === 'settings' && (
             <Card>
               <CardHeader>

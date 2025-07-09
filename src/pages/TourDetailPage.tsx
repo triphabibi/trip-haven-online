@@ -1,96 +1,288 @@
 
-import { useParams } from 'react-router-dom';
-import { useTour } from '@/hooks/useTours';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import Loading from '@/components/common/Loading';
-import TourDetailHeader from '@/components/tours/TourDetailHeader';
-import TourImageGallery from '@/components/tours/TourImageGallery';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { MapPin, Clock, Users, Star, Calendar, Shield, CheckCircle } from 'lucide-react';
 import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
-import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
-import StickyMobileCTA from '@/components/common/StickyMobileCTA';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const TourDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: tour, isLoading, error } = useTour(id || '');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [showBooking, setShowBooking] = useState(false);
+  const { formatPrice } = useCurrency();
 
-  const scrollToBooking = () => {
-    const bookingSection = document.getElementById('booking-section');
-    if (bookingSection) {
-      bookingSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const { data: tour, isLoading, error } = useQuery({
+    queryKey: ['tour', id],
+    queryFn: async () => {
+      console.log('Fetching tour with ID:', id);
+      
+      if (!id) {
+        throw new Error('Tour ID is required');
+      }
+
+      const { data, error } = await supabase
+        .from('tours')
+        .select('*')
+        .eq('id', id)
+        .eq('status', 'active')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching tour:', error);
+        throw error;
+      }
+      
+      console.log('Tour data fetched:', data);
+      return data;
+    },
+    enabled: !!id,
+  });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <Loading message="Loading tour details..." />
-        <Footer />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (error || !tour) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
-            <p className="text-gray-600">The tour you're looking for could not be found.</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
+          <p className="text-gray-600 mb-4">The tour you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => navigate('/tours')}>Back to Tours</Button>
         </div>
-        <Footer />
       </div>
     );
   }
 
+  if (showBooking) {
+    return (
+      <SinglePageBookingFlow
+        service={{
+          id: tour.id,
+          title: tour.title,
+          price_adult: tour.price_adult,
+          price_child: tour.price_child,
+          price_infant: tour.price_infant,
+          type: 'tour'
+        }}
+        onBack={() => setShowBooking(false)}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-4 sm:py-8">
-        <div className="max-w-7xl mx-auto">
-          
-          {/* Tour Header */}
-          <TourDetailHeader tour={tour} />
-          
-          {/* Tour Images */}
-          <div className="mt-6">
-            <TourImageGallery tour={tour} />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-2">
+            {tour.featured_image && (
+              <div className="relative h-96 rounded-lg overflow-hidden mb-6">
+                <img
+                  src={tour.featured_image}
+                  alt={tour.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span>{tour.location || 'Location not specified'}</span>
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900">{tour.title}</h1>
+              
+              <div className="flex items-center gap-4">
+                {tour.rating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{tour.rating}</span>
+                    <span className="text-gray-600">({tour.total_reviews} reviews)</span>
+                  </div>
+                )}
+                
+                {tour.duration && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span className="text-gray-600">{tour.duration}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                {tour.instant_confirmation && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Instant Confirmation
+                  </Badge>
+                )}
+                {tour.free_cancellation && (
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Free Cancellation
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Main Content */}
-          <div className="mt-8 space-y-8">
-            
-            {/* Tabbed Details */}
-            <TabbedTourDetails tour={tour} />
-            
-            {/* Booking Section */}
-            <div id="booking-section" className="scroll-mt-4">
-              <SinglePageBookingFlow
-                serviceId={tour.id}
-                serviceType="tour"
-                serviceTitle={tour.title}
-                priceAdult={tour.price_adult}
-                priceChild={tour.price_child}
-                priceInfant={tour.price_infant}
-                serviceImage={tour.featured_image || tour.image_urls?.[0]}
-              />
-            </div>
+          {/* Booking Card */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-3xl font-bold text-blue-600">
+                      From {formatPrice(tour.price_adult)}
+                    </div>
+                    <p className="text-sm text-gray-600">per adult</p>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => setShowBooking(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    size="lg"
+                  >
+                    Book Now
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Tour Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Overview */}
+            {tour.overview && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Overview</h2>
+                  <p className="text-gray-700 leading-relaxed">{tour.overview}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Highlights */}
+            {tour.highlights && tour.highlights.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Highlights</h2>
+                  <ul className="space-y-2">
+                    {tour.highlights.map((highlight: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* What's Included */}
+            {tour.whats_included && tour.whats_included.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">What's Included</h2>
+                  <ul className="space-y-2">
+                    {tour.whats_included.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Itinerary */}
+            {tour.itinerary && tour.itinerary.days && tour.itinerary.days.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Itinerary</h2>
+                  <div className="space-y-4">
+                    {tour.itinerary.days.map((day: any, index: number) => (
+                      <div key={index} className="border-l-2 border-blue-200 pl-4">
+                        <h3 className="font-medium text-lg">Day {index + 1}: {day.title}</h3>
+                        <p className="text-gray-600 mt-1">{day.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar Info */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Tour Information</h3>
+                <div className="space-y-3">
+                  {tour.duration && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Duration:</span>
+                      <span className="font-medium">{tour.duration}</span>
+                    </div>
+                  )}
+                  {tour.max_capacity && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Max Capacity:</span>
+                      <span className="font-medium">{tour.max_capacity} people</span>
+                    </div>
+                  )}
+                  {tour.languages && tour.languages.length > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Languages:</span>
+                      <span className="font-medium">{tour.languages.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pricing Breakdown */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Pricing</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Adult:</span>
+                    <span className="font-medium">{formatPrice(tour.price_adult)}</span>
+                  </div>
+                  {tour.price_child > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Child:</span>
+                      <span className="font-medium">{formatPrice(tour.price_child)}</span>
+                    </div>
+                  )}
+                  {tour.price_infant > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Infant:</span>
+                      <span className="font-medium">{formatPrice(tour.price_infant)}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-      
-      {/* Sticky Mobile CTA */}
-      <StickyMobileCTA 
-        tour={tour} 
-        showBooking={true} 
-        onBookNow={scrollToBooking}
-      />
-      
-      <Footer />
     </div>
   );
 };
