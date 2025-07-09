@@ -371,8 +371,10 @@ export type Database = {
       }
       homepage_sliders: {
         Row: {
+          background_overlay_opacity: number | null
           button_text: string | null
           created_at: string | null
+          cta_button_color: string | null
           display_order: number | null
           id: string
           image_url: string
@@ -382,8 +384,10 @@ export type Database = {
           title: string
         }
         Insert: {
+          background_overlay_opacity?: number | null
           button_text?: string | null
           created_at?: string | null
+          cta_button_color?: string | null
           display_order?: number | null
           id?: string
           image_url: string
@@ -393,8 +397,10 @@ export type Database = {
           title: string
         }
         Update: {
+          background_overlay_opacity?: number | null
           button_text?: string | null
           created_at?: string | null
+          cta_button_color?: string | null
           display_order?: number | null
           id?: string
           image_url?: string
@@ -486,6 +492,7 @@ export type Database = {
           tax_amount: number | null
           total_amount: number
           travel_date: string | null
+          travel_time: string | null
           updated_at: string | null
         }
         Insert: {
@@ -518,6 +525,7 @@ export type Database = {
           tax_amount?: number | null
           total_amount: number
           travel_date?: string | null
+          travel_time?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -550,6 +558,7 @@ export type Database = {
           tax_amount?: number | null
           total_amount?: number
           travel_date?: string | null
+          travel_time?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -603,6 +612,7 @@ export type Database = {
         Row: {
           api_key: string | null
           api_secret: string | null
+          bank_details: Json | null
           configuration: Json | null
           created_at: string | null
           description: string | null
@@ -620,6 +630,7 @@ export type Database = {
         Insert: {
           api_key?: string | null
           api_secret?: string | null
+          bank_details?: Json | null
           configuration?: Json | null
           created_at?: string | null
           description?: string | null
@@ -637,6 +648,7 @@ export type Database = {
         Update: {
           api_key?: string | null
           api_secret?: string | null
+          bank_details?: Json | null
           configuration?: Json | null
           created_at?: string | null
           description?: string | null

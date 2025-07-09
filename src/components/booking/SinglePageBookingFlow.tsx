@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarIcon, ArrowLeft, CreditCard, Wallet, Banknote, Plus, Minus } from 'lucide-react';
+import { CalendarIcon, ArrowLeft, CreditCard, Wallet, Banknote, Plus, Minus, Building } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,6 +15,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
+import { useQuery } from '@tanstack/react-query';
 
 interface Service {
   id: string;
@@ -34,36 +35,58 @@ interface Service {
   terms_conditions?: string;
 }
 
+interface PaymentGateway {
+  id: string;
+  gateway_name: string;
+  display_name: string;
+  description: string;
+  is_enabled: boolean;
+  test_mode: boolean;
+  priority: number;
+  bank_details: any;
+}
+
 interface Props {
   service: Service;
   onBack: () => void;
 }
 
 const SinglePageBookingFlow = ({ service, onBack }: Props) => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Trip details
     travelDate: undefined as Date | undefined,
     travelTime: '',
     pickupLocation: '',
     adults: 1,
     children: 0,
     infants: 0,
-    
-    // Guest details
     customerName: '',
     customerEmail: '',
     customerPhone: '',
-    
-    // Payment
     paymentMethod: '',
-    
-    // Additional
     specialRequests: ''
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showBankDetails, setShowBankDetails] = useState(false);
+
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
+
+  // Fetch enabled payment gateways
+  const { data: paymentGateways } = useQuery({
+    queryKey: ['enabled_payment_gateways'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('payment_gateways')
+        .select('*')
+        .eq('is_enabled', true)
+        .order('priority');
+      
+      if (error) throw error;
+      return data as PaymentGateway[];
+    }
+  });
 
   const calculateTotal = () => {
     const adultTotal = formData.adults * service.price_adult;
@@ -81,104 +104,131 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     }));
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.travelDate) {
+      newErrors.travelDate = 'Travel date is required';
+    }
+    
+    if (!formData.customerName.trim()) {
+      newErrors.customerName = 'Customer name is required';
+    }
+    
+    if (!formData.customerEmail.trim()) {
+      newErrors.customerEmail = 'Email address is required';
+    } else if (!/^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]+$/.test(formData.customerEmail)) {
+      newErrors.customerEmail = 'Please enter a valid email address';
+    }
+    
+    if (!formData.paymentMethod) {
+      newErrors.paymentMethod = 'Please select a payment method';
+    }
+    
+    if (service.type === 'tour' && !formData.travelTime) {
+      newErrors.travelTime = 'Please select a time';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const initializeRazorpay = () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
+      script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
       document.body.appendChild(script);
     });
   };
 
   const handlePayment = async () => {
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields correctly",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
     try {
-      if (!formData.paymentMethod) {
-        toast({
-          title: "Error",
-          description: "Please select a payment method",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!formData.customerName || !formData.customerEmail) {
-        toast({
-          title: "Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const totalAmount = calculateTotal();
+      const selectedGateway = paymentGateways?.find(g => g.gateway_name === formData.paymentMethod);
+
+      if (!selectedGateway) {
+        throw new Error('Selected payment gateway not found');
+      }
 
       // Create booking record
-      const bookingData = {
-        service_id: service.id,
-        service_type: service.type,
-        service_title: service.title,
-        customer_name: formData.customerName,
-        customer_email: formData.customerEmail,
-        customer_phone: formData.customerPhone,
-        travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
-        travel_time: formData.travelTime,
-        pickup_location: formData.pickupLocation,
-        adults_count: formData.adults,
-        children_count: formData.children,
-        infants_count: formData.infants,
-        base_amount: totalAmount,
-        total_amount: totalAmount,
-        final_amount: totalAmount,
-        payment_gateway: formData.paymentMethod,
-        special_requests: formData.specialRequests,
-        booking_status: 'pending',
-        payment_status: 'pending'
-      };
-
-      const { data, error } = await supabase
+      const { data: bookingData, error: bookingError } = await supabase
         .from('new_bookings')
-        .insert(bookingData)
+        .insert({
+          service_id: service.id,
+          service_type: service.type,
+          service_title: service.title,
+          customer_name: formData.customerName,
+          customer_email: formData.customerEmail,
+          customer_phone: formData.customerPhone,
+          travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
+          travel_time: formData.travelTime,
+          pickup_location: formData.pickupLocation,
+          adults_count: formData.adults,
+          children_count: formData.children,
+          infants_count: formData.infants,
+          base_amount: totalAmount,
+          total_amount: totalAmount,
+          final_amount: totalAmount,
+          payment_gateway: selectedGateway.display_name,
+          payment_method: selectedGateway.gateway_name,
+          special_requests: formData.specialRequests,
+          booking_status: 'pending',
+          payment_status: 'pending'
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (bookingError) {
+        throw bookingError;
+      }
 
       // Handle different payment methods
-      if (formData.paymentMethod === 'cash_on_delivery') {
+      if (formData.paymentMethod === 'cash_on_arrival') {
         await supabase
           .from('new_bookings')
           .update({ 
             payment_status: 'confirmed',
-            booking_status: 'confirmed'
+            booking_status: 'confirmed',
+            confirmed_at: new Date().toISOString()
           })
-          .eq('id', data.id);
+          .eq('id', bookingData.id);
 
         toast({
           title: "Booking Confirmed!",
-          description: `Your booking reference is ${data.booking_reference}. You can pay upon arrival.`,
+          description: `Your booking reference is ${bookingData.booking_reference}. You can pay upon arrival.`,
         });
         
         onBack();
+      } else if (formData.paymentMethod === 'bank_transfer') {
+        setShowBankDetails(true);
+        
+        toast({
+          title: "Booking Created!",
+          description: `Your booking reference is ${bookingData.booking_reference}. Please complete the bank transfer to confirm your booking.`,
+        });
       } else if (formData.paymentMethod === 'razorpay') {
-        const res = await initializeRazorpay();
-
-        if (!res) {
-          toast({
-            title: "Error",
-            description: "Razorpay SDK failed to load. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
+        await initializeRazorpay();
 
         const options = {
-          key: 'rzp_test_9wuOSlATpSiUGq', // Replace with your Razorpay key
-          amount: Math.round(totalAmount * 100), // Amount in paise
+          key: selectedGateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
+          amount: Math.round(totalAmount * 100),
           currency: 'AED',
           name: 'Trip Habibi',
           description: service.title,
-          order_id: data.booking_reference,
+          order_id: bookingData.booking_reference,
           prefill: {
             name: formData.customerName,
             email: formData.customerEmail,
@@ -193,13 +243,14 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               .update({ 
                 payment_status: 'paid',
                 booking_status: 'confirmed',
-                payment_reference: response.razorpay_payment_id
+                payment_reference: response.razorpay_payment_id,
+                confirmed_at: new Date().toISOString()
               })
-              .eq('id', data.id);
+              .eq('id', bookingData.id);
 
             toast({
               title: "Payment Successful!",
-              description: `Your booking is confirmed. Reference: ${data.booking_reference}`,
+              description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
             });
             onBack();
           },
@@ -216,38 +267,113 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         const rzp = new (window as any).Razorpay(options);
         rzp.open();
       } else if (formData.paymentMethod === 'stripe') {
-        toast({
-          title: "Redirecting to Stripe",
-          description: "You will be redirected to complete your payment.",
-        });
-        
-        // Simulate Stripe redirect - replace with actual Stripe integration
+        // Simulate Stripe payment
         setTimeout(async () => {
           await supabase
             .from('new_bookings')
             .update({ 
               payment_status: 'paid',
-              booking_status: 'confirmed'
+              booking_status: 'confirmed',
+              payment_reference: `stripe_${Date.now()}`,
+              confirmed_at: new Date().toISOString()
             })
-            .eq('id', data.id);
+            .eq('id', bookingData.id);
 
           toast({
             title: "Payment Successful!",
-            description: `Your booking is confirmed. Reference: ${data.booking_reference}`,
+            description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
           });
           onBack();
         }, 2000);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Booking error:', error);
       toast({
         title: "Booking Failed",
-        description: "There was an error processing your booking. Please try again.",
+        description: error.message || "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
+
+  const getPaymentIcon = (gatewayName: string) => {
+    switch (gatewayName) {
+      case 'razorpay':
+        return <Wallet className="h-5 w-5 text-blue-600" />;
+      case 'stripe':
+        return <CreditCard className="h-5 w-5 text-purple-600" />;
+      case 'bank_transfer':
+        return <Building className="h-5 w-5 text-green-600" />;
+      case 'cash_on_arrival':
+        return <Banknote className="h-5 w-5 text-orange-600" />;
+      default:
+        return <CreditCard className="h-5 w-5" />;
+    }
+  };
+
+  const selectedGateway = paymentGateways?.find(g => g.gateway_name === formData.paymentMethod);
+
+  if (showBankDetails && selectedGateway?.bank_details) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center">Bank Transfer Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <p className="text-lg font-semibold text-green-600 mb-2">Booking Created Successfully!</p>
+                <p className="text-gray-600">Please transfer the amount to the following bank account:</p>
+              </div>
+              
+              <div className="bg-blue-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-lg mb-4">Bank Account Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.bank_details.bank_name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.bank_details.account_holder}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Account Number</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.bank_details.account_number}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">IBAN</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.bank_details.iban}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.bank_details.swift}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
+                    <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-4">
+                  Please use your booking reference in the transfer description for quick processing.
+                </p>
+                <Button onClick={onBack} className="px-8">
+                  Back to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const showTimeField = service.type === 'tour';
   const showPickupField = service.type === 'tour';
@@ -288,7 +414,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal bg-white border-gray-300",
-                          !formData.travelDate && "text-muted-foreground"
+                          !formData.travelDate && "text-muted-foreground",
+                          errors.travelDate && "border-red-500"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -306,6 +433,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       />
                     </PopoverContent>
                   </Popover>
+                  {errors.travelDate && <p className="text-sm text-red-600 mt-1">{errors.travelDate}</p>}
                 </div>
 
                 {/* Travel Time - Only for tours */}
@@ -313,7 +441,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                   <div>
                     <Label htmlFor="travel-time">Select Time *</Label>
                     <Select value={formData.travelTime} onValueChange={(value) => setFormData(prev => ({...prev, travelTime: value}))}>
-                      <SelectTrigger className="bg-white border-gray-300">
+                      <SelectTrigger className={cn("bg-white border-gray-300", errors.travelTime && "border-red-500")}>
                         <SelectValue placeholder="Choose your preferred time" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border shadow-lg">
@@ -325,6 +453,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                         <SelectItem value="16:00">4:00 PM</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.travelTime && <p className="text-sm text-red-600 mt-1">{errors.travelTime}</p>}
                   </div>
                 )}
 
@@ -452,9 +581,10 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       value={formData.customerName}
                       onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
                       placeholder="Enter your full name"
-                      className="bg-white border-gray-300"
+                      className={cn("bg-white border-gray-300", errors.customerName && "border-red-500")}
                       required
                     />
+                    {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
                   </div>
                   <div>
                     <Label htmlFor="email">Email *</Label>
@@ -464,9 +594,10 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       value={formData.customerEmail}
                       onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
                       placeholder="Enter your email"
-                      className="bg-white border-gray-300"
+                      className={cn("bg-white border-gray-300", errors.customerEmail && "border-red-500")}
                       required
                     />
+                    {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
                   </div>
                 </div>
                 <div>
@@ -499,51 +630,27 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div 
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      formData.paymentMethod === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'razorpay'}))}
-                  >
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <div className="font-medium">Razorpay</div>
-                        <div className="text-sm text-gray-600">Pay securely with credit/debit cards, UPI, wallets</div>
+                  {paymentGateways?.map((gateway) => (
+                    <div 
+                      key={gateway.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                        formData.paymentMethod === gateway.gateway_name 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setFormData(prev => ({...prev, paymentMethod: gateway.gateway_name}))}
+                    >
+                      <div className="flex items-center gap-3">
+                        {getPaymentIcon(gateway.gateway_name)}
+                        <div>
+                          <div className="font-medium">{gateway.display_name}</div>
+                          <div className="text-sm text-gray-600">{gateway.description}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div 
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      formData.paymentMethod === 'stripe' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'stripe'}))}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Wallet className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <div className="font-medium">Stripe</div>
-                        <div className="text-sm text-gray-600">International payment processing</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div 
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      formData.paymentMethod === 'cash_on_delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setFormData(prev => ({...prev, paymentMethod: 'cash_on_delivery'}))}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Banknote className="h-5 w-5 text-green-600" />
-                      <div>
-                        <div className="font-medium">Pay Later</div>
-                        <div className="text-sm text-gray-600">Pay when you arrive or meet our representative</div>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
+                {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
               </CardContent>
             </Card>
           </div>
@@ -595,10 +702,19 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
                 <Button 
                   onClick={handlePayment}
+                  disabled={isProcessing}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                   size="lg"
                 >
-                  {formData.paymentMethod === 'cash_on_delivery' ? 'Confirm Booking' : 'Proceed to Payment'}
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    formData.paymentMethod === 'cash_on_arrival' ? 'Confirm Booking' : 
+                    formData.paymentMethod === 'bank_transfer' ? 'Get Bank Details' : 'Proceed to Payment'
+                  )}
                 </Button>
               </CardContent>
             </Card>

@@ -13,7 +13,8 @@ import {
   TrendingUp,
   Car,
   PlaneIcon,
-  Settings
+  Settings,
+  Images
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -31,8 +32,9 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: 'transfers', label: 'Transfers', icon: Car },
     { id: 'ok-to-board', label: 'Ok to Board', icon: PlaneIcon },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
-    { id: 'trending', label: 'Trending', icon: TrendingUp },
-    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'trending', label: 'Trending Products', icon: TrendingUp },
+    { id: 'payments', label: 'Payment Settings', icon: CreditCard },
+    { id: 'sliders', label: 'Homepage Sliders', icon: Images },
     { id: 'content', label: 'Content', icon: Globe },
     { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload },
     { id: 'settings', label: 'Settings', icon: Settings }
