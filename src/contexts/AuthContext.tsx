@@ -44,8 +44,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      // Check if this is the specific admin user by UUID first
-      if (user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377') {
+      // Check if this is the specific admin user by email first
+      if (user.email === 'admin@triphabibi.in') {
         setIsAdmin(true);
         return;
       }
@@ -65,8 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(false);
     } catch (error) {
       console.error('Error checking admin status:', error);
-      // Fallback: check if this is the specific admin user
-      setIsAdmin(user.id === '993f2a1d-7c48-48b5-ae5d-86fafaff5377');
+      // Fallback: check if this is the specific admin user by email
+      setIsAdmin(user.email === 'admin@triphabibi.in');
     }
   };
 

@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Phone, Mail, Heart, Share2 } from 'lucide-react';
+import { MessageCircle, Phone, Mail, X, Bot, ChevronUp, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface StickyMobileCTAProps {
@@ -10,22 +11,13 @@ interface StickyMobileCTAProps {
 }
 
 const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCTAProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset;
-      setIsVisible(scrollTop > 300);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(`Hello! I'm interested in the tour: ${tour?.title || 'your tour'}. Can you provide more information?`);
+    const message = encodeURIComponent(`Hello! I'm interested in ${tour?.title || 'your services'}. Can you provide more information?`);
     window.open(`https://wa.me/919125009662?text=${message}`, '_blank');
   };
 
@@ -34,129 +26,76 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Inquiry about ${tour?.title || 'Tour'}`);
-    const body = encodeURIComponent(`Hello,\n\nI'm interested in learning more about this tour. Please provide additional details.\n\nThank you!`);
+    const subject = encodeURIComponent(`Inquiry about ${tour?.title || 'Services'}`);
+    const body = encodeURIComponent(`Hello,\n\nI'm interested in learning more about your services. Please provide additional details.\n\nThank you!`);
     window.open(`mailto:info@triphabibi.com?subject=${subject}&body=${body}`, '_self');
   };
 
-  const handleWishlist = () => {
-    if (!tour) return;
-    
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    const isInWishlist = wishlist.some((item: any) => item.id === tour.id && item.type === 'tour');
-    
-    if (isInWishlist) {
-      const newWishlist = wishlist.filter((item: any) => !(item.id === tour.id && item.type === 'tour'));
-      localStorage.setItem('wishlist', JSON.stringify(newWishlist));
-      setIsWishlisted(false);
-      toast({
-        title: "Removed from Wishlist",
-        description: "Tour removed from your wishlist",
-      });
-    } else {
-      wishlist.push({ id: tour.id, type: 'tour', title: tour.title, image: tour.image_urls?.[0] });
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-      setIsWishlisted(true);
-      toast({
-        title: "Added to Wishlist",
-        description: "Tour added to your wishlist",
-      });
-    }
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: tour?.title || 'Amazing Tour',
-        text: tour?.description || 'Check out this amazing tour!',
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link Copied!",
-        description: "Tour link copied to clipboard",
-      });
-    }
+  const hideWidget = () => {
+    setIsVisible(false);
+    // Show again after page refresh
+    sessionStorage.setItem('ctaHidden', 'true');
   };
+
+  useEffect(() => {
+    // Check if was hidden in current session
+    const wasHidden = sessionStorage.getItem('ctaHidden');
+    if (wasHidden) {
+      setIsVisible(false);
+    }
+
+    // Show widget again on page refresh
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('ctaHidden');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  if (!isVisible) return null;
 
   return (
     <>
-      {/* Mobile Sticky Bottom Bar - Only visible on mobile */}
-      <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 transform transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
-      }`}>
-        <div className="bg-white border-t border-gray-200 shadow-lg">
-          <div className="px-4 py-3">
-            <div className="flex items-center gap-2 mb-3">
-              {/* Contact Actions */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleWhatsApp}
-                className="flex-1 bg-green-500 border-green-500 text-white hover:bg-green-600"
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                WhatsApp
-              </Button>
-              
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCall}
-                className="flex-1 bg-blue-500 border-blue-500 text-white hover:bg-blue-600"
-              >
-                <Phone className="h-4 w-4 mr-1" />
-                Call
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleEmail}
-                className="flex-1"
-              >
-                <Mail className="h-4 w-4 mr-1" />
-                Email
-              </Button>
-
-              {tour && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleWishlist}
-                    className={isWishlisted ? 'text-red-500 border-red-200' : ''}
-                  >
-                    <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500' : ''}`} />
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
+      {/* Sticky Widget - Always visible on all pages */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        
+        {/* AI Chat Button */}
+        <div className="relative">
+          <Button
+            onClick={() => setShowAIChat(!showAIChat)}
+            className="bg-purple-600 hover:bg-purple-700 rounded-full w-14 h-14 shadow-lg animate-pulse"
+            size="icon"
+          >
+            <Bot className="h-6 w-6" />
+          </Button>
+          
+          {/* AI Chat Popup */}
+          {showAIChat && (
+            <div className="absolute bottom-16 right-0 w-80 bg-white rounded-lg shadow-xl border p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold">AI Travel Assistant</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowAIChat(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-2 text-sm">
+                <p>Hi! I'm your AI travel assistant. How can I help you today?</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm">Find Tours</Button>
+                  <Button variant="outline" size="sm">Visa Help</Button>
+                  <Button variant="outline" size="sm">Packages</Button>
+                </div>
+              </div>
             </div>
-
-            {/* Book Now Button */}
-            {showBooking && onBookNow && (
-              <Button 
-                onClick={onBookNow}
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-              >
-                Book This Experience
-              </Button>
-            )}
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* Floating WhatsApp Button - Always visible */}
-      <div className="fixed bottom-6 right-6 z-50">
+        {/* WhatsApp Button */}
         <Button
           onClick={handleWhatsApp}
           className="bg-green-500 hover:bg-green-600 rounded-full w-14 h-14 shadow-lg animate-pulse"
@@ -165,6 +104,80 @@ const StickyMobileCTA = ({ tour, showBooking = true, onBookNow }: StickyMobileCT
           <MessageCircle className="h-6 w-6" />
         </Button>
       </div>
+
+      {/* Mobile Bottom Bar - Only on mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
+        <div className="bg-white border-t border-gray-200 shadow-lg">
+          
+          {/* Minimize/Expand Button */}
+          <div className="flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleMinimize}
+              className="rounded-t-lg"
+            >
+              {isMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          {!isMinimized && (
+            <div className="px-4 py-3">
+              
+              {/* Hide Button */}
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-medium">Need Help?</span>
+                <Button variant="ghost" size="sm" onClick={hideWidget}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Contact Actions */}
+              <div className="flex items-center gap-2 mb-3">
+                <Button
+                  size="sm"
+                  onClick={handleWhatsApp}
+                  className="flex-1 bg-green-500 border-green-500 text-white hover:bg-green-600"
+                >
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  WhatsApp
+                </Button>
+                
+                <Button
+                  size="sm"
+                  onClick={handleCall}
+                  className="flex-1 bg-blue-500 border-blue-500 text-white hover:bg-blue-600"
+                >
+                  <Phone className="h-4 w-4 mr-1" />
+                  Call Now
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={handleEmail}
+                  className="flex-1 bg-gray-500 border-gray-500 text-white hover:bg-gray-600"
+                >
+                  <Mail className="h-4 w-4 mr-1" />
+                  Email
+                </Button>
+              </div>
+
+              {/* Book Now Button */}
+              {showBooking && onBookNow && (
+                <Button 
+                  onClick={onBookNow}
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                >
+                  Book This Experience Now
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Spacer for mobile to prevent content overlap */}
+      <div className="lg:hidden h-20"></div>
     </>
   );
 };
