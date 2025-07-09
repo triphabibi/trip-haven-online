@@ -16,6 +16,15 @@ const Header = () => {
     navigate('/');
   };
 
+  const handleAdminClick = () => {
+    console.log('Admin button clicked, user:', user?.email, 'isAdmin:', isAdmin);
+    if (user && isAdmin) {
+      navigate('/admin');
+    } else {
+      console.log('Not admin, staying put');
+    }
+  };
+
   const navItems = [
     { name: 'Tours', href: '/tours', icon: Plane },
     { name: 'Packages', href: '/packages', icon: FileText },
@@ -67,11 +76,13 @@ const Header = () => {
             {user ? (
               <div className="flex items-center space-x-2">
                 {isAdmin && (
-                  <Link to="/admin">
-                    <Button variant="outline" size="sm">
-                      Admin Panel
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAdminClick}
+                  >
+                    Admin Panel
+                  </Button>
                 )}
                 <Button
                   variant="ghost"
@@ -80,7 +91,7 @@ const Header = () => {
                   className="flex items-center gap-2"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  Sign Out ({user.email})
                 </Button>
               </div>
             ) : (
@@ -129,11 +140,16 @@ const Header = () => {
                     {user ? (
                       <div className="space-y-2">
                         {isAdmin && (
-                          <Link to="/admin" onClick={() => setIsOpen(false)}>
-                            <Button variant="outline" className="w-full justify-start">
-                              Admin Panel
-                            </Button>
-                          </Link>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              handleAdminClick();
+                              setIsOpen(false);
+                            }}
+                          >
+                            Admin Panel
+                          </Button>
                         )}
                         <Button
                           variant="ghost"

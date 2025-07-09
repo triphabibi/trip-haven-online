@@ -21,47 +21,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
-      checkAdminStatus(session?.user);
+      if (session?.user) {
+        await checkAdminStatus(session.user);
+      }
       setLoading(false);
-    });
+    };
+
+    getInitialSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
       setUser(session?.user ?? null);
-      checkAdminStatus(session?.user);
+      
+      if (session?.user) {
+        await checkAdminStatus(session.user);
+      } else {
+        setIsAdmin(false);
+      }
+      
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (user: User | null) => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-
+  const checkAdminStatus = async (user: User) => {
     try {
+      console.log('Checking admin status for user:', user.email);
+      
       // Check if this is the specific admin user by email first
       if (user.email === 'admin@triphabibi.in') {
+        console.log('User is admin by email');
         setIsAdmin(true);
         return;
       }
 
       // Check profiles table for admin role
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role, is_admin')
         .eq('id', user.id)
         .single();
       
-      if (profile?.role === 'admin' || profile?.is_admin) {
+      console.log('Profile check result:', profile, error);
+      
+      if (profile && (profile.role === 'admin' || profile.is_admin)) {
+        console.log('User is admin by profile');
         setIsAdmin(true);
         return;
       }
 
+      console.log('User is not admin');
       setIsAdmin(false);
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -71,10 +85,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting to sign in:', email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (error) {
+      console.error('Sign in error:', error);
+    } else {
+      console.log('Sign in successful:', data.user?.email);
+    }
+    
     return { data, error };
   };
 
