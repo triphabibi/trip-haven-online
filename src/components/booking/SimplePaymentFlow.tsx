@@ -42,29 +42,24 @@ const SimplePaymentFlow = ({
 
   console.log('SimplePaymentFlow rendered with:', { amount, bookingId, customerName, customerEmail });
 
-  // Fetch payment gateways with better error handling
+  // Fetch payment gateways
   const { data: gateways, isLoading, error } = useQuery({
     queryKey: ['payment_gateways'],
     queryFn: async () => {
       console.log('Fetching payment gateways...');
-      try {
-        const { data, error } = await supabase
-          .from('payment_gateways')
-          .select('*')
-          .eq('is_enabled', true)
-          .order('priority');
-        
-        if (error) {
-          console.error('Supabase error fetching gateways:', error);
-          throw error;
-        }
-        
-        console.log('Payment gateways fetched successfully:', data);
-        return data as PaymentGateway[];
-      } catch (err) {
-        console.error('Error in queryFn:', err);
-        throw err;
+      const { data, error } = await supabase
+        .from('payment_gateways')
+        .select('*')
+        .eq('is_enabled', true)
+        .order('priority');
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
+      
+      console.log('Payment gateways fetched:', data);
+      return data as PaymentGateway[];
     },
     retry: 3,
     retryDelay: 1000,
@@ -87,17 +82,13 @@ const SimplePaymentFlow = ({
 
   const handleRazorpayPayment = async (checkoutData: any) => {
     return new Promise((resolve, reject) => {
-      console.log('Loading Razorpay script...');
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => {
-        console.log('Razorpay script loaded, opening checkout...');
         const options = {
           ...checkoutData,
           handler: async function (response: any) {
-            console.log('Razorpay payment response:', response);
             try {
-              console.log('Confirming payment with backend...');
               const { data: confirmResult, error } = await supabase.functions.invoke('confirm-payment', {
                 body: {
                   paymentId: response.razorpay_payment_id,
@@ -105,8 +96,6 @@ const SimplePaymentFlow = ({
                   bookingId: bookingId
                 }
               });
-
-              console.log('Payment confirmation result:', { confirmResult, error });
 
               if (error || !confirmResult?.success) {
                 throw new Error(confirmResult?.error || 'Payment confirmation failed');
@@ -132,7 +121,6 @@ const SimplePaymentFlow = ({
           },
           modal: {
             ondismiss: function() {
-              console.log('Razorpay modal dismissed by user');
               reject(new Error('Payment cancelled by user'));
             }
           }
@@ -143,7 +131,6 @@ const SimplePaymentFlow = ({
       };
       
       script.onerror = () => {
-        console.error('Failed to load Razorpay script');
         reject(new Error('Failed to load Razorpay'));
       };
       
@@ -165,7 +152,6 @@ const SimplePaymentFlow = ({
     setProcessing(true);
 
     try {
-      console.log('Calling create-payment function...');
       const { data: result, error } = await supabase.functions.invoke('create-payment', {
         body: {
           bookingId,
@@ -180,24 +166,18 @@ const SimplePaymentFlow = ({
       console.log('Create-payment response:', { result, error });
 
       if (error) {
-        console.error('Supabase function error:', error);
         throw new Error(error.message || 'Payment creation failed');
       }
 
       if (result?.success) {
-        console.log('Payment creation successful:', result);
-        
         if (result.requiresAction) {
           if (result.paymentMethod === 'razorpay' && result.checkoutData) {
-            console.log('Processing Razorpay payment...');
             await handleRazorpayPayment(result.checkoutData);
           } else if (result.paymentMethod === 'stripe' && result.checkoutUrl) {
-            console.log('Redirecting to Stripe checkout...');
             window.location.href = result.checkoutUrl;
           }
         } else {
           // Direct success for cash/bank transfer
-          console.log('Payment completed without action required');
           toast({
             title: "Success!",
             description: result.message || 'Payment method selected successfully',
