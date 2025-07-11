@@ -38,6 +38,11 @@ serve(async (req) => {
       customerPhone
     } = requestData;
 
+    // Validate required fields
+    if (!bookingId || !paymentMethod || !amount || !customerName || !customerEmail) {
+      throw new Error('Missing required fields');
+    }
+
     // Get payment gateway configuration
     const { data: gateway, error: gatewayError } = await supabase
       .from('payment_gateways')
@@ -47,6 +52,7 @@ serve(async (req) => {
       .single();
 
     if (gatewayError || !gateway) {
+      logStep("Gateway error", gatewayError);
       throw new Error(`Payment gateway ${paymentMethod} not found or disabled`);
     }
 
@@ -73,7 +79,8 @@ serve(async (req) => {
           customerName,
           customerEmail,
           customerPhone,
-          bookingId
+          bookingId,
+          origin: req.headers.get("origin") || 'https://triphabibi.in'
         });
         break;
 
@@ -120,7 +127,7 @@ async function handleRazorpay(params: any) {
     actionType: 'razorpay_checkout',
     checkoutData: {
       key: gateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
-      amount: Math.round(amount * 100),
+      amount: Math.round(amount * 100), // Convert to paise
       currency: 'AED',
       name: 'Trip Habibi',
       description: 'Tour Booking Payment',
@@ -138,7 +145,7 @@ async function handleRazorpay(params: any) {
 }
 
 async function handleStripe(params: any) {
-  const { gateway, amount, customerName, customerEmail, customerPhone, bookingId } = params;
+  const { gateway, amount, customerName, customerEmail, customerPhone, bookingId, origin } = params;
   
   logStep("Processing Stripe payment");
 
@@ -150,37 +157,42 @@ async function handleStripe(params: any) {
     apiVersion: '2023-10-16',
   });
 
-  const session = await stripe.checkout.sessions.create({
-    customer_email: customerEmail,
-    line_items: [
-      {
-        price_data: {
-          currency: 'aed',
-          product_data: {
-            name: 'Tour Booking',
-            description: `Booking ID: ${bookingId}`,
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer_email: customerEmail,
+      line_items: [
+        {
+          price_data: {
+            currency: 'aed',
+            product_data: {
+              name: 'Tour Booking',
+              description: `Booking ID: ${bookingId}`,
+            },
+            unit_amount: Math.round(amount * 100), // Convert to fils
           },
-          unit_amount: Math.round(amount * 100),
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      mode: 'payment',
+      success_url: `${origin}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/booking?cancelled=true`,
+      metadata: {
+        booking_id: bookingId,
       },
-    ],
-    mode: 'payment',
-    success_url: `${req.headers.get("origin") || 'http://localhost:3000'}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${req.headers.get("origin") || 'http://localhost:3000'}/booking?cancelled=true`,
-    metadata: {
-      booking_id: bookingId,
-    },
-  });
+    });
 
-  return {
-    success: true,
-    paymentMethod: 'stripe',
-    requiresAction: true,
-    actionType: 'redirect',
-    checkoutUrl: session.url,
-    sessionId: session.id
-  };
+    return {
+      success: true,
+      paymentMethod: 'stripe',
+      requiresAction: true,
+      actionType: 'redirect',
+      checkoutUrl: session.url,
+      sessionId: session.id
+    };
+  } catch (error: any) {
+    logStep("Stripe error", error.message);
+    throw new Error(`Stripe payment failed: ${error.message}`);
+  }
 }
 
 async function handleCash(params: any) {
@@ -198,7 +210,10 @@ async function handleCash(params: any) {
     })
     .eq('id', bookingId);
 
-  if (error) throw error;
+  if (error) {
+    logStep("Cash payment update error", error);
+    throw error;
+  }
 
   return {
     success: true,
@@ -222,7 +237,10 @@ async function handleBankTransfer(params: any) {
     })
     .eq('id', bookingId);
 
-  if (error) throw error;
+  if (error) {
+    logStep("Bank transfer update error", error);
+    throw error;
+  }
 
   return {
     success: true,

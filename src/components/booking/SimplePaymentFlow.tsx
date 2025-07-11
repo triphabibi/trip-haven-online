@@ -39,16 +39,23 @@ const SimplePaymentFlow = ({
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
 
-  const { data: gateways } = useQuery({
+  console.log('SimplePaymentFlow rendered with:', { amount, bookingId, customerName, customerEmail });
+
+  const { data: gateways, isLoading, error } = useQuery({
     queryKey: ['payment_gateways'],
     queryFn: async () => {
+      console.log('Fetching payment gateways...');
       const { data, error } = await supabase
         .from('payment_gateways')
         .select('*')
         .eq('is_enabled', true)
         .order('priority');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching gateways:', error);
+        throw error;
+      }
+      console.log('Payment gateways fetched:', data);
       return data as PaymentGateway[];
     }
   });
@@ -78,9 +85,11 @@ const SimplePaymentFlow = ({
       return;
     }
 
+    console.log('Starting payment process with:', { selectedPayment, bookingId, amount });
     setProcessing(true);
 
     try {
+      console.log('Calling create-payment function...');
       const { data: result, error } = await supabase.functions.invoke('create-payment', {
         body: {
           bookingId,
@@ -92,16 +101,26 @@ const SimplePaymentFlow = ({
         }
       });
 
-      if (error) throw error;
+      console.log('Create-payment response:', { result, error });
 
-      if (result.success) {
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (result?.success) {
+        console.log('Payment creation successful:', result);
+        
         if (result.requiresAction) {
           if (result.paymentMethod === 'razorpay') {
+            console.log('Processing Razorpay payment...');
             await handleRazorpayPayment(result.checkoutData);
           } else if (result.paymentMethod === 'stripe') {
+            console.log('Redirecting to Stripe checkout...');
             window.location.href = result.checkoutUrl;
           }
         } else {
+          console.log('Payment completed without action required');
           toast({
             title: "Success!",
             description: result.message,
@@ -109,9 +128,10 @@ const SimplePaymentFlow = ({
           onSuccess();
         }
       } else {
-        throw new Error(result.error || 'Payment failed');
+        throw new Error(result?.error || 'Payment failed');
       }
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: "Payment Failed",
         description: error.message || 'Something went wrong',
@@ -124,13 +144,17 @@ const SimplePaymentFlow = ({
 
   const handleRazorpayPayment = (checkoutData: any) => {
     return new Promise((resolve, reject) => {
+      console.log('Loading Razorpay script...');
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => {
+        console.log('Razorpay script loaded, opening checkout...');
         const options = {
           ...checkoutData,
           handler: async function (response: any) {
+            console.log('Razorpay payment response:', response);
             try {
+              console.log('Confirming payment...');
               const { data: confirmResult, error } = await supabase.functions.invoke('confirm-payment', {
                 body: {
                   paymentId: response.razorpay_payment_id,
@@ -139,7 +163,9 @@ const SimplePaymentFlow = ({
                 }
               });
 
-              if (error || !confirmResult.success) {
+              console.log('Payment confirmation result:', { confirmResult, error });
+
+              if (error || !confirmResult?.success) {
                 throw new Error('Payment confirmation failed');
               }
 
@@ -151,6 +177,7 @@ const SimplePaymentFlow = ({
               onSuccess();
               resolve(response);
             } catch (error) {
+              console.error('Payment confirmation error:', error);
               toast({
                 title: "Payment Failed",
                 description: "Payment could not be confirmed",
@@ -161,6 +188,7 @@ const SimplePaymentFlow = ({
           },
           modal: {
             ondismiss: function() {
+              console.log('Razorpay modal dismissed');
               reject(new Error('Payment cancelled'));
             }
           }
@@ -171,12 +199,36 @@ const SimplePaymentFlow = ({
       };
       
       script.onerror = () => {
+        console.error('Failed to load Razorpay script');
         reject(new Error('Failed to load Razorpay'));
       };
       
       document.body.appendChild(script);
     });
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading payment options...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    console.error('Payment gateways error:', error);
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            Error loading payment options. Please try again.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -192,25 +244,34 @@ const SimplePaymentFlow = ({
         <div className="space-y-3">
           <h3 className="font-medium">Select Payment Method</h3>
           
-          {gateways?.map((gateway) => (
-            <div
-              key={gateway.id}
-              className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                selectedPayment === gateway.gateway_name
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => setSelectedPayment(gateway.gateway_name)}
-            >
-              <div className="flex items-center gap-3">
-                {getPaymentIcon(gateway.gateway_name)}
-                <div>
-                  <div className="font-medium">{gateway.display_name}</div>
-                  <div className="text-sm text-gray-600">{gateway.description}</div>
+          {gateways && gateways.length > 0 ? (
+            gateways.map((gateway) => (
+              <div
+                key={gateway.id}
+                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                  selectedPayment === gateway.gateway_name
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => {
+                  console.log('Selected payment method:', gateway.gateway_name);
+                  setSelectedPayment(gateway.gateway_name);
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {getPaymentIcon(gateway.gateway_name)}
+                  <div>
+                    <div className="font-medium">{gateway.display_name}</div>
+                    <div className="text-sm text-gray-600">{gateway.description}</div>
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-600">
+              No payment methods available. Please contact support.
             </div>
-          ))}
+          )}
         </div>
 
         <Button
@@ -228,6 +289,13 @@ const SimplePaymentFlow = ({
             `Pay AED ${amount.toFixed(2)}`
           )}
         </Button>
+
+        {/* Debug info */}
+        <div className="text-xs text-gray-500 mt-4">
+          <div>Booking ID: {bookingId}</div>
+          <div>Selected: {selectedPayment || 'None'}</div>
+          <div>Available gateways: {gateways?.length || 0}</div>
+        </div>
       </CardContent>
     </Card>
   );

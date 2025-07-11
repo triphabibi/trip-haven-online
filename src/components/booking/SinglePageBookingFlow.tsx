@@ -63,6 +63,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
+  console.log('SinglePageBookingFlow rendered with service:', service);
+
   const calculateTotal = () => {
     const adultTotal = formData.adults * service.price_adult;
     const childTotal = formData.children * service.price_child;
@@ -105,6 +107,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   };
 
   const handleCreateBooking = async () => {
+    console.log('Creating booking with form data:', formData);
+    
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -118,35 +122,44 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
     try {
       const totalAmount = calculateTotal();
+      console.log('Total amount calculated:', totalAmount);
 
-      const { data: bookingData, error: bookingError } = await supabase
+      const bookingData = {
+        service_id: service.id,
+        service_type: service.type,
+        service_title: service.title,
+        customer_name: formData.customerName,
+        customer_email: formData.customerEmail,
+        customer_phone: formData.customerPhone,
+        travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
+        travel_time: formData.travelTime,
+        pickup_location: formData.pickupLocation,
+        adults_count: formData.adults,
+        children_count: formData.children,
+        infants_count: formData.infants,
+        base_amount: totalAmount,
+        total_amount: totalAmount,
+        final_amount: totalAmount,
+        special_requests: formData.specialRequests,
+        booking_status: 'pending',
+        payment_status: 'pending'
+      };
+
+      console.log('Inserting booking data:', bookingData);
+
+      const { data: bookingResult, error: bookingError } = await supabase
         .from('new_bookings')
-        .insert({
-          service_id: service.id,
-          service_type: service.type,
-          service_title: service.title,
-          customer_name: formData.customerName,
-          customer_email: formData.customerEmail,
-          customer_phone: formData.customerPhone,
-          travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
-          travel_time: formData.travelTime,
-          pickup_location: formData.pickupLocation,
-          adults_count: formData.adults,
-          children_count: formData.children,
-          infants_count: formData.infants,
-          base_amount: totalAmount,
-          total_amount: totalAmount,
-          final_amount: totalAmount,
-          special_requests: formData.specialRequests,
-          booking_status: 'pending',
-          payment_status: 'pending'
-        })
+        .insert(bookingData)
         .select()
         .single();
 
-      if (bookingError) throw bookingError;
+      if (bookingError) {
+        console.error('Booking creation error:', bookingError);
+        throw bookingError;
+      }
 
-      setBookingId(bookingData.id);
+      console.log('Booking created successfully:', bookingResult);
+      setBookingId(bookingResult.id);
       setStep('payment');
 
     } catch (error: any) {
@@ -162,6 +175,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   };
 
   const handlePaymentSuccess = () => {
+    console.log('Payment successful, booking confirmed');
     toast({
       title: "🎉 Booking Confirmed!",
       description: "Your booking has been confirmed successfully!",
@@ -177,6 +191,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const showPickupField = service.type === 'tour';
 
   if (step === 'payment') {
+    console.log('Rendering payment step with booking ID:', bookingId);
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

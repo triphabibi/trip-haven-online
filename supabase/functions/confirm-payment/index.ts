@@ -29,11 +29,16 @@ serve(async (req) => {
     const { paymentId, paymentMethod, bookingId, sessionId } = await req.json();
     logStep("Confirmation data received", { paymentId, paymentMethod, bookingId });
 
+    if (!bookingId) {
+      throw new Error('Booking ID is required');
+    }
+
     let success = false;
     let paymentReference = '';
 
-    if (paymentMethod === 'razorpay') {
+    if (paymentMethod === 'razorpay' && paymentId) {
       // For demo purposes, we'll accept any payment ID for Razorpay
+      // In production, you should verify the payment with Razorpay API
       success = true;
       paymentReference = paymentId;
     } else if (paymentMethod === 'stripe' && sessionId) {
@@ -50,10 +55,15 @@ serve(async (req) => {
           apiVersion: '2023-10-16',
         });
 
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        if (session.payment_status === 'paid') {
-          success = true;
-          paymentReference = session.payment_intent as string;
+        try {
+          const session = await stripe.checkout.sessions.retrieve(sessionId);
+          if (session.payment_status === 'paid') {
+            success = true;
+            paymentReference = session.payment_intent as string;
+          }
+        } catch (error) {
+          logStep("Stripe verification error", error);
+          throw new Error('Failed to verify Stripe payment');
         }
       }
     }
@@ -66,11 +76,15 @@ serve(async (req) => {
           payment_status: 'paid',
           booking_status: 'confirmed',
           payment_reference: paymentReference,
+          payment_method: paymentMethod,
           confirmed_at: new Date().toISOString()
         })
         .eq('id', bookingId);
 
-      if (error) throw error;
+      if (error) {
+        logStep("Booking update error", error);
+        throw error;
+      }
 
       logStep("Booking confirmed successfully");
 
