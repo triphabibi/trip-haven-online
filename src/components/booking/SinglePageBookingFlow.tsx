@@ -625,13 +625,18 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               </CardContent>
             </Card>
 
-            {/* Payment Methods - Only show if gateways are available */}
-            {paymentGateways && paymentGateways.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payment Method</CardTitle>
-                </CardHeader>
-                <CardContent>
+            {/* Payment Methods */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Method</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!paymentGateways || paymentGateways.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 font-medium">No payment methods are currently enabled.</p>
+                    <p className="text-sm text-gray-400 mt-1">Please contact admin to configure payment gateways.</p>
+                  </div>
+                ) : (
                   <div className="space-y-3">
                     {paymentGateways.map((gateway) => (
                       <div 
@@ -643,20 +648,32 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                         }`}
                         onClick={() => setFormData(prev => ({...prev, paymentMethod: gateway.gateway_name}))}
                       >
-                        <div className="flex items-center gap-3">
-                          {getPaymentIcon(gateway.gateway_name)}
-                          <div>
-                            <div className="font-medium">{gateway.display_name}</div>
-                            <div className="text-sm text-gray-600">{gateway.description}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {getPaymentIcon(gateway.gateway_name)}
+                            <div>
+                              <div className="font-medium">{gateway.display_name}</div>
+                              <div className="text-sm text-gray-600">{gateway.description}</div>
+                              {gateway.test_mode && (
+                                <span className="inline-block px-2 py-1 text-xs bg-orange-100 text-orange-600 rounded mt-1">
+                                  Test Mode
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
+                            {formData.paymentMethod === gateway.gateway_name && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
-                </CardContent>
-              </Card>
-            )}
+                )}
+                {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Booking Summary */}

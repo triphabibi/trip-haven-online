@@ -73,6 +73,10 @@ const TourDetailPage = () => {
     );
   }
 
+  const handleBookNow = () => {
+    navigate(`/booking?type=tour&id=${tour.id}`);
+  };
+
   if (showBooking) {
     return (
       <SinglePageBookingFlow
@@ -191,7 +195,7 @@ const TourDetailPage = () => {
                   </div>
                   
                   <Button 
-                    onClick={() => setShowBooking(true)}
+                    onClick={handleBookNow}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     size="lg"
                   >
