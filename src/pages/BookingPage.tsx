@@ -52,14 +52,14 @@ const BookingPage = () => {
           price_child: packageData.price_child,
           price_infant: packageData.price_infant,
           type: 'package' as const,
-          overview: packageData.overview || packageData.description,
-          highlights: packageData.highlights,
-          whats_included: packageData.whats_included,
-          exclusions: packageData.exclusions,
+          overview: (packageData as any).overview || packageData.description,
+          highlights: (packageData as any).highlights || [],
+          whats_included: (packageData as any).whats_included || [],
+          exclusions: (packageData as any).exclusions || [],
           itinerary: packageData.itinerary,
-          location: packageData.location,
-          cancellation_policy: packageData.cancellation_policy,
-          terms_conditions: packageData.terms_conditions
+          location: (packageData as any).location || '',
+          cancellation_policy: (packageData as any).cancellation_policy || '',
+          terms_conditions: (packageData as any).terms_conditions || ''
         } : null;
       case 'ticket':
         return ticket ? {
@@ -69,13 +69,13 @@ const BookingPage = () => {
           price_child: ticket.price_child || 0,
           price_infant: ticket.price_infant || 0,
           type: 'ticket' as const,
-          overview: ticket.overview || ticket.description,
-          highlights: ticket.highlights,
-          whats_included: ticket.whats_included,
-          exclusions: ticket.exclusions,
-          location: ticket.location,
-          cancellation_policy: ticket.cancellation_policy,
-          terms_conditions: ticket.terms_conditions
+          overview: (ticket as any).overview || ticket.description,
+          highlights: (ticket as any).highlights || [],
+          whats_included: (ticket as any).whats_included || [],
+          exclusions: (ticket as any).exclusions || [],
+          location: (ticket as any).location || '',
+          cancellation_policy: (ticket as any).cancellation_policy || '',
+          terms_conditions: (ticket as any).terms_conditions || ''
         } : null;
       case 'visa':
         return visa ? {
@@ -85,12 +85,12 @@ const BookingPage = () => {
           price_child: 0,
           price_infant: 0,
           type: 'visa' as const,
-          overview: visa.overview || visa.description,
-          highlights: visa.highlights,
-          whats_included: visa.whats_included,
-          exclusions: visa.exclusions,
-          cancellation_policy: visa.cancellation_policy,
-          terms_conditions: visa.terms_conditions
+          overview: (visa as any).overview || visa.description,
+          highlights: (visa as any).highlights || [],
+          whats_included: (visa as any).whats_included || [],
+          exclusions: (visa as any).exclusions || [],
+          cancellation_policy: (visa as any).cancellation_policy || '',
+          terms_conditions: (visa as any).terms_conditions || ''
         } : null;
       default:
         return null;
