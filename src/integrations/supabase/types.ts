@@ -629,6 +629,8 @@ export type Database = {
           supported_currencies: string[] | null
           test_mode: boolean | null
           updated_at: string | null
+          webhook_secret: string | null
+          webhook_url: string | null
         }
         Insert: {
           api_key?: string | null
@@ -650,6 +652,8 @@ export type Database = {
           supported_currencies?: string[] | null
           test_mode?: boolean | null
           updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Update: {
           api_key?: string | null
@@ -671,6 +675,8 @@ export type Database = {
           supported_currencies?: string[] | null
           test_mode?: boolean | null
           updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Relationships: []
       }
