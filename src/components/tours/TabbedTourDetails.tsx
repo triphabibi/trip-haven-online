@@ -70,7 +70,44 @@ const TabbedTourDetails = ({ tour }: TabbedTourDetailsProps) => {
     }
   ];
 
-  const itineraryData = tour.itinerary || sampleItinerary;
+  // Safely parse and ensure itinerary is always an array
+  const getItineraryData = () => {
+    if (!tour.itinerary) {
+      return sampleItinerary;
+    }
+
+    // If it's already an array, return it
+    if (Array.isArray(tour.itinerary)) {
+      return tour.itinerary.length > 0 ? tour.itinerary : sampleItinerary;
+    }
+
+    // If it's a string, try to parse it
+    if (typeof tour.itinerary === 'string') {
+      try {
+        const parsed = JSON.parse(tour.itinerary);
+        if (Array.isArray(parsed)) {
+          return parsed.length > 0 ? parsed : sampleItinerary;
+        }
+        // If parsed object has a days property with array
+        if (parsed && Array.isArray(parsed.days)) {
+          return parsed.days.length > 0 ? parsed.days : sampleItinerary;
+        }
+      } catch (error) {
+        console.warn('Failed to parse itinerary:', error);
+        return sampleItinerary;
+      }
+    }
+
+    // If it's an object with days property
+    if (typeof tour.itinerary === 'object' && tour.itinerary.days && Array.isArray(tour.itinerary.days)) {
+      return tour.itinerary.days.length > 0 ? tour.itinerary.days : sampleItinerary;
+    }
+
+    // Fallback to sample itinerary
+    return sampleItinerary;
+  };
+
+  const itineraryData = getItineraryData();
 
   return (
     <div className="w-full">
