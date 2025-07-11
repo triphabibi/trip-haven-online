@@ -17,7 +17,6 @@ const BookingPage = () => {
   const serviceType = searchParams.get('type') || 'general';
   const serviceId = searchParams.get('id') || 'sample-service-id';
 
-  // Fetch service data based on type
   const { data: tour, isLoading: tourLoading } = useTour(serviceType === 'tour' ? serviceId : '');
   const { data: packageData, isLoading: packageLoading } = usePackage(serviceType === 'package' ? serviceId : '');
   const { data: ticket, isLoading: ticketLoading } = useTicket(serviceType === 'ticket' ? serviceId : '');
@@ -165,7 +164,7 @@ const BookingPage = () => {
     );
   }
 
-  // Direct booking flow - no tour detail page
+  // Use streamlined booking flow for all other services - directly book without tour detail page
   return (
     <SinglePageBookingFlow
       service={serviceData}
