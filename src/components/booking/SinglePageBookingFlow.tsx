@@ -77,11 +77,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
-  // Fetch enabled payment gateways
-  const { data: paymentGateways } = useQuery({
-    queryKey: ['enabled_payment_gateways'],
+  // Fetch ALL enabled payment gateways without authentication requirement
+  const { data: paymentGateways, isLoading: gatewaysLoading, error: gatewaysError } = useQuery({
+    queryKey: ['payment_gateways'],
     queryFn: async () => {
-      console.log('Fetching payment gateways...');
+      console.log('🔄 Fetching all payment gateways...');
       const { data, error } = await supabase
         .from('payment_gateways')
         .select('*')
@@ -89,10 +89,10 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         .order('priority');
       
       if (error) {
-        console.error('Error fetching payment gateways:', error);
+        console.error('❌ Error fetching payment gateways:', error);
         throw error;
       }
-      console.log('Payment gateways fetched:', data);
+      console.log('✅ Payment gateways fetched:', data);
       return data as PaymentGateway[];
     }
   });
@@ -153,11 +153,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   };
 
   const handlePayment = async () => {
-    console.log('Starting booking process...');
+    console.log('🚀 Starting booking process...');
     
     if (!validateForm()) {
       toast({
-        title: "Validation Error",
+        title: "❌ Validation Error",
         description: "Please fill in all required fields correctly",
         variant: "destructive",
       });
@@ -174,7 +174,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         throw new Error('Selected payment gateway not found');
       }
 
-      console.log('Creating booking with data:', {
+      console.log('💰 Creating booking with amount:', totalAmount);
+      console.log('🏦 Selected gateway:', selectedGateway.display_name);
+
+      // Create booking record
+      const bookingData = {
         service_id: service.id,
         service_type: service.type,
         service_title: service.title,
@@ -195,42 +199,22 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         special_requests: formData.specialRequests,
         booking_status: 'pending',
         payment_status: 'pending'
-      });
+      };
 
-      // Create booking record
-      const { data: bookingData, error: bookingError } = await supabase
+      console.log('📝 Creating booking with data:', bookingData);
+
+      const { data: booking, error: bookingError } = await supabase
         .from('new_bookings')
-        .insert({
-          service_id: service.id,
-          service_type: service.type,
-          service_title: service.title,
-          customer_name: formData.customerName,
-          customer_email: formData.customerEmail,
-          customer_phone: formData.customerPhone,
-          travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
-          travel_time: formData.travelTime,
-          pickup_location: formData.pickupLocation,
-          adults_count: formData.adults,
-          children_count: formData.children,
-          infants_count: formData.infants,
-          base_amount: totalAmount,
-          total_amount: totalAmount,
-          final_amount: totalAmount,
-          payment_gateway: selectedGateway.display_name,
-          payment_method: selectedGateway.gateway_name,
-          special_requests: formData.specialRequests,
-          booking_status: 'pending',
-          payment_status: 'pending'
-        })
+        .insert(bookingData)
         .select()
         .single();
 
       if (bookingError) {
-        console.error('Booking creation error:', bookingError);
+        console.error('❌ Booking creation error:', bookingError);
         throw bookingError;
       }
 
-      console.log('Booking created successfully:', bookingData);
+      console.log('✅ Booking created successfully:', booking);
 
       // Handle different payment methods
       if (formData.paymentMethod === 'cash_on_arrival') {
@@ -241,13 +225,13 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             booking_status: 'confirmed',
             confirmed_at: new Date().toISOString()
           })
-          .eq('id', bookingData.id);
+          .eq('id', booking.id);
 
         const instructions = selectedGateway.instructions || 'You can pay in cash at the pickup location or when you meet our representative.';
         
         toast({
           title: "🎉 Booking Confirmed!",
-          description: `Your booking reference is ${bookingData.booking_reference}. ${instructions}`,
+          description: `Your booking reference is ${booking.booking_reference}. ${instructions}`,
           duration: 8000,
         });
         
@@ -259,8 +243,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         setShowBankDetails(true);
         
         toast({
-          title: "Booking Created!",
-          description: `Your booking reference is ${bookingData.booking_reference}. Please complete the bank transfer to confirm your booking.`,
+          title: "✅ Booking Created!",
+          description: `Your booking reference is ${booking.booking_reference}. Please complete the bank transfer to confirm your booking.`,
         });
       } else if (formData.paymentMethod === 'razorpay') {
         await initializeRazorpay();
@@ -271,7 +255,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           currency: 'AED',
           name: 'Trip Habibi',
           description: service.title,
-          order_id: bookingData.booking_reference,
+          order_id: booking.booking_reference,
           prefill: {
             name: formData.customerName,
             email: formData.customerEmail,
@@ -289,11 +273,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                 payment_reference: response.razorpay_payment_id,
                 confirmed_at: new Date().toISOString()
               })
-              .eq('id', bookingData.id);
+              .eq('id', booking.id);
 
             toast({
-              title: "Payment Successful!",
-              description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
+              title: "💳 Payment Successful!",
+              description: `Your booking is confirmed. Reference: ${booking.booking_reference}`,
             });
             setTimeout(() => {
               onBack();
@@ -302,7 +286,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           modal: {
             ondismiss: function() {
               toast({
-                title: "Payment Cancelled",
+                title: "⚠️ Payment Cancelled",
                 description: "Your booking is saved as pending. You can complete payment later.",
               });
             }
@@ -322,11 +306,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               payment_reference: `stripe_${Date.now()}`,
               confirmed_at: new Date().toISOString()
             })
-            .eq('id', bookingData.id);
+            .eq('id', booking.id);
 
           toast({
-            title: "Payment Successful!",
-            description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
+            title: "💳 Payment Successful!",
+            description: `Your booking is confirmed. Reference: ${booking.booking_reference}`,
           });
           setTimeout(() => {
             onBack();
@@ -335,9 +319,9 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
       }
 
     } catch (error: any) {
-      console.error('Booking error:', error);
+      console.error('❌ Booking error:', error);
       toast({
-        title: "Booking Failed",
+        title: "💥 Booking Failed",
         description: error.message || "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
@@ -363,22 +347,47 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
   const selectedGateway = paymentGateways?.find(g => g.gateway_name === formData.paymentMethod);
 
+  // Show loading state for gateways
+  if (gatewaysLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading payment methods...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state for gateways
+  if (gatewaysError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Error Loading Payment Methods</h2>
+          <p className="text-gray-600 mb-4">{gatewaysError.message}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
   if (showBankDetails && selectedGateway?.bank_details) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
-              <CardTitle className="text-center">Bank Transfer Details</CardTitle>
+              <CardTitle className="text-center">🏦 Bank Transfer Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="text-center">
-                <p className="text-lg font-semibold text-green-600 mb-2">Booking Created Successfully!</p>
+                <p className="text-lg font-semibold text-green-600 mb-2">✅ Booking Created Successfully!</p>
                 <p className="text-gray-600">Please transfer the amount to the following bank account:</p>
               </div>
               
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-4">🏦 Bank Account Details</h3>
+              <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-lg mb-4 text-blue-800">🏦 Bank Account Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
@@ -464,7 +473,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             {/* Trip Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Trip Details</CardTitle>
+                <CardTitle>📅 Trip Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Travel Date */}
@@ -535,7 +544,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
                 {/* Travelers */}
                 <div className="space-y-4">
-                  <Label>Number of Travelers</Label>
+                  <Label>👥 Number of Travelers</Label>
                   
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -632,7 +641,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             {/* Guest Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Guest Details</CardTitle>
+                <CardTitle>👤 Guest Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -688,16 +697,19 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             {/* Payment Methods */}
             <Card>
               <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
+                <CardTitle>💳 Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
                 {!paymentGateways || paymentGateways.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 font-medium">No payment methods are currently enabled.</p>
+                    <p className="text-gray-500 font-medium">⚠️ No payment methods are currently enabled.</p>
                     <p className="text-sm text-gray-400 mt-1">Please contact admin to configure payment gateways.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    <p className="text-sm text-gray-600 mb-4">
+                      ✅ {paymentGateways.length} payment methods available
+                    </p>
                     {paymentGateways.map((gateway) => (
                       <div 
                         key={gateway.id}
@@ -735,14 +747,14 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
-                <CardTitle>Booking Summary</CardTitle>
+                <CardTitle>📋 Booking Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-medium">{service.title}</h3>
                   {formData.travelDate && (
                     <p className="text-sm text-gray-600">
-                      {format(formData.travelDate, "PPP")}
+                      📅 {format(formData.travelDate, "PPP")}
                       {formData.travelTime && ` at ${formData.travelTime}`}
                     </p>
                   )}
@@ -751,19 +763,19 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                 <div className="space-y-2">
                   {formData.adults > 0 && (
                     <div className="flex justify-between">
-                      <span>{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
+                      <span>👤 {formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
                       <span>{formatPrice(formData.adults * service.price_adult)}</span>
                     </div>
                   )}
                   {formData.children > 0 && (
                     <div className="flex justify-between">
-                      <span>{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
+                      <span>👶 {formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
                       <span>{formatPrice(formData.children * service.price_child)}</span>
                     </div>
                   )}
                   {formData.infants > 0 && (
                     <div className="flex justify-between">
-                      <span>{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
+                      <span>🍼 {formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
                       <span>{formatPrice(formData.infants * service.price_infant)}</span>
                     </div>
                   )}
@@ -771,7 +783,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
+                    <span>💰 Total</span>
                     <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
                   </div>
                 </div>
@@ -785,15 +797,21 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                   {isProcessing ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
+                      🔄 Processing...
                     </>
                   ) : !paymentGateways || paymentGateways.length === 0 ? (
-                    'Payment Not Available'
+                    '❌ Payment Not Available'
                   ) : (
-                    formData.paymentMethod === 'cash_on_arrival' ? 'Confirm Booking' : 
-                    formData.paymentMethod === 'bank_transfer' ? 'Get Bank Details' : 'Proceed to Payment'
+                    formData.paymentMethod === 'cash_on_arrival' ? '✅ Confirm Booking' : 
+                    formData.paymentMethod === 'bank_transfer' ? '🏦 Get Bank Details' : '💳 Proceed to Payment'
                   )}
                 </Button>
+
+                {paymentGateways && paymentGateways.length > 0 && (
+                  <p className="text-xs text-gray-500 text-center">
+                    🔒 Secure booking powered by {paymentGateways.length} payment methods
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

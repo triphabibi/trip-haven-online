@@ -1,104 +1,71 @@
-
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import toast, { Toaster } from 'react-hot-toast';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { PaymentProvider } from '@/contexts/PaymentContext';
-import { useScrollToTop } from '@/hooks/useScrollToTop';
-import Homepage from '@/pages/Homepage';
+import { Toaster } from '@/components/ui/toaster';
+import Index from '@/pages/Index';
 import ToursPage from '@/pages/ToursPage';
+import PackagesPage from '@/pages/PackagesPage';
 import TicketsPage from '@/pages/TicketsPage';
 import VisaPage from '@/pages/VisaPage';
-import PackagesPage from '@/pages/PackagesPage';
 import TransfersPage from '@/pages/TransfersPage';
-import AboutPage from '@/pages/AboutPage';
 import ContactPage from '@/pages/ContactPage';
+import AboutPage from '@/pages/AboutPage';
+import BookingPage from '@/pages/BookingPage';
+import BookingConfirmationPage from '@/pages/BookingConfirmationPage';
+import BookingHistoryPage from '@/pages/BookingHistoryPage';
+import AdminPage from '@/pages/AdminPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import ProfilePage from '@/pages/ProfilePage';
-import AdminPage from '@/pages/AdminPage';
 import AuthPage from '@/pages/AuthPage';
 import NotFound from '@/pages/NotFound';
-import BookingPage from '@/pages/BookingPage';
-import TourDetailPage from '@/pages/TourDetailPage';
+import ServicesPage from '@/pages/ServicesPage';
+import PackageDetailPage from '@/pages/PackageDetailPage';
 import TicketDetailPage from '@/pages/TicketDetailPage';
 import VisaDetailPage from '@/pages/VisaDetailPage';
-import PackageDetailPage from '@/pages/PackageDetailPage';
 import OkToBoardPage from '@/pages/OkToBoardPage';
-import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
+import AdminGuard from '@/pages/AdminGuard';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
+import { AuthProvider } from '@/contexts/AuthContext';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-// Component to handle scroll to top
-const ScrollToTopHandler = () => {
-  useScrollToTop();
-  return null;
-};
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Router>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PaymentProvider>
-          <QueryClientProvider client={queryClient}>
-            <ScrollToTopHandler />
-            <div className="App pb-16 md:pb-0" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
-              <StickyMobileBookingButton />
-              <Toaster 
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#363636',
-                    color: '#fff',
-                  },
-                }}
-              />
-              <Routes>
-                <Route path="/" element={<Homepage />} />
-                <Route path="/tours" element={<ToursPage />} />
-                <Route path="/tickets" element={<TicketsPage />} />
-                <Route path="/visas" element={<VisaPage />} />
-                <Route path="/packages" element={<PackagesPage />} />
-                <Route path="/transfers" element={<TransfersPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/admin" element={
-                  <AdminRoute>
-                    <AdminPage />
-                  </AdminRoute>
-                } />
-                <Route path="/booking" element={<BookingPage />} />
-                <Route path="/tours/:id" element={<TourDetailPage />} />
-                <Route path="/tours/:slug" element={<TourDetailPage />} />
-                <Route path="/tickets/:id" element={<TicketDetailPage />} />
-                <Route path="/tickets/:slug" element={<TicketDetailPage />} />
-                <Route path="/visas/:id" element={<VisaDetailPage />} />
-                <Route path="/visas/:slug" element={<VisaDetailPage />} />
-                <Route path="/packages/:id" element={<PackageDetailPage />} />
-                <Route path="/packages/:slug" element={<PackageDetailPage />} />
-                <Route path="/ok-to-board" element={<OkToBoardPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </QueryClientProvider>
-        </PaymentProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/tours" element={<ToursPage />} />
+              <Route path="/packages" element={<PackagesPage />} />
+              <Route path="/packages/:id" element={<PackageDetailPage />} />
+              <Route path="/tickets" element={<TicketsPage />} />
+              <Route path="/tickets/:id" element={<TicketDetailPage />} />
+              <Route path="/visas" element={<VisaPage />} />
+              <Route path="/visas/:id" element={<VisaDetailPage />} />
+              <Route path="/transfers" element={<TransfersPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/ok-to-board" element={<OkToBoardPage />} />
+              <Route path="/booking" element={<BookingPage />} />
+              <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+              <Route path="/booking-history" element={<ProtectedRoute><BookingHistoryPage /></ProtectedRoute>} />
+              <Route path="/admin/*" element={<AdminRoute><AdminPage /></AdminRoute>} />
+              <Route path="/admin" element={<AdminGuard />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
       </AuthProvider>
-    </Router>
+    </QueryClientProvider>
   );
 }
 
