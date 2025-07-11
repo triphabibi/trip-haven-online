@@ -164,7 +164,7 @@ const BookingPage = () => {
     );
   }
 
-  // Use streamlined booking flow for all other services
+  // Use streamlined booking flow for all other services - directly book without tour detail page
   return (
     <SinglePageBookingFlow
       service={serviceData}

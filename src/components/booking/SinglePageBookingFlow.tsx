@@ -41,7 +41,6 @@ interface PaymentGateway {
   display_name: string;
   description: string;
   is_enabled: boolean;
-  test_mode: boolean;
   priority: number;
   bank_details: any;
   api_key?: string;
@@ -82,13 +81,18 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const { data: paymentGateways } = useQuery({
     queryKey: ['enabled_payment_gateways'],
     queryFn: async () => {
+      console.log('Fetching payment gateways...');
       const { data, error } = await supabase
         .from('payment_gateways')
         .select('*')
         .eq('is_enabled', true)
         .order('priority');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching payment gateways:', error);
+        throw error;
+      }
+      console.log('Payment gateways fetched:', data);
       return data as PaymentGateway[];
     }
   });
@@ -149,6 +153,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   };
 
   const handlePayment = async () => {
+    console.log('Starting booking process...');
+    
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -167,6 +173,29 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
       if (!selectedGateway) {
         throw new Error('Selected payment gateway not found');
       }
+
+      console.log('Creating booking with data:', {
+        service_id: service.id,
+        service_type: service.type,
+        service_title: service.title,
+        customer_name: formData.customerName,
+        customer_email: formData.customerEmail,
+        customer_phone: formData.customerPhone,
+        travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
+        travel_time: formData.travelTime,
+        pickup_location: formData.pickupLocation,
+        adults_count: formData.adults,
+        children_count: formData.children,
+        infants_count: formData.infants,
+        base_amount: totalAmount,
+        total_amount: totalAmount,
+        final_amount: totalAmount,
+        payment_gateway: selectedGateway.display_name,
+        payment_method: selectedGateway.gateway_name,
+        special_requests: formData.specialRequests,
+        booking_status: 'pending',
+        payment_status: 'pending'
+      });
 
       // Create booking record
       const { data: bookingData, error: bookingError } = await supabase
@@ -197,8 +226,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         .single();
 
       if (bookingError) {
+        console.error('Booking creation error:', bookingError);
         throw bookingError;
       }
+
+      console.log('Booking created successfully:', bookingData);
 
       // Handle different payment methods
       if (formData.paymentMethod === 'cash_on_arrival') {
@@ -219,7 +251,10 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           duration: 8000,
         });
         
-        onBack();
+        setTimeout(() => {
+          onBack();
+        }, 2000);
+        
       } else if (formData.paymentMethod === 'bank_transfer') {
         setShowBankDetails(true);
         
@@ -260,7 +295,9 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               title: "Payment Successful!",
               description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
             });
-            onBack();
+            setTimeout(() => {
+              onBack();
+            }, 2000);
           },
           modal: {
             ondismiss: function() {
@@ -291,7 +328,9 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             title: "Payment Successful!",
             description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
           });
-          onBack();
+          setTimeout(() => {
+            onBack();
+          }, 2000);
         }, 2000);
       }
 
@@ -338,51 +377,51 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                 <p className="text-gray-600">Please transfer the amount to the following bank account:</p>
               </div>
               
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-4">🏦 Bank Account Details</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
-                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.bank_name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
-                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_holder}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Account Number</Label>
-                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_number}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">IBAN</Label>
-                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.iban}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
-                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.swift}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">IFSC Code</Label>
-                      <p className="text-lg font-semibold">{selectedGateway.ifsc_code}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
-                      <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Country</Label>
-                      <p className="text-lg font-semibold">{selectedGateway.country}</p>
-                    </div>
+              <div className="bg-blue-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-lg mb-4">🏦 Bank Account Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
+                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.bank_name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
+                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_holder}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Account Number</Label>
+                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_number}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">IBAN</Label>
+                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.iban}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
+                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.swift}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">IFSC Code</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.ifsc_code}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
+                    <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Country</Label>
+                    <p className="text-lg font-semibold">{selectedGateway.country}</p>
                   </div>
                 </div>
-                
-                {selectedGateway.instructions && (
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                    <h4 className="font-medium text-yellow-800 mb-2">💡 Important Instructions</h4>
-                    <p className="text-sm text-yellow-700">{selectedGateway.instructions}</p>
-                  </div>
-                )}
+              </div>
               
+              {selectedGateway.instructions && (
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h4 className="font-medium text-yellow-800 mb-2">💡 Important Instructions</h4>
+                  <p className="text-sm text-yellow-700">{selectedGateway.instructions}</p>
+                </div>
+              )}
+            
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-4">
                   Please use your booking reference in the transfer description for quick processing.
@@ -675,11 +714,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                             <div>
                               <div className="font-medium">{gateway.display_name}</div>
                               <div className="text-sm text-gray-600">{gateway.description}</div>
-                              {gateway.test_mode && (
-                                <span className="inline-block px-2 py-1 text-xs bg-orange-100 text-orange-600 rounded mt-1">
-                                  Test Mode
-                                </span>
-                              )}
                             </div>
                           </div>
                           <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
