@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, Star, CheckCircle, Shield } from 'lucide-react';
-import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
 import { useCurrency } from '@/hooks/useCurrency';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -15,7 +13,6 @@ import Footer from '@/components/layout/Footer';
 const TourDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [showBooking, setShowBooking] = useState(false);
   const { formatPrice } = useCurrency();
 
   const { data: tour, isLoading, error } = useQuery({
@@ -76,31 +73,6 @@ const TourDetailPage = () => {
   const handleBookNow = () => {
     navigate(`/booking?type=tour&id=${tour.id}`);
   };
-
-  if (showBooking) {
-    return (
-      <SinglePageBookingFlow
-        service={{
-          id: tour.id,
-          title: tour.title,
-          price_adult: tour.price_adult,
-          price_child: tour.price_child,
-          price_infant: tour.price_infant,
-          type: 'tour',
-          overview: tour.overview,
-          highlights: tour.highlights,
-          whats_included: tour.whats_included,
-          exclusions: tour.exclusions,
-          itinerary: tour.itinerary,
-          duration: tour.duration,
-          location: tour.location,
-          cancellation_policy: tour.cancellation_policy,
-          terms_conditions: tour.terms_conditions
-        }}
-        onBack={() => setShowBooking(false)}
-      />
-    );
-  }
 
   // Parse itinerary safely
   const parseItinerary = (itinerary: any) => {
