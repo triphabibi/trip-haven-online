@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -232,106 +231,49 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
       console.log('Booking created successfully:', bookingData);
 
-      // Handle different payment methods
-      if (formData.paymentMethod === 'cash_on_arrival') {
-        await supabase
-          .from('new_bookings')
-          .update({ 
-            payment_status: 'confirmed',
-            booking_status: 'confirmed',
-            confirmed_at: new Date().toISOString()
-          })
-          .eq('id', bookingData.id);
-
-        const instructions = selectedGateway.instructions || 'You can pay in cash at the pickup location or when you meet our representative.';
-        
-        toast({
-          title: "🎉 Booking Confirmed!",
-          description: `Your booking reference is ${bookingData.booking_reference}. ${instructions}`,
-          duration: 8000,
-        });
-        
-        setTimeout(() => {
-          onBack();
-        }, 2000);
-        
-      } else if (formData.paymentMethod === 'bank_transfer') {
-        setShowBankDetails(true);
-        
-        toast({
-          title: "Booking Created!",
-          description: `Your booking reference is ${bookingData.booking_reference}. Please complete the bank transfer to confirm your booking.`,
-        });
-      } else if (formData.paymentMethod === 'razorpay') {
-        await initializeRazorpay();
-
-        const options = {
-          key: selectedGateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
-          amount: Math.round(totalAmount * 100),
+      // Process payment
+      const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('process-payment', {
+        body: {
+          bookingId: bookingData.id,
+          gatewayName: selectedGateway.gateway_name,
+          amount: totalAmount,
           currency: 'AED',
-          name: 'Trip Habibi',
-          description: service.title,
-          order_id: bookingData.booking_reference,
-          prefill: {
-            name: formData.customerName,
-            email: formData.customerEmail,
-            contact: formData.customerPhone
-          },
-          theme: {
-            color: '#3B82F6'
-          },
-          handler: async function (response: any) {
-            await supabase
-              .from('new_bookings')
-              .update({ 
-                payment_status: 'paid',
-                booking_status: 'confirmed',
-                payment_reference: response.razorpay_payment_id,
-                confirmed_at: new Date().toISOString()
-              })
-              .eq('id', bookingData.id);
+          customerName: formData.customerName,
+          customerEmail: formData.customerEmail,
+          customerPhone: formData.customerPhone,
+          returnUrl: `${window.location.origin}/booking-confirmation`
+        }
+      });
 
-            toast({
-              title: "Payment Successful!",
-              description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
-            });
-            setTimeout(() => {
-              onBack();
-            }, 2000);
-          },
-          modal: {
-            ondismiss: function() {
-              toast({
-                title: "Payment Cancelled",
-                description: "Your booking is saved as pending. You can complete payment later.",
-              });
-            }
+      if (paymentError) {
+        console.error('Payment processing error:', paymentError);
+        throw new Error(paymentError.message || 'Payment processing failed');
+      }
+
+      console.log('Payment processing result:', paymentResult);
+
+      if (paymentResult.success) {
+        if (paymentResult.requiresAction) {
+          // Handle different payment methods
+          if (paymentResult.paymentMethod === 'razorpay') {
+            await handleRazorpayCheckout(paymentResult.checkoutData, bookingData.id);
+          } else if (paymentResult.paymentMethod === 'stripe') {
+            window.location.href = paymentResult.checkoutUrl;
           }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } else if (formData.paymentMethod === 'stripe') {
-        // Simulate Stripe payment
-        setTimeout(async () => {
-          await supabase
-            .from('new_bookings')
-            .update({ 
-              payment_status: 'paid',
-              booking_status: 'confirmed',
-              payment_reference: `stripe_${Date.now()}`,
-              confirmed_at: new Date().toISOString()
-            })
-            .eq('id', bookingData.id);
-
+        } else {
+          // Direct success (cash or bank transfer)
           toast({
-            title: "Payment Successful!",
-            description: `Your booking is confirmed. Reference: ${bookingData.booking_reference}`,
+            title: "🎉 Booking Confirmed!",
+            description: `${paymentResult.message} Reference: ${bookingData.booking_reference}`,
+            duration: 8000,
           });
+          
           setTimeout(() => {
             onBack();
           }, 2000);
-        }, 2000);
+        }
+      } else {
+        throw new Error(paymentResult.error || 'Payment processing failed');
       }
 
     } catch (error: any) {
@@ -344,6 +286,68 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleRazorpayCheckout = async (checkoutData: any, bookingId: string) => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        const options = {
+          ...checkoutData,
+          handler: async function (response: any) {
+            try {
+              // Verify payment
+              const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('verify-payment', {
+                body: {
+                  paymentId: response.razorpay_payment_id,
+                  paymentMethod: 'razorpay',
+                  bookingId: bookingId
+                }
+              });
+
+              if (verificationError || !verificationResult.success) {
+                throw new Error(verificationResult?.error || 'Payment verification failed');
+              }
+
+              toast({
+                title: "Payment Successful!",
+                description: `Your booking is confirmed. Payment ID: ${response.razorpay_payment_id}`,
+                duration: 8000,
+              });
+
+              setTimeout(() => {
+                onBack();
+              }, 2000);
+
+              resolve(response);
+            } catch (error) {
+              console.error('Payment verification error:', error);
+              toast({
+                title: "Payment Verification Failed",
+                description: "Please contact support with your payment details.",
+                variant: "destructive",
+              });
+              reject(error);
+            }
+          },
+          modal: {
+            ondismiss: function() {
+              reject(new Error('Payment cancelled by user'));
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      };
+      
+      script.onerror = () => {
+        reject(new Error('Failed to load Razorpay'));
+      };
+      
+      document.body.appendChild(script);
+    });
   };
 
   const getPaymentIcon = (gatewayName: string) => {
