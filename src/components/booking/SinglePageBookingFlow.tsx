@@ -44,6 +44,8 @@ interface PaymentGateway {
   test_mode: boolean;
   priority: number;
   bank_details: any;
+  api_key?: string;
+  api_secret?: string;
 }
 
 interface Props {
@@ -623,36 +625,38 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               </CardContent>
             </Card>
 
-            {/* Payment Methods */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {paymentGateways?.map((gateway) => (
-                    <div 
-                      key={gateway.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                        formData.paymentMethod === gateway.gateway_name 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setFormData(prev => ({...prev, paymentMethod: gateway.gateway_name}))}
-                    >
-                      <div className="flex items-center gap-3">
-                        {getPaymentIcon(gateway.gateway_name)}
-                        <div>
-                          <div className="font-medium">{gateway.display_name}</div>
-                          <div className="text-sm text-gray-600">{gateway.description}</div>
+            {/* Payment Methods - Only show if gateways are available */}
+            {paymentGateways && paymentGateways.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payment Method</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {paymentGateways.map((gateway) => (
+                      <div 
+                        key={gateway.id}
+                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                          formData.paymentMethod === gateway.gateway_name 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setFormData(prev => ({...prev, paymentMethod: gateway.gateway_name}))}
+                      >
+                        <div className="flex items-center gap-3">
+                          {getPaymentIcon(gateway.gateway_name)}
+                          <div>
+                            <div className="font-medium">{gateway.display_name}</div>
+                            <div className="text-sm text-gray-600">{gateway.description}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                  {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Booking Summary */}
@@ -702,7 +706,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
                 <Button 
                   onClick={handlePayment}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !paymentGateways || paymentGateways.length === 0}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                   size="lg"
                 >
@@ -711,6 +715,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing...
                     </>
+                  ) : !paymentGateways || paymentGateways.length === 0 ? (
+                    'Payment Not Available'
                   ) : (
                     formData.paymentMethod === 'cash_on_arrival' ? 'Confirm Booking' : 
                     formData.paymentMethod === 'bank_transfer' ? 'Get Bank Details' : 'Proceed to Payment'

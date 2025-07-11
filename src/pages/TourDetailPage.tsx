@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, Star, CheckCircle, Shield } from 'lucide-react';
 import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
 import { useCurrency } from '@/hooks/useCurrency';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const TourDetailPage = () => {
   const { id } = useParams();
@@ -45,20 +47,28 @@ const TourDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen">
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (error || !tour) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
-          <p className="text-gray-600 mb-4">The tour you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate('/tours')}>Back to Tours</Button>
+      <div className="min-h-screen">
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Tour Not Found</h1>
+            <p className="text-gray-600 mb-4">The tour you're looking for doesn't exist or has been removed.</p>
+            <Button onClick={() => navigate('/tours')}>Back to Tours</Button>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -111,6 +121,7 @@ const TourDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -312,6 +323,7 @@ const TourDetailPage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
-import ProfessionalBookingFlow from '@/components/booking/ProfessionalBookingFlow';
+import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTour } from '@/hooks/useTours';
 import { usePackage } from '@/hooks/usePackages';
@@ -30,62 +30,70 @@ const BookingPage = () => {
         return tour ? {
           id: tour.id,
           title: tour.title,
-          priceAdult: tour.price_adult,
-          priceChild: tour.price_child,
-          priceInfant: tour.price_infant,
-          image: tour.featured_image,
-          description: tour.description
+          price_adult: tour.price_adult,
+          price_child: tour.price_child,
+          price_infant: tour.price_infant,
+          type: 'tour' as const,
+          overview: tour.overview,
+          highlights: tour.highlights,
+          whats_included: tour.whats_included,
+          exclusions: tour.exclusions,
+          itinerary: tour.itinerary,
+          duration: tour.duration,
+          location: tour.location,
+          cancellation_policy: tour.cancellation_policy,
+          terms_conditions: tour.terms_conditions
         } : null;
       case 'package':
         return packageData ? {
           id: packageData.id,
           title: packageData.title,
-          priceAdult: packageData.price_adult,
-          priceChild: packageData.price_child,
-          priceInfant: packageData.price_infant,
-          image: packageData.image_urls?.[0] || '/placeholder.svg',
-          description: packageData.description
+          price_adult: packageData.price_adult,
+          price_child: packageData.price_child,
+          price_infant: packageData.price_infant,
+          type: 'package' as const,
+          overview: packageData.overview,
+          highlights: packageData.highlights,
+          whats_included: packageData.whats_included,
+          exclusions: packageData.exclusions,
+          itinerary: packageData.itinerary,
+          location: packageData.location,
+          cancellation_policy: packageData.cancellation_policy,
+          terms_conditions: packageData.terms_conditions
         } : null;
       case 'ticket':
         return ticket ? {
           id: ticket.id,
           title: ticket.title,
-          priceAdult: ticket.price_adult,
-          priceChild: ticket.price_child || 0,
-          priceInfant: ticket.price_infant || 0,
-          image: ticket.image_urls?.[0] || '/placeholder.svg',
-          description: ticket.description
+          price_adult: ticket.price_adult,
+          price_child: ticket.price_child || 0,
+          price_infant: ticket.price_infant || 0,
+          type: 'ticket' as const,
+          overview: ticket.overview,
+          highlights: ticket.highlights,
+          whats_included: ticket.whats_included,
+          exclusions: ticket.exclusions,
+          location: ticket.location,
+          cancellation_policy: ticket.cancellation_policy,
+          terms_conditions: ticket.terms_conditions
         } : null;
       case 'visa':
         return visa ? {
           id: visa.id,
           title: `${visa.country} - ${visa.visa_type}`,
-          priceAdult: visa.price,
-          priceChild: 0,
-          priceInfant: 0,
-          image: visa.image_urls?.[0] || '/placeholder.svg',
-          description: visa.description
+          price_adult: visa.price,
+          price_child: 0,
+          price_infant: 0,
+          type: 'visa' as const,
+          overview: visa.overview,
+          highlights: visa.highlights,
+          whats_included: visa.whats_included,
+          exclusions: visa.exclusions,
+          cancellation_policy: visa.cancellation_policy,
+          terms_conditions: visa.terms_conditions
         } : null;
-      case 'transfer':
-        return {
-          id: 'transfer-service',
-          title: 'Transfer Service',
-          priceAdult: 150,
-          priceChild: 0,
-          priceInfant: 0,
-          image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
-          description: 'Professional transfer service'
-        };
       default:
-        return {
-          id: 'general-service',
-          title: 'General Service',
-          priceAdult: 1000,
-          priceChild: 0,
-          priceInfant: 0,
-          image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
-          description: 'Professional service booking'
-        };
+        return null;
     }
   };
 
@@ -156,46 +164,12 @@ const BookingPage = () => {
     );
   }
 
-  // Use professional booking flow for other services
+  // Use streamlined booking flow for all other services
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">{serviceData.title}</CardTitle>
-                <p className="text-gray-600">{serviceData.description}</p>
-              </CardHeader>
-              <CardContent>
-                {serviceData.image && (
-                  <img
-                    src={serviceData.image}
-                    alt={serviceData.title}
-                    className="w-full h-64 object-cover rounded-lg"
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <ProfessionalBookingFlow
-            bookingData={{
-              serviceId: serviceData.id,
-              serviceType: serviceType,
-              serviceTitle: serviceData.title,
-              priceAdult: serviceData.priceAdult,
-              priceChild: serviceData.priceChild,
-              priceInfant: serviceData.priceInfant
-            }}
-          />
-        </div>
-      </div>
-      
-      <Footer />
-    </div>
+    <SinglePageBookingFlow
+      service={serviceData}
+      onBack={() => window.history.back()}
+    />
   );
 };
 
