@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarIcon, ArrowLeft, CreditCard, Wallet, Banknote, Plus, Minus, Building } from 'lucide-react';
+import { CalendarIcon, ArrowLeft, Plus, Minus } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,7 +15,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
-import { useQuery } from '@tanstack/react-query';
+import SimplePaymentFlow from '@/components/booking/SimplePaymentFlow';
 
 interface Service {
   id: string;
@@ -34,27 +35,15 @@ interface Service {
   terms_conditions?: string;
 }
 
-interface PaymentGateway {
-  id: string;
-  gateway_name: string;
-  display_name: string;
-  description: string;
-  is_enabled: boolean;
-  priority: number;
-  bank_details: any;
-  api_key?: string;
-  api_secret?: string;
-  ifsc_code?: string;
-  country?: string;
-  instructions?: string;
-}
-
 interface Props {
   service: Service;
   onBack: () => void;
 }
 
 const SinglePageBookingFlow = ({ service, onBack }: Props) => {
+  const [step, setStep] = useState<'details' | 'payment'>('details');
+  const [bookingId, setBookingId] = useState<string>('');
+  
   const [formData, setFormData] = useState({
     travelDate: undefined as Date | undefined,
     travelTime: '',
@@ -65,36 +54,14 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     customerName: '',
     customerEmail: '',
     customerPhone: '',
-    paymentMethod: '',
     specialRequests: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showBankDetails, setShowBankDetails] = useState(false);
 
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
-
-  // Fetch enabled payment gateways
-  const { data: paymentGateways } = useQuery({
-    queryKey: ['enabled_payment_gateways'],
-    queryFn: async () => {
-      console.log('Fetching payment gateways...');
-      const { data, error } = await supabase
-        .from('payment_gateways')
-        .select('*')
-        .eq('is_enabled', true)
-        .order('priority');
-      
-      if (error) {
-        console.error('Error fetching payment gateways:', error);
-        throw error;
-      }
-      console.log('Payment gateways fetched:', data);
-      return data as PaymentGateway[];
-    }
-  });
 
   const calculateTotal = () => {
     const adultTotal = formData.adults * service.price_adult;
@@ -129,10 +96,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
       newErrors.customerEmail = 'Please enter a valid email address';
     }
     
-    if (!formData.paymentMethod) {
-      newErrors.paymentMethod = 'Please select a payment method';
-    }
-    
     if (service.type === 'tour' && !formData.travelTime) {
       newErrors.travelTime = 'Please select a time';
     }
@@ -141,19 +104,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const initializeRazorpay = () => {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
-      document.body.appendChild(script);
-    });
-  };
-
-  const handlePayment = async () => {
-    console.log('Starting booking process...');
-    
+  const handleCreateBooking = async () => {
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -167,36 +118,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
 
     try {
       const totalAmount = calculateTotal();
-      const selectedGateway = paymentGateways?.find(g => g.gateway_name === formData.paymentMethod);
 
-      if (!selectedGateway) {
-        throw new Error('Selected payment gateway not found');
-      }
-
-      console.log('Creating booking with data:', {
-        service_id: service.id,
-        service_type: service.type,
-        service_title: service.title,
-        customer_name: formData.customerName,
-        customer_email: formData.customerEmail,
-        customer_phone: formData.customerPhone,
-        travel_date: formData.travelDate ? formData.travelDate.toISOString().split('T')[0] : null,
-        travel_time: formData.travelTime,
-        pickup_location: formData.pickupLocation,
-        adults_count: formData.adults,
-        children_count: formData.children,
-        infants_count: formData.infants,
-        base_amount: totalAmount,
-        total_amount: totalAmount,
-        final_amount: totalAmount,
-        payment_gateway: selectedGateway.display_name,
-        payment_method: selectedGateway.gateway_name,
-        special_requests: formData.specialRequests,
-        booking_status: 'pending',
-        payment_status: 'pending'
-      });
-
-      // Create booking record
       const { data: bookingData, error: bookingError } = await supabase
         .from('new_bookings')
         .insert({
@@ -215,8 +137,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           base_amount: totalAmount,
           total_amount: totalAmount,
           final_amount: totalAmount,
-          payment_gateway: selectedGateway.display_name,
-          payment_method: selectedGateway.gateway_name,
           special_requests: formData.specialRequests,
           booking_status: 'pending',
           payment_status: 'pending'
@@ -224,63 +144,16 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         .select()
         .single();
 
-      if (bookingError) {
-        console.error('Booking creation error:', bookingError);
-        throw bookingError;
-      }
+      if (bookingError) throw bookingError;
 
-      console.log('Booking created successfully:', bookingData);
-
-      // Process payment
-      const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('process-payment', {
-        body: {
-          bookingId: bookingData.id,
-          gatewayName: selectedGateway.gateway_name,
-          amount: totalAmount,
-          currency: 'AED',
-          customerName: formData.customerName,
-          customerEmail: formData.customerEmail,
-          customerPhone: formData.customerPhone,
-          returnUrl: `${window.location.origin}/booking-confirmation`
-        }
-      });
-
-      if (paymentError) {
-        console.error('Payment processing error:', paymentError);
-        throw new Error(paymentError.message || 'Payment processing failed');
-      }
-
-      console.log('Payment processing result:', paymentResult);
-
-      if (paymentResult.success) {
-        if (paymentResult.requiresAction) {
-          // Handle different payment methods
-          if (paymentResult.paymentMethod === 'razorpay') {
-            await handleRazorpayCheckout(paymentResult.checkoutData, bookingData.id);
-          } else if (paymentResult.paymentMethod === 'stripe') {
-            window.location.href = paymentResult.checkoutUrl;
-          }
-        } else {
-          // Direct success (cash or bank transfer)
-          toast({
-            title: "🎉 Booking Confirmed!",
-            description: `${paymentResult.message} Reference: ${bookingData.booking_reference}`,
-            duration: 8000,
-          });
-          
-          setTimeout(() => {
-            onBack();
-          }, 2000);
-        }
-      } else {
-        throw new Error(paymentResult.error || 'Payment processing failed');
-      }
+      setBookingId(bookingData.id);
+      setStep('payment');
 
     } catch (error: any) {
       console.error('Booking error:', error);
       toast({
         title: "Booking Failed",
-        description: error.message || "There was an error processing your booking. Please try again.",
+        description: error.message || "There was an error creating your booking.",
         variant: "destructive",
       });
     } finally {
@@ -288,161 +161,50 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     }
   };
 
-  const handleRazorpayCheckout = async (checkoutData: any, bookingId: string) => {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        const options = {
-          ...checkoutData,
-          handler: async function (response: any) {
-            try {
-              // Verify payment
-              const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('verify-payment', {
-                body: {
-                  paymentId: response.razorpay_payment_id,
-                  paymentMethod: 'razorpay',
-                  bookingId: bookingId
-                }
-              });
-
-              if (verificationError || !verificationResult.success) {
-                throw new Error(verificationResult?.error || 'Payment verification failed');
-              }
-
-              toast({
-                title: "Payment Successful!",
-                description: `Your booking is confirmed. Payment ID: ${response.razorpay_payment_id}`,
-                duration: 8000,
-              });
-
-              setTimeout(() => {
-                onBack();
-              }, 2000);
-
-              resolve(response);
-            } catch (error) {
-              console.error('Payment verification error:', error);
-              toast({
-                title: "Payment Verification Failed",
-                description: "Please contact support with your payment details.",
-                variant: "destructive",
-              });
-              reject(error);
-            }
-          },
-          modal: {
-            ondismiss: function() {
-              reject(new Error('Payment cancelled by user'));
-            }
-          }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      };
-      
-      script.onerror = () => {
-        reject(new Error('Failed to load Razorpay'));
-      };
-      
-      document.body.appendChild(script);
+  const handlePaymentSuccess = () => {
+    toast({
+      title: "🎉 Booking Confirmed!",
+      description: "Your booking has been confirmed successfully!",
+      duration: 5000,
     });
+    
+    setTimeout(() => {
+      onBack();
+    }, 2000);
   };
 
-  const getPaymentIcon = (gatewayName: string) => {
-    switch (gatewayName) {
-      case 'razorpay':
-        return <Wallet className="h-5 w-5 text-blue-600" />;
-      case 'stripe':
-        return <CreditCard className="h-5 w-5 text-purple-600" />;
-      case 'bank_transfer':
-        return <Building className="h-5 w-5 text-green-600" />;
-      case 'cash_on_arrival':
-        return <Banknote className="h-5 w-5 text-orange-600" />;
-      default:
-        return <CreditCard className="h-5 w-5" />;
-    }
-  };
+  const showTimeField = service.type === 'tour';
+  const showPickupField = service.type === 'tour';
 
-  const selectedGateway = paymentGateways?.find(g => g.gateway_name === formData.paymentMethod);
-
-  if (showBankDetails && selectedGateway?.bank_details) {
+  if (step === 'payment') {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">Bank Transfer Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-center">
-                <p className="text-lg font-semibold text-green-600 mb-2">Booking Created Successfully!</p>
-                <p className="text-gray-600">Please transfer the amount to the following bank account:</p>
-              </div>
-              
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-4">🏦 Bank Account Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
-                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.bank_name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
-                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_holder}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Account Number</Label>
-                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_number}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">IBAN</Label>
-                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.iban}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
-                    <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.swift}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">IFSC Code</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.ifsc_code}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
-                    <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Country</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.country}</p>
-                  </div>
-                </div>
-              </div>
-              
-              {selectedGateway.instructions && (
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <h4 className="font-medium text-yellow-800 mb-2">💡 Important Instructions</h4>
-                  <p className="text-sm text-yellow-700">{selectedGateway.instructions}</p>
-                </div>
-              )}
-            
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-4">
-                  Please use your booking reference in the transfer description for quick processing.
-                </p>
-                <Button onClick={onBack} className="px-8">
-                  Back to Home
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="outline" onClick={() => setStep('details')} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Complete Payment</h1>
+              <p className="text-gray-600">Secure payment processing</p>
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <SimplePaymentFlow
+              amount={calculateTotal()}
+              bookingId={bookingId}
+              customerName={formData.customerName}
+              customerEmail={formData.customerEmail}
+              customerPhone={formData.customerPhone}
+              onSuccess={handlePaymentSuccess}
+            />
+          </div>
         </div>
       </div>
     );
   }
-
-  const showTimeField = service.type === 'tour';
-  const showPickupField = service.type === 'tour';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -455,7 +217,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Book {service.title}</h1>
-            <p className="text-gray-600">Complete your booking in just a few steps</p>
+            <p className="text-gray-600">Complete your booking details</p>
           </div>
         </div>
 
@@ -495,7 +257,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                         onSelect={(date) => setFormData(prev => ({...prev, travelDate: date}))}
                         disabled={(date) => date < new Date()}
                         initialFocus
-                        className="pointer-events-auto bg-white"
                       />
                     </PopoverContent>
                   </Popover>
@@ -510,7 +271,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       <SelectTrigger className={cn("bg-white border-gray-300", errors.travelTime && "border-red-500")}>
                         <SelectValue placeholder="Choose your preferred time" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border shadow-lg">
+                      <SelectContent>
                         <SelectItem value="09:00">9:00 AM</SelectItem>
                         <SelectItem value="10:00">10:00 AM</SelectItem>
                         <SelectItem value="11:00">11:00 AM</SelectItem>
@@ -554,7 +315,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('adults', false)}
                           disabled={formData.adults <= 1}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -564,7 +325,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('adults', true)}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -583,7 +344,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('children', false)}
                           disabled={formData.children <= 0}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -593,7 +354,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('children', true)}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -612,7 +373,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           size="sm"
                           onClick={() => adjustCount('infants', false)}
                           disabled={formData.infants <= 0}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -622,7 +383,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                           variant="outline"
                           size="sm"
                           onClick={() => adjustCount('infants', true)}
-                          className="h-8 w-8 rounded-full p-0 border-gray-300"
+                          className="h-8 w-8 rounded-full p-0"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -648,7 +409,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
                       placeholder="Enter your full name"
                       className={cn("bg-white border-gray-300", errors.customerName && "border-red-500")}
-                      required
                     />
                     {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
                   </div>
@@ -661,7 +421,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                       onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
                       placeholder="Enter your email"
                       className={cn("bg-white border-gray-300", errors.customerEmail && "border-red-500")}
-                      required
                     />
                     {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
                   </div>
@@ -686,51 +445,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                     className="bg-white border-gray-300"
                   />
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Methods */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!paymentGateways || paymentGateways.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 font-medium">No payment methods are currently enabled.</p>
-                    <p className="text-sm text-gray-400 mt-1">Please contact admin to configure payment gateways.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {paymentGateways.map((gateway) => (
-                      <div 
-                        key={gateway.id}
-                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                          formData.paymentMethod === gateway.gateway_name 
-                            ? 'border-blue-500 bg-blue-50' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setFormData(prev => ({...prev, paymentMethod: gateway.gateway_name}))}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {getPaymentIcon(gateway.gateway_name)}
-                            <div>
-                              <div className="font-medium">{gateway.display_name}</div>
-                              <div className="text-sm text-gray-600">{gateway.description}</div>
-                            </div>
-                          </div>
-                          <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
-                            {formData.paymentMethod === gateway.gateway_name && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {errors.paymentMethod && <p className="text-sm text-red-600 mt-2">{errors.paymentMethod}</p>}
               </CardContent>
             </Card>
           </div>
@@ -781,21 +495,18 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                 </div>
 
                 <Button 
-                  onClick={handlePayment}
-                  disabled={isProcessing || !paymentGateways || paymentGateways.length === 0}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={handleCreateBooking}
+                  disabled={isProcessing}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
                   size="lg"
                 >
                   {isProcessing ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
+                      Creating Booking...
                     </>
-                  ) : !paymentGateways || paymentGateways.length === 0 ? (
-                    'Payment Not Available'
                   ) : (
-                    formData.paymentMethod === 'cash_on_arrival' ? 'Confirm Booking' : 
-                    formData.paymentMethod === 'bank_transfer' ? 'Get Bank Details' : 'Proceed to Payment'
+                    'Continue to Payment'
                   )}
                 </Button>
               </CardContent>
