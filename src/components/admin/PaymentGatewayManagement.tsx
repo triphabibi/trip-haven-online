@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { 
   CreditCard, 
@@ -18,13 +18,16 @@ import {
   Banknote,
   Eye,
   EyeOff,
-  TestTube
+  Save,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 
 const PaymentGatewayManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  const [bankDetails, setBankDetails] = useState<Record<string, any>>({});
 
   const { data: gateways, isLoading } = useQuery({
     queryKey: ['payment_gateways'],
@@ -53,11 +56,14 @@ const PaymentGatewayManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment_gateways'] });
-      toast({ title: "Payment gateway updated successfully" });
+      toast({ 
+        title: "✅ Payment gateway updated successfully",
+        className: "bg-green-50 border-green-200"
+      });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Error updating gateway", 
+        title: "❌ Error updating gateway", 
         description: error.message, 
         variant: "destructive" 
       });
@@ -81,6 +87,13 @@ const PaymentGatewayManagement = () => {
     }
   };
 
+  const getGatewayCardClass = (gateway: any) => {
+    if (gateway.is_enabled) {
+      return "border-2 border-green-200 bg-green-50/30 shadow-lg";
+    }
+    return "border-2 border-gray-200 bg-gray-50/30";
+  };
+
   const toggleGateway = (id: string, enabled: boolean) => {
     updateGatewayMutation.mutate({ 
       id, 
@@ -95,6 +108,40 @@ const PaymentGatewayManagement = () => {
     });
   };
 
+  const updateBankDetails = (gatewayId: string, field: string, value: string) => {
+    setBankDetails(prev => ({
+      ...prev,
+      [gatewayId]: {
+        ...prev[gatewayId],
+        [field]: value
+      }
+    }));
+  };
+
+  const saveBankDetails = (gateway: any) => {
+    const details = bankDetails[gateway.id] || {};
+    const existingBankDetails = gateway.bank_details as any || {};
+    const bankDetailsObj = {
+      bank_name: details.bank_name || existingBankDetails.bank_name || '',
+      account_number: details.account_number || existingBankDetails.account_number || '',
+      iban: details.iban || existingBankDetails.iban || '',
+      swift: details.swift || existingBankDetails.swift || '',
+      account_holder: details.account_holder || existingBankDetails.account_holder || '',
+      branch: details.branch || existingBankDetails.branch || '',
+      address: details.address || existingBankDetails.address || ''
+    };
+
+    updateGatewayMutation.mutate({
+      id: gateway.id,
+      updates: {
+        bank_details: bankDetailsObj,
+        ifsc_code: details.ifsc_code || gateway.ifsc_code || '',
+        country: details.country || gateway.country || 'UAE',
+        instructions: details.instructions || gateway.instructions || ''
+      }
+    });
+  };
+
   const toggleSecretVisibility = (gatewayId: string) => {
     setShowSecrets(prev => ({
       ...prev,
@@ -103,14 +150,16 @@ const PaymentGatewayManagement = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading payment gateways...</div>;
+    return <div className="text-center py-8 text-lg">🔄 Loading payment gateways...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Payment Gateway Management</h2>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            💳 Payment Gateway Management
+          </h2>
           <p className="text-gray-600">Configure and manage payment methods</p>
         </div>
       </div>
@@ -118,7 +167,7 @@ const PaymentGatewayManagement = () => {
       {/* Gateway Configuration Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {gateways?.map((gateway) => (
-          <Card key={gateway.id} className="border-2">
+          <Card key={gateway.id} className={getGatewayCardClass(gateway)}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -129,16 +178,22 @@ const PaymentGatewayManagement = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  {gateway.test_mode && (
-                    <Badge variant="outline" className="text-orange-600">
-                      <TestTube className="h-3 w-3 mr-1" />
-                      Test Mode
+                <div className="flex items-center gap-3">
+                  {gateway.is_enabled ? (
+                    <Badge className="bg-green-100 text-green-800 border-green-300">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-gray-600 border-gray-300">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Disabled
                     </Badge>
                   )}
                   <Switch
                     checked={gateway.is_enabled}
                     onCheckedChange={(checked) => toggleGateway(gateway.id, checked)}
+                    className="data-[state=checked]:bg-green-500"
                   />
                 </div>
               </CardTitle>
@@ -147,7 +202,9 @@ const PaymentGatewayManagement = () => {
             <CardContent className="space-y-4">
               {/* Priority */}
               <div>
-                <Label htmlFor={`priority-${gateway.id}`}>Display Priority</Label>
+                <Label htmlFor={`priority-${gateway.id}`} className="text-sm font-medium text-gray-700">
+                  Display Priority
+                </Label>
                 <Input
                   id={`priority-${gateway.id}`}
                   type="number"
@@ -155,12 +212,14 @@ const PaymentGatewayManagement = () => {
                   onChange={(e) => updateGatewayConfig(gateway.id, 'priority', parseInt(e.target.value))}
                   min="0"
                   max="100"
+                  className="mt-1"
                 />
               </div>
 
-              {/* API Configuration */}
+              {/* API Configuration for Razorpay/Stripe */}
               {(gateway.gateway_name === 'razorpay' || gateway.gateway_name === 'stripe') && (
-                <div className="space-y-3">
+                <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-800">API Configuration</h4>
                   <div>
                     <Label htmlFor={`api-key-${gateway.id}`}>API Key</Label>
                     <div className="flex gap-2">
@@ -203,22 +262,125 @@ const PaymentGatewayManagement = () => {
                 </div>
               )}
 
-              {/* Test Mode Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Test Mode</Label>
-                  <p className="text-sm text-gray-500">Use sandbox/test environment</p>
+              {/* Bank Transfer Configuration */}
+              {gateway.gateway_name === 'bank_transfer' && (
+                <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-medium text-green-800">🏦 Bank Account Details</h4>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Country</Label>
+                      <Select 
+                        value={bankDetails[gateway.id]?.country || gateway.country || 'UAE'}
+                        onValueChange={(value) => updateBankDetails(gateway.id, 'country', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="UAE">🇦🇪 UAE</SelectItem>
+                          <SelectItem value="USA">🇺🇸 USA</SelectItem>
+                          <SelectItem value="IND">🇮🇳 India</SelectItem>
+                          <SelectItem value="UK">🇬🇧 UK</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Bank Name</Label>
+                      <Input
+                        value={bankDetails[gateway.id]?.bank_name || (gateway.bank_details as any)?.bank_name || ''}
+                        onChange={(e) => updateBankDetails(gateway.id, 'bank_name', e.target.value)}
+                        placeholder="Emirates NBD"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Account Holder</Label>
+                      <Input
+                        value={bankDetails[gateway.id]?.account_holder || (gateway.bank_details as any)?.account_holder || ''}
+                        onChange={(e) => updateBankDetails(gateway.id, 'account_holder', e.target.value)}
+                        placeholder="Company Name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Account Number</Label>
+                      <Input
+                        value={bankDetails[gateway.id]?.account_number || (gateway.bank_details as any)?.account_number || ''}
+                        onChange={(e) => updateBankDetails(gateway.id, 'account_number', e.target.value)}
+                        placeholder="1234567890"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>IBAN</Label>
+                      <Input
+                        value={bankDetails[gateway.id]?.iban || (gateway.bank_details as any)?.iban || ''}
+                        onChange={(e) => updateBankDetails(gateway.id, 'iban', e.target.value)}
+                        placeholder="AE070260001234567890"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>SWIFT/IFSC Code</Label>
+                      <Input
+                        value={bankDetails[gateway.id]?.ifsc_code || gateway.ifsc_code || ''}
+                        onChange={(e) => updateBankDetails(gateway.id, 'ifsc_code', e.target.value)}
+                        placeholder="EBILAEAD"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label>Branch Address</Label>
+                    <Input
+                      value={bankDetails[gateway.id]?.address || (gateway.bank_details as any)?.address || ''}
+                      onChange={(e) => updateBankDetails(gateway.id, 'address', e.target.value)}
+                      placeholder="Branch address"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Instructions for Customers</Label>
+                    <Textarea
+                      value={bankDetails[gateway.id]?.instructions || gateway.instructions || ''}
+                      onChange={(e) => updateBankDetails(gateway.id, 'instructions', e.target.value)}
+                      placeholder="Instructions for bank transfer..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={() => saveBankDetails(gateway)}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Bank Details
+                  </Button>
                 </div>
-                <Switch
-                  checked={gateway.test_mode}
-                  onCheckedChange={(checked) => updateGatewayConfig(gateway.id, 'test_mode', checked)}
-                />
-              </div>
+              )}
+
+              {/* Cash on Arrival Configuration */}
+              {gateway.gateway_name === 'cash_on_arrival' && (
+                <div className="space-y-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <h4 className="font-medium text-orange-800">💰 Cash Payment Instructions</h4>
+                  <div>
+                    <Label>Instructions for Customers</Label>
+                    <Textarea
+                      value={gateway.instructions || ''}
+                      onChange={(e) => updateGatewayConfig(gateway.id, 'instructions', e.target.value)}
+                      placeholder="Instructions for cash payment..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Amount Limits */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor={`min-amount-${gateway.id}`}>Min Amount</Label>
+                  <Label htmlFor={`min-amount-${gateway.id}`}>Min Amount (AED)</Label>
                   <Input
                     id={`min-amount-${gateway.id}`}
                     type="number"
@@ -229,7 +391,7 @@ const PaymentGatewayManagement = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`max-amount-${gateway.id}`}>Max Amount</Label>
+                  <Label htmlFor={`max-amount-${gateway.id}`}>Max Amount (AED)</Label>
                   <Input
                     id={`max-amount-${gateway.id}`}
                     type="number"
@@ -245,9 +407,11 @@ const PaymentGatewayManagement = () => {
               {/* Supported Currencies */}
               <div>
                 <Label>Supported Currencies</Label>
-                <div className="flex gap-1 mt-1">
+                <div className="flex gap-1 mt-1 flex-wrap">
                   {gateway.supported_currencies?.map((currency) => (
-                    <Badge key={currency} variant="secondary">{currency}</Badge>
+                    <Badge key={currency} variant="secondary" className="bg-blue-100 text-blue-800">
+                      {currency}
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -257,11 +421,11 @@ const PaymentGatewayManagement = () => {
       </div>
 
       {/* Global Payment Settings */}
-      <Card>
+      <Card className="border-2 border-blue-200 bg-blue-50/30">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-blue-800">
             <Settings className="h-5 w-5" />
-            Global Payment Settings
+            🌐 Global Payment Settings
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -273,10 +437,10 @@ const PaymentGatewayManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AED">AED - UAE Dirham</SelectItem>
-                  <SelectItem value="USD">USD - US Dollar</SelectItem>
-                  <SelectItem value="EUR">EUR - Euro</SelectItem>
-                  <SelectItem value="INR">INR - Indian Rupee</SelectItem>
+                  <SelectItem value="AED">🇦🇪 AED - UAE Dirham</SelectItem>
+                  <SelectItem value="USD">🇺🇸 USD - US Dollar</SelectItem>
+                  <SelectItem value="EUR">🇪🇺 EUR - Euro</SelectItem>
+                  <SelectItem value="INR">🇮🇳 INR - Indian Rupee</SelectItem>
                 </SelectContent>
               </Select>
             </div>

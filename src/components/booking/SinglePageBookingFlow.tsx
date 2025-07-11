@@ -46,6 +46,9 @@ interface PaymentGateway {
   bank_details: any;
   api_key?: string;
   api_secret?: string;
+  ifsc_code?: string;
+  country?: string;
+  instructions?: string;
 }
 
 interface Props {
@@ -208,9 +211,12 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           })
           .eq('id', bookingData.id);
 
+        const instructions = selectedGateway.instructions || 'You can pay in cash at the pickup location or when you meet our representative.';
+        
         toast({
-          title: "Booking Confirmed!",
-          description: `Your booking reference is ${bookingData.booking_reference}. You can pay upon arrival.`,
+          title: "🎉 Booking Confirmed!",
+          description: `Your booking reference is ${bookingData.booking_reference}. ${instructions}`,
+          duration: 8000,
         });
         
         onBack();
@@ -332,35 +338,50 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
                 <p className="text-gray-600">Please transfer the amount to the following bank account:</p>
               </div>
               
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-4">Bank Account Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.bank_details.bank_name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.bank_details.account_holder}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Account Number</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.bank_details.account_number}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">IBAN</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.bank_details.iban}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
-                    <p className="text-lg font-semibold">{selectedGateway.bank_details.swift}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
-                    <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-4">🏦 Bank Account Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Bank Name</Label>
+                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.bank_name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Account Holder</Label>
+                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_holder}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Account Number</Label>
+                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.account_number}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">IBAN</Label>
+                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.iban}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">SWIFT Code</Label>
+                      <p className="text-lg font-semibold">{(selectedGateway.bank_details as any)?.swift}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">IFSC Code</Label>
+                      <p className="text-lg font-semibold">{selectedGateway.ifsc_code}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Amount to Transfer</Label>
+                      <p className="text-xl font-bold text-green-600">{formatPrice(calculateTotal())}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Country</Label>
+                      <p className="text-lg font-semibold">{selectedGateway.country}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+                
+                {selectedGateway.instructions && (
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h4 className="font-medium text-yellow-800 mb-2">💡 Important Instructions</h4>
+                    <p className="text-sm text-yellow-700">{selectedGateway.instructions}</p>
+                  </div>
+                )}
               
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-4">

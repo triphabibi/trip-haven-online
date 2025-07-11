@@ -614,11 +614,14 @@ export type Database = {
           api_secret: string | null
           bank_details: Json | null
           configuration: Json | null
+          country: string | null
           created_at: string | null
           description: string | null
           display_name: string
           gateway_name: Database["public"]["Enums"]["gateway_type"]
           id: string
+          ifsc_code: string | null
+          instructions: string | null
           is_enabled: boolean | null
           max_amount: number | null
           min_amount: number | null
@@ -632,11 +635,14 @@ export type Database = {
           api_secret?: string | null
           bank_details?: Json | null
           configuration?: Json | null
+          country?: string | null
           created_at?: string | null
           description?: string | null
           display_name: string
           gateway_name: Database["public"]["Enums"]["gateway_type"]
           id?: string
+          ifsc_code?: string | null
+          instructions?: string | null
           is_enabled?: boolean | null
           max_amount?: number | null
           min_amount?: number | null
@@ -650,11 +656,14 @@ export type Database = {
           api_secret?: string | null
           bank_details?: Json | null
           configuration?: Json | null
+          country?: string | null
           created_at?: string | null
           description?: string | null
           display_name?: string
           gateway_name?: Database["public"]["Enums"]["gateway_type"]
           id?: string
+          ifsc_code?: string | null
+          instructions?: string | null
           is_enabled?: boolean | null
           max_amount?: number | null
           min_amount?: number | null
