@@ -14,8 +14,7 @@ interface PaymentGateway {
   description: string;
   is_enabled: boolean;
   priority: number;
-  api_key?: string;
-  api_secret?: string;
+  instructions?: string;
   bank_details?: any;
 }
 

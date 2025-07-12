@@ -18,7 +18,7 @@ const QuickPaymentSetup = () => {
       const { data, error } = await supabase
         .from('payment_gateways')
         .select('*')
-        .order('gateway_name');
+        .order('priority');
       
       if (error) throw error;
       return data;
@@ -30,32 +30,71 @@ const QuickPaymentSetup = () => {
     try {
       const defaultGateways = [
         {
-          gateway_name: 'razorpay',
+          gateway_name: 'razorpay' as const,
           display_name: 'Razorpay',
           description: 'Pay with Cards, UPI, Wallets & More',
           is_enabled: true,
-          priority: 1
+          priority: 1,
+          api_key: '',
+          api_secret: '',
+          test_mode: true,
+          configuration: {},
+          supported_currencies: ['AED', 'USD'],
+          min_amount: 0,
+          country: 'UAE',
+          instructions: 'Secure payment processing with multiple payment options including cards, UPI, and digital wallets.'
         },
         {
-          gateway_name: 'stripe',
+          gateway_name: 'stripe' as const,
           display_name: 'Stripe',
           description: 'Credit & Debit Cards',
           is_enabled: true,
-          priority: 2
+          priority: 2,
+          api_key: '',
+          api_secret: '',
+          test_mode: true,
+          configuration: {},
+          supported_currencies: ['AED', 'USD'],
+          min_amount: 0,
+          country: 'UAE',
+          instructions: 'International payment processing for credit and debit cards worldwide.'
         },
         {
-          gateway_name: 'cash_on_arrival',
+          gateway_name: 'cash_on_arrival' as const,
           display_name: 'Cash on Arrival',
           description: 'Pay cash at pickup location',
           is_enabled: true,
-          priority: 3
+          priority: 3,
+          api_key: '',
+          api_secret: '',
+          test_mode: true,
+          configuration: {},
+          supported_currencies: ['AED', 'USD'],
+          min_amount: 0,
+          country: 'UAE',
+          instructions: 'You can pay in cash at the pickup location or when you meet our representative. Please ensure you have the exact amount or we will provide change. Cash payment is accepted in AED, USD, or EUR.'
         },
         {
-          gateway_name: 'bank_transfer',
+          gateway_name: 'bank_transfer' as const,
           display_name: 'Bank Transfer',
           description: 'Direct bank transfer',
           is_enabled: true,
-          priority: 4
+          priority: 4,
+          api_key: '',
+          api_secret: '',
+          test_mode: true,
+          configuration: {},
+          supported_currencies: ['AED', 'USD'],
+          min_amount: 0,
+          country: 'UAE',
+          bank_details: {
+            bank_name: 'Emirates NBD',
+            account_number: '1234567890',
+            iban: 'AE123456789012345678901',
+            swift: 'EBILAEAD',
+            account_holder: 'TripHabibi Tourism LLC'
+          },
+          instructions: 'Please mention your booking reference number in the transfer description for quick processing. Transfer confirmation will be processed within 2-4 hours during business hours.'
         }
       ];
 
@@ -67,7 +106,10 @@ const QuickPaymentSetup = () => {
             ignoreDuplicates: false 
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error upserting gateway:', gateway.gateway_name, error);
+          throw error;
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ['payment_gateways_setup'] });
