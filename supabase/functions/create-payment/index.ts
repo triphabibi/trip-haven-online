@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    logStep("Payment creation started");
+    logStep("🚀 Payment creation started");
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,7 +27,7 @@ serve(async (req) => {
     );
 
     const requestData = await req.json();
-    logStep("Request received", requestData);
+    logStep("📋 Request received", requestData);
 
     const {
       bookingId,
@@ -40,10 +40,12 @@ serve(async (req) => {
 
     // Validate required fields
     if (!bookingId || !paymentMethod || !amount || !customerName || !customerEmail) {
+      logStep("❌ Missing required fields", { bookingId, paymentMethod, amount, customerName, customerEmail });
       throw new Error('Missing required fields');
     }
 
     // Get payment gateway configuration
+    logStep("🔍 Fetching gateway configuration for:", paymentMethod);
     const { data: gateway, error: gatewayError } = await supabase
       .from('payment_gateways')
       .select('*')
@@ -52,11 +54,11 @@ serve(async (req) => {
       .single();
 
     if (gatewayError || !gateway) {
-      logStep("Gateway error", gatewayError);
+      logStep("❌ Gateway error", gatewayError);
       throw new Error(`Payment gateway ${paymentMethod} not found or disabled`);
     }
 
-    logStep("Gateway found", gateway.display_name);
+    logStep("✅ Gateway found", gateway.display_name);
 
     let result;
 
@@ -93,10 +95,11 @@ serve(async (req) => {
         break;
 
       default:
+        logStep("❌ Unsupported payment method:", paymentMethod);
         throw new Error(`Unsupported payment method: ${paymentMethod}`);
     }
 
-    logStep("Payment processed", result);
+    logStep("✅ Payment processed successfully", result);
 
     return new Response(JSON.stringify(result), {
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -104,7 +107,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    logStep("Payment error", error.message);
+    logStep("🚨 Payment error", error.message);
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message 
@@ -118,7 +121,7 @@ serve(async (req) => {
 async function handleRazorpay(params: any) {
   const { gateway, amount, customerName, customerEmail, customerPhone, bookingId } = params;
   
-  logStep("Processing Razorpay payment");
+  logStep("💳 Processing Razorpay payment", { amount, bookingId });
 
   return {
     success: true,
@@ -147,7 +150,7 @@ async function handleRazorpay(params: any) {
 async function handleStripe(params: any) {
   const { gateway, amount, customerName, customerEmail, customerPhone, bookingId, origin } = params;
   
-  logStep("Processing Stripe payment");
+  logStep("💳 Processing Stripe payment", { amount, bookingId });
 
   if (!gateway.api_secret) {
     throw new Error('Stripe secret key not configured');
@@ -190,7 +193,7 @@ async function handleStripe(params: any) {
       sessionId: session.id
     };
   } catch (error: any) {
-    logStep("Stripe error", error.message);
+    logStep("❌ Stripe error", error.message);
     throw new Error(`Stripe payment failed: ${error.message}`);
   }
 }
@@ -198,7 +201,7 @@ async function handleStripe(params: any) {
 async function handleCash(params: any) {
   const { bookingId, supabase } = params;
   
-  logStep("Processing cash payment");
+  logStep("💵 Processing cash payment", { bookingId });
 
   const { error } = await supabase
     .from('new_bookings')
@@ -211,7 +214,7 @@ async function handleCash(params: any) {
     .eq('id', bookingId);
 
   if (error) {
-    logStep("Cash payment update error", error);
+    logStep("❌ Cash payment update error", error);
     throw error;
   }
 
@@ -219,14 +222,14 @@ async function handleCash(params: any) {
     success: true,
     paymentMethod: 'cash_on_arrival',
     requiresAction: false,
-    message: 'Booking confirmed! Please pay in cash at the pickup location.'
+    message: '🎉 Booking confirmed! Please pay in cash at the pickup location.'
   };
 }
 
 async function handleBankTransfer(params: any) {
   const { bookingId, supabase, gateway } = params;
   
-  logStep("Processing bank transfer");
+  logStep("🏦 Processing bank transfer", { bookingId });
 
   const { error } = await supabase
     .from('new_bookings')
@@ -238,7 +241,7 @@ async function handleBankTransfer(params: any) {
     .eq('id', bookingId);
 
   if (error) {
-    logStep("Bank transfer update error", error);
+    logStep("❌ Bank transfer update error", error);
     throw error;
   }
 
@@ -246,7 +249,7 @@ async function handleBankTransfer(params: any) {
     success: true,
     paymentMethod: 'bank_transfer',
     requiresAction: false,
-    message: 'Please transfer the amount to our bank account.',
+    message: '🏦 Please transfer the amount to our bank account.',
     bankDetails: gateway.bank_details
   };
 }

@@ -39,26 +39,34 @@ const SimplePaymentFlow = ({
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
 
-  console.log('SimplePaymentFlow rendered with:', { amount, bookingId, customerName, customerEmail });
+  console.log('🔄 SimplePaymentFlow initialized:', { amount, bookingId, customerName, customerEmail });
 
-  // Fetch payment gateways
-  const { data: gateways, isLoading, error } = useQuery({
+  // Fetch payment gateways with detailed logging
+  const { data: gateways, isLoading, error, refetch } = useQuery({
     queryKey: ['payment_gateways'],
     queryFn: async () => {
-      console.log('Fetching payment gateways...');
-      const { data, error } = await supabase
-        .from('payment_gateways')
-        .select('*')
-        .eq('is_enabled', true)
-        .order('priority');
+      console.log('🔍 Fetching payment gateways...');
       
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('payment_gateways')
+          .select('*')
+          .eq('is_enabled', true)
+          .order('priority');
+        
+        console.log('📊 Supabase query result:', { data, error });
+        
+        if (error) {
+          console.error('❌ Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('✅ Payment gateways fetched successfully:', data);
+        return data as PaymentGateway[];
+      } catch (err) {
+        console.error('🚨 Error in payment gateways query:', err);
+        throw err;
       }
-      
-      console.log('Payment gateways fetched:', data);
-      return data as PaymentGateway[];
     },
     retry: 3,
     retryDelay: 1000,
@@ -80,6 +88,8 @@ const SimplePaymentFlow = ({
   };
 
   const handleRazorpayPayment = async (checkoutData: any) => {
+    console.log('💳 Starting Razorpay payment:', checkoutData);
+    
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -87,6 +97,7 @@ const SimplePaymentFlow = ({
         const options = {
           ...checkoutData,
           handler: async function (response: any) {
+            console.log('✅ Razorpay payment successful:', response);
             try {
               const { data: confirmResult, error } = await supabase.functions.invoke('confirm-payment', {
                 body: {
@@ -96,12 +107,14 @@ const SimplePaymentFlow = ({
                 }
               });
 
+              console.log('📋 Payment confirmation result:', { confirmResult, error });
+
               if (error || !confirmResult?.success) {
                 throw new Error(confirmResult?.error || 'Payment confirmation failed');
               }
 
               toast({
-                title: "Payment Successful!",
+                title: "🎉 Payment Successful!",
                 description: `Payment ID: ${response.razorpay_payment_id}`,
                 duration: 5000,
               });
@@ -109,9 +122,9 @@ const SimplePaymentFlow = ({
               onSuccess();
               resolve(response);
             } catch (error) {
-              console.error('Payment confirmation error:', error);
+              console.error('❌ Payment confirmation error:', error);
               toast({
-                title: "Payment Failed",
+                title: "❌ Payment Failed",
                 description: "Payment could not be confirmed",
                 variant: "destructive",
               });
@@ -120,6 +133,7 @@ const SimplePaymentFlow = ({
           },
           modal: {
             ondismiss: function() {
+              console.log('🚫 Payment cancelled by user');
               reject(new Error('Payment cancelled by user'));
             }
           }
@@ -130,6 +144,7 @@ const SimplePaymentFlow = ({
       };
       
       script.onerror = () => {
+        console.error('❌ Failed to load Razorpay script');
         reject(new Error('Failed to load Razorpay'));
       };
       
@@ -140,14 +155,21 @@ const SimplePaymentFlow = ({
   const handlePayment = async () => {
     if (!selectedPayment) {
       toast({
-        title: "Error",
+        title: "⚠️ Error",
         description: "Please select a payment method",
         variant: "destructive",
       });
       return;
     }
 
-    console.log('Starting payment process:', { selectedPayment, bookingId, amount });
+    console.log('🚀 Starting payment process:', { 
+      selectedPayment, 
+      bookingId, 
+      amount, 
+      customerName, 
+      customerEmail 
+    });
+    
     setProcessing(true);
 
     try {
@@ -162,35 +184,41 @@ const SimplePaymentFlow = ({
         }
       });
 
-      console.log('Create-payment response:', { result, error });
+      console.log('📋 Create-payment response:', { result, error });
 
       if (error) {
+        console.error('❌ Create-payment error:', error);
         throw new Error(error.message || 'Payment creation failed');
       }
 
       if (result?.success) {
+        console.log('✅ Payment creation successful:', result);
+        
         if (result.requiresAction) {
           if (result.paymentMethod === 'razorpay' && result.checkoutData) {
             await handleRazorpayPayment(result.checkoutData);
           } else if (result.paymentMethod === 'stripe' && result.checkoutUrl) {
+            console.log('🔗 Redirecting to Stripe:', result.checkoutUrl);
             window.location.href = result.checkoutUrl;
           }
         } else {
           // Direct success for cash/bank transfer
+          console.log('✅ Direct payment success:', result.message);
           toast({
-            title: "Success!",
+            title: "🎉 Success!",
             description: result.message || 'Payment method selected successfully',
             duration: 5000,
           });
           onSuccess();
         }
       } else {
+        console.error('❌ Payment creation failed:', result);
         throw new Error(result?.error || 'Payment creation failed');
       }
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error('🚨 Payment error:', error);
       toast({
-        title: "Payment Failed",
+        title: "❌ Payment Failed",
         description: error.message || 'Something went wrong with the payment',
         variant: "destructive",
       });
@@ -213,14 +241,20 @@ const SimplePaymentFlow = ({
   }
 
   if (error) {
-    console.error('Payment gateways error:', error);
+    console.error('🚨 Payment gateways error:', error);
     return (
       <Card>
         <CardContent className="p-6">
           <div className="text-center text-red-600">
-            <p className="mb-2">Error loading payment options</p>
-            <p className="text-sm">Please refresh the page and try again.</p>
-            <p className="text-xs mt-2 text-gray-500">Error: {error.message}</p>
+            <p className="mb-4">❌ Error loading payment options</p>
+            <Button onClick={() => refetch()} variant="outline" className="mb-4">
+              🔄 Retry Loading
+            </Button>
+            <div className="text-xs bg-red-50 p-3 rounded mt-4">
+              <strong>Debug Info:</strong><br />
+              Error: {error.message}<br />
+              Booking ID: {bookingId}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -230,7 +264,7 @@ const SimplePaymentFlow = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Complete Payment</CardTitle>
+        <CardTitle>💳 Complete Payment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-center">
@@ -252,7 +286,7 @@ const SimplePaymentFlow = ({
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => {
-                    console.log('Selected payment method:', gateway.gateway_name);
+                    console.log('🎯 Selected payment method:', gateway.gateway_name);
                     setSelectedPayment(gateway.gateway_name);
                   }}
                 >
@@ -275,8 +309,11 @@ const SimplePaymentFlow = ({
             </div>
           ) : (
             <div className="text-center text-gray-600 py-8">
-              <p className="mb-2">No payment methods available</p>
+              <p className="mb-2">❌ No payment methods available</p>
               <p className="text-sm">Please contact support for assistance.</p>
+              <Button onClick={() => refetch()} variant="outline" className="mt-4">
+                🔄 Reload Payment Methods
+              </Button>
             </div>
           )}
         </div>
@@ -293,17 +330,19 @@ const SimplePaymentFlow = ({
               Processing...
             </>
           ) : (
-            `Pay AED ${amount.toFixed(2)}`
+            `💳 Pay AED ${amount.toFixed(2)}`
           )}
         </Button>
 
-        {/* Debug info */}
-        <div className="text-xs text-gray-500 mt-4 p-2 bg-gray-50 rounded">
-          <div><strong>Debug Info:</strong></div>
+        {/* Enhanced Debug info */}
+        <div className="text-xs text-gray-500 mt-4 p-3 bg-gray-50 rounded">
+          <div><strong>🔍 Debug Info:</strong></div>
           <div>Booking ID: {bookingId}</div>
           <div>Selected: {selectedPayment || 'None'}</div>
           <div>Available gateways: {gateways?.length || 0}</div>
           <div>Gateway names: {gateways?.map(g => g.gateway_name).join(', ') || 'None'}</div>
+          <div>Amount: AED {amount}</div>
+          <div>Customer: {customerName} ({customerEmail})</div>
           {error && <div className="text-red-600">Error: {error.message}</div>}
         </div>
       </CardContent>
