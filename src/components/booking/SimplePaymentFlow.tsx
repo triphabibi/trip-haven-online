@@ -204,12 +204,18 @@ const SimplePaymentFlow = ({
         } else {
           // Direct success for cash/bank transfer
           console.log('✅ Direct payment success:', result.message);
+          console.log('Payment successful, booking confirmed');
+          
           toast({
             title: "🎉 Success!",
             description: result.message || 'Payment method selected successfully',
-            duration: 5000,
+            duration: 3000,
           });
-          onSuccess();
+          
+          // Redirect to booking confirmation page after 2 seconds
+          setTimeout(() => {
+            window.location.href = `/booking-confirmation?booking=${bookingId}&payment=${selectedPayment}&amount=${amount}&customer=${encodeURIComponent(customerName)}`;
+          }, 2000);
         }
       } else {
         console.error('❌ Payment creation failed:', result);

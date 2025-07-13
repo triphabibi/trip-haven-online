@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -10,10 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Download, Calendar, Users, MapPin, Clock, Phone, Mail } from 'lucide-react';
 
 const BookingConfirmationPage = () => {
-  const { bookingId } = useParams<{ bookingId: string }>();
+  const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
+  const [searchParams] = useSearchParams();
   const [booking, setBooking] = useState<any>(null);
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Get booking ID from either URL params or search params
+  const bookingId = urlBookingId || searchParams.get('booking');
 
   useEffect(() => {
     if (bookingId) {
@@ -247,17 +251,17 @@ const BookingConfirmationPage = () => {
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{booking.total_amount.toLocaleString()}</span>
+                  <span>AED {booking.total_amount.toLocaleString()}</span>
                 </div>
                 {booking.discount_amount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
-                    <span>-₹{booking.discount_amount.toLocaleString()}</span>
+                    <span>-AED {booking.discount_amount.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="border-t pt-2 flex justify-between font-bold text-lg">
                   <span>Total Paid</span>
-                  <span>₹{booking.final_amount.toLocaleString()}</span>
+                  <span>AED {booking.final_amount.toLocaleString()}</span>
                 </div>
                 <div className="text-sm text-gray-500">
                   Payment Status: 
