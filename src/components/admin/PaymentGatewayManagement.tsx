@@ -29,6 +29,8 @@ const PaymentGatewayManagement = () => {
   const queryClient = useQueryClient();
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [bankDetails, setBankDetails] = useState<Record<string, any>>({});
+  const [localGateways, setLocalGateways] = useState<any[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const { data: gateways, isLoading } = useQuery({
     queryKey: ['payment_gateways'],
@@ -39,32 +41,54 @@ const PaymentGatewayManagement = () => {
         .order('priority');
       
       if (error) throw error;
+      
+      // Initialize local state with fetched data
+      setLocalGateways(data || []);
       return data;
     },
   });
 
-  const updateGatewayMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      const { data, error } = await supabase
-        .from('payment_gateways')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+  const batchUpdateMutation = useMutation({
+    mutationFn: async (gatewaysToUpdate: any[]) => {
+      const promises = gatewaysToUpdate.map(gateway => 
+        supabase
+          .from('payment_gateways')
+          .update({
+            is_enabled: gateway.is_enabled,
+            api_key: gateway.api_key,
+            api_secret: gateway.api_secret,
+            priority: gateway.priority,
+            min_amount: gateway.min_amount,
+            max_amount: gateway.max_amount,
+            bank_details: gateway.bank_details,
+            ifsc_code: gateway.ifsc_code,
+            country: gateway.country,
+            instructions: gateway.instructions
+          })
+          .eq('id', gateway.id)
+      );
       
-      if (error) throw error;
-      return data;
+      const results = await Promise.all(promises);
+      const errors = results.filter(result => result.error);
+      
+      if (errors.length > 0) {
+        throw new Error(`Failed to update ${errors.length} gateways`);
+      }
+      
+      return results;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment_gateways'] });
+      setHasChanges(false);
       toast({ 
-        title: "✅ Payment gateway updated successfully",
+        title: "✅ All payment gateways saved successfully!",
+        description: "Your payment gateway settings have been updated.",
         className: "bg-green-50 border-green-200"
       });
     },
     onError: (error: any) => {
       toast({ 
-        title: "❌ Error updating gateway", 
+        title: "❌ Error saving gateways", 
         description: error.message, 
         variant: "destructive" 
       });
@@ -95,18 +119,19 @@ const PaymentGatewayManagement = () => {
     return "border-2 border-gray-200 bg-gray-50/30";
   };
 
+  const updateLocalGateway = (id: string, field: string, value: any) => {
+    setLocalGateways(prev => prev.map(gateway => 
+      gateway.id === id ? { ...gateway, [field]: value } : gateway
+    ));
+    setHasChanges(true);
+  };
+
   const toggleGateway = (id: string, enabled: boolean) => {
-    updateGatewayMutation.mutate({ 
-      id, 
-      updates: { is_enabled: enabled } 
-    });
+    updateLocalGateway(id, 'is_enabled', enabled);
   };
 
   const updateGatewayConfig = (id: string, field: string, value: any) => {
-    updateGatewayMutation.mutate({
-      id,
-      updates: { [field]: value }
-    });
+    updateLocalGateway(id, field, value);
   };
 
   const updateBankDetails = (gatewayId: string, field: string, value: string) => {
@@ -117,6 +142,7 @@ const PaymentGatewayManagement = () => {
         [field]: value
       }
     }));
+    setHasChanges(true);
   };
 
   const saveBankDetails = (gateway: any) => {
@@ -132,15 +158,16 @@ const PaymentGatewayManagement = () => {
       address: details.address || existingBankDetails.address || ''
     };
 
-    updateGatewayMutation.mutate({
-      id: gateway.id,
-      updates: {
-        bank_details: bankDetailsObj,
-        ifsc_code: details.ifsc_code || gateway.ifsc_code || '',
-        country: details.country || gateway.country || 'UAE',
-        instructions: details.instructions || gateway.instructions || ''
-      }
-    });
+    updateLocalGateway(gateway.id, 'bank_details', bankDetailsObj);
+    updateLocalGateway(gateway.id, 'ifsc_code', details.ifsc_code || gateway.ifsc_code || '');
+    updateLocalGateway(gateway.id, 'country', details.country || gateway.country || 'UAE');
+    updateLocalGateway(gateway.id, 'instructions', details.instructions || gateway.instructions || '');
+  };
+
+  const saveAllChanges = () => {
+    if (hasChanges && localGateways.length > 0) {
+      batchUpdateMutation.mutate(localGateways);
+    }
   };
 
   const toggleSecretVisibility = (gatewayId: string) => {
@@ -163,11 +190,23 @@ const PaymentGatewayManagement = () => {
           </h2>
           <p className="text-gray-600">Configure and manage payment methods</p>
         </div>
+        
+        {hasChanges && (
+          <Button 
+            onClick={saveAllChanges}
+            disabled={batchUpdateMutation.isPending}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+            size="lg"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {batchUpdateMutation.isPending ? 'Saving...' : 'Save All Changes'}
+          </Button>
+        )}
       </div>
 
       {/* Gateway Configuration Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {gateways?.map((gateway) => (
+        {localGateways?.map((gateway) => (
           <Card key={gateway.id} className={getGatewayCardClass(gateway)}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
