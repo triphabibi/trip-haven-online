@@ -38,7 +38,7 @@ const QuickPaymentSetup = () => {
     try {
       const defaultGateways = [
         {
-          gateway_name: 'razorpay',
+          gateway_name: 'razorpay' as const,
           display_name: 'Razorpay',
           description: 'Pay with Cards, UPI, Wallets & More',
           is_enabled: true,
@@ -53,7 +53,7 @@ const QuickPaymentSetup = () => {
           instructions: 'Secure payment processing with multiple payment options including cards, UPI, and digital wallets.'
         },
         {
-          gateway_name: 'stripe',
+          gateway_name: 'stripe' as const,
           display_name: 'Stripe',
           description: 'Credit & Debit Cards',
           is_enabled: true,
@@ -68,7 +68,7 @@ const QuickPaymentSetup = () => {
           instructions: 'International payment processing for credit and debit cards worldwide.'
         },
         {
-          gateway_name: 'cash_on_arrival',
+          gateway_name: 'cash_on_arrival' as const,
           display_name: 'Cash on Arrival',
           description: 'Pay cash at pickup location',
           is_enabled: true,
@@ -83,7 +83,7 @@ const QuickPaymentSetup = () => {
           instructions: 'You can pay in cash at the pickup location or when you meet our representative. Please ensure you have the exact amount or we will provide change. Cash payment is accepted in AED, USD, or EUR.'
         },
         {
-          gateway_name: 'bank_transfer',
+          gateway_name: 'bank_transfer' as const,
           display_name: 'Bank Transfer',
           description: 'Direct bank transfer',
           is_enabled: true,
