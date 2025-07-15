@@ -122,22 +122,23 @@ serve(async (req) => {
 async function handleRazorpay(params: any) {
   const { gateway, amount, customerName, customerEmail, customerPhone, bookingId, supabase } = params;
   
-  // Extract numeric amount value
-  const numericAmount = typeof amount === 'object' && amount.amount ? amount.amount : amount;
+  // Extract numeric amount value (this should already be converted to INR rupees from frontend)
+  const amountInINRRupees = typeof amount === 'object' && amount.amount ? amount.amount : amount;
   
-  logStep("💳 Processing Razorpay payment", { amount: numericAmount, bookingId });
+  logStep("💳 Processing Razorpay payment", { 
+    amountInINRRupees, 
+    bookingId,
+    note: 'Amount should already be in INR rupees from frontend conversion'
+  });
   
-  // Get USD to INR exchange rate from settings
-  const { data: exchangeRateData } = await supabase
-    .from('site_settings')
-    .select('setting_value')
-    .eq('setting_key', 'usd_to_inr_rate')
-    .single();
+  // Convert INR rupees to paise for Razorpay (multiply by 100)
+  const amountInPaise = Math.round(amountInINRRupees * 100);
   
-  const exchangeRate = exchangeRateData?.setting_value ? parseFloat(exchangeRateData.setting_value) : 86;
-  const amountInINR = Math.round(numericAmount * exchangeRate);
-  
-  logStep("💱 Currency conversion", { usdAmount: numericAmount, exchangeRate, inrAmount: amountInINR });
+  logStep("💱 Converting rupees to paise for Razorpay", { 
+    rupeesAmount: amountInINRRupees,
+    paiseAmount: amountInPaise,
+    note: 'Razorpay requires amount in paise (smallest currency unit)'
+  });
 
   if (!gateway.api_secret) {
     throw new Error('Razorpay secret key not configured');
@@ -145,15 +146,15 @@ async function handleRazorpay(params: any) {
 
   // Create Razorpay order using their API
   const orderData = {
-    amount: Math.round(amountInINR * 100), // Convert INR to paise
+    amount: amountInPaise, // Amount in paise (smallest unit)
     currency: 'INR',
     receipt: bookingId,
     notes: {
       booking_id: bookingId,
       customer_name: customerName,
       customer_email: customerEmail,
-      original_usd_amount: numericAmount,
-      exchange_rate: exchangeRate
+      amount_in_rupees: amountInINRRupees,
+      amount_in_paise: amountInPaise
     }
   };
 

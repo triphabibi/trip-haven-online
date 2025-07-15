@@ -39,38 +39,50 @@ export const useCurrency = () => {
     try {
       setIsLoading(true);
       
-      // Get live rates from a free API
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const data = await response.json();
+      // Get admin-configured USD to INR exchange rate
+      const { data: exchangeRateData } = await supabase
+        .from('site_settings')
+        .select('setting_value')
+        .eq('setting_key', 'usd_to_inr_rate')
+        .single();
       
-      if (data.rates) {
-        const ratesList: CurrencyRate[] = [];
+      const adminUsdToInrRate = exchangeRateData?.setting_value ? parseFloat(exchangeRateData.setting_value) : 86;
+      
+      console.log('[CURRENCY] Loading admin-configured exchange rate:', { adminUsdToInrRate });
+      
+      // Use admin-configured rates with fallbacks for other currencies
+      const ratesList: CurrencyRate[] = [
+        // Admin-configured USD-INR rate
+        { from_currency: 'USD', to_currency: 'INR', rate: adminUsdToInrRate },
+        { from_currency: 'INR', to_currency: 'USD', rate: 1 / adminUsdToInrRate },
         
-        // Convert rates to our format
-        Object.entries(data.rates).forEach(([currency, rate]) => {
-          ratesList.push({ from_currency: 'USD', to_currency: currency, rate: rate as number });
-          ratesList.push({ from_currency: currency, to_currency: 'USD', rate: 1 / (rate as number) });
-        });
-        
-        // Add AED rates (commonly used in UAE)
-        const aedRate = data.rates.AED || 3.67;
-        ratesList.push({ from_currency: 'USD', to_currency: 'AED', rate: aedRate });
-        ratesList.push({ from_currency: 'AED', to_currency: 'USD', rate: 1 / aedRate });
-        
-        setRates(ratesList);
-      }
-    } catch (error) {
-      console.error('Error loading exchange rates, using fallback rates:', error);
-      // Fallback rates
-      setRates([
-        { from_currency: 'USD', to_currency: 'INR', rate: 83.50 },
-        { from_currency: 'INR', to_currency: 'USD', rate: 0.012 },
+        // Fallback rates for other currencies
         { from_currency: 'USD', to_currency: 'AED', rate: 3.67 },
         { from_currency: 'AED', to_currency: 'USD', rate: 0.27 },
         { from_currency: 'USD', to_currency: 'EUR', rate: 0.92 },
         { from_currency: 'EUR', to_currency: 'USD', rate: 1.09 },
-        { from_currency: 'AED', to_currency: 'INR', rate: 22.75 },
-        { from_currency: 'INR', to_currency: 'AED', rate: 0.044 },
+        { from_currency: 'USD', to_currency: 'GBP', rate: 0.79 },
+        { from_currency: 'GBP', to_currency: 'USD', rate: 1.27 },
+        
+        // Cross rates using admin INR rate
+        { from_currency: 'AED', to_currency: 'INR', rate: adminUsdToInrRate / 3.67 },
+        { from_currency: 'INR', to_currency: 'AED', rate: 3.67 / adminUsdToInrRate },
+      ];
+      
+      console.log('[CURRENCY] Exchange rates loaded:', ratesList);
+      setRates(ratesList);
+    } catch (error) {
+      console.error('[CURRENCY] Error loading admin exchange rates, using fallback:', error);
+      // Fallback rates with default admin rate
+      setRates([
+        { from_currency: 'USD', to_currency: 'INR', rate: 86 },
+        { from_currency: 'INR', to_currency: 'USD', rate: 1 / 86 },
+        { from_currency: 'USD', to_currency: 'AED', rate: 3.67 },
+        { from_currency: 'AED', to_currency: 'USD', rate: 0.27 },
+        { from_currency: 'USD', to_currency: 'EUR', rate: 0.92 },
+        { from_currency: 'EUR', to_currency: 'USD', rate: 1.09 },
+        { from_currency: 'AED', to_currency: 'INR', rate: 86 / 3.67 },
+        { from_currency: 'INR', to_currency: 'AED', rate: 3.67 / 86 },
       ]);
     } finally {
       setIsLoading(false);
@@ -78,7 +90,12 @@ export const useCurrency = () => {
   };
 
   const convertPrice = (price: number, fromCurrency: string = baseCurrency, toCurrency: string = displayCurrency): number => {
-    if (fromCurrency === toCurrency) return price;
+    console.log('[CURRENCY] Converting price:', { price, fromCurrency, toCurrency });
+    
+    if (fromCurrency === toCurrency) {
+      console.log('[CURRENCY] Same currency, no conversion needed');
+      return price;
+    }
     
     // Find direct conversion rate
     const directRate = rates.find(r => 
@@ -86,7 +103,9 @@ export const useCurrency = () => {
     );
     
     if (directRate) {
-      return price * directRate.rate;
+      const convertedPrice = price * directRate.rate;
+      console.log('[CURRENCY] Direct conversion:', { rate: directRate.rate, convertedPrice });
+      return convertedPrice;
     }
     
     // If direct rate not found, convert through USD
@@ -95,10 +114,17 @@ export const useCurrency = () => {
       const fromUSDRate = rates.find(r => r.from_currency === 'USD' && r.to_currency === toCurrency);
       
       if (toUSDRate && fromUSDRate) {
-        return price * toUSDRate.rate * fromUSDRate.rate;
+        const convertedPrice = price * toUSDRate.rate * fromUSDRate.rate;
+        console.log('[CURRENCY] USD bridge conversion:', { 
+          toUSDRate: toUSDRate.rate, 
+          fromUSDRate: fromUSDRate.rate, 
+          convertedPrice 
+        });
+        return convertedPrice;
       }
     }
     
+    console.log('[CURRENCY] No conversion rate found, returning original price');
     return price; // Return original price if no conversion found
   };
 
@@ -119,10 +145,22 @@ export const useCurrency = () => {
     return `${symbol}${formattedNumber}`;
   };
 
-  // Convert price for payment gateway (returns base amount, not multiplied by 100)
+  // Convert price for payment gateway (returns amount in target currency, NOT multiplied by 100)
+  // This is for display and base calculations - payment gateways handle their own unit conversion
   const convertForPayment = (price: number, targetCurrency: string): number => {
-    // Convert from USD base to target currency
-    return convertPrice(price, 'USD', targetCurrency);
+    console.log('[CURRENCY] Converting for payment gateway:', { price, targetCurrency });
+    
+    // Convert from USD base to target currency (rupees for INR, dollars for USD)
+    const convertedAmount = convertPrice(price, 'USD', targetCurrency);
+    
+    console.log('[CURRENCY] Payment conversion result:', { 
+      originalUSD: price, 
+      targetCurrency, 
+      convertedAmount: convertedAmount,
+      note: 'This is in base currency units (rupees/dollars), not sub-units (paise/cents)'
+    });
+    
+    return convertedAmount;
   };
 
   return {

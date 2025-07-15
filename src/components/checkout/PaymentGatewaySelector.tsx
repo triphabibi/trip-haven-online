@@ -131,11 +131,17 @@ export function PaymentGatewaySelector({
     try {
       console.log('Processing payment with gateway:', gateway.name);
       
-      // Convert amount to target currency for display and payment
+      // Convert amount to target currency (returns base currency units - rupees for INR, dollars for USD)
       const targetCurrency = getTargetCurrency(gateway.name);
       const convertedAmount = convertForPayment(amount, targetCurrency);
       
-      console.log(`Converting ${amount} USD to ${convertedAmount} ${targetCurrency}`);
+      console.log('[PAYMENT] Converting amount for gateway:', { 
+        originalUSD: amount, 
+        targetCurrency, 
+        convertedAmount,
+        gatewayName: gateway.name,
+        note: 'Amount is in base currency units (rupees/dollars)'
+      });
       
       // Call the create-payment edge function
       const { data, error } = await supabase.functions.invoke('create-payment', {
@@ -229,11 +235,19 @@ export function PaymentGatewaySelector({
                 throw updateError;
               }
 
+              // Convert paise back to rupees for display
+              const displayAmount = checkoutData.amount / 100;
+              console.log('[PAYMENT] Razorpay success - converting display amount:', {
+                paiseAmount: checkoutData.amount,
+                rupeesAmount: displayAmount,
+                note: 'Converted from paise to rupees for display'
+              });
+
               onPaymentSuccess({
                 gateway: 'razorpay',
                 type: 'api',
                 status: 'completed',
-                amount: checkoutData.amount / 100, // Convert paise back to INR for display
+                amount: displayAmount, // Amount in rupees for display
                 currency: 'INR',
                 transactionId: response.razorpay_payment_id
               });

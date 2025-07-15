@@ -2,9 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, Save, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CurrencySettingsProps {
   settings: Record<string, any>;
@@ -13,6 +16,28 @@ interface CurrencySettingsProps {
 }
 
 const CurrencySettings = ({ settings, onSettingChange, onSettingUpdate }: CurrencySettingsProps) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  const handleSaveExchangeRate = async () => {
+    setIsUpdating(true);
+    try {
+      await onSettingUpdate('usd_to_inr_rate', settings.usd_to_inr_rate || '86');
+      toast({
+        title: "Success",
+        description: "Exchange rate updated successfully! This will be used for all future payments.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to update exchange rate",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -49,19 +74,39 @@ const CurrencySettings = ({ settings, onSettingChange, onSettingUpdate }: Curren
           <Label htmlFor="auto_currency_conversion">Enable Auto Currency Conversion</Label>
         </div>
         
-        <div>
+        <div className="space-y-3">
           <Label htmlFor="usd_to_inr_rate">USD to INR Exchange Rate</Label>
-          <Input
-            id="usd_to_inr_rate"
-            type="number"
-            step="0.01"
-            value={settings.usd_to_inr_rate || '86'}
-            onChange={(e) => onSettingChange('usd_to_inr_rate', e.target.value)}
-            placeholder="86.00"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Current rate: 1 USD = {settings.usd_to_inr_rate || '86'} INR
-          </p>
+          <div className="flex gap-2">
+            <Input
+              id="usd_to_inr_rate"
+              type="number"
+              step="0.01"
+              value={settings.usd_to_inr_rate || '86'}
+              onChange={(e) => onSettingChange('usd_to_inr_rate', e.target.value)}
+              placeholder="86.00"
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleSaveExchangeRate}
+              disabled={isUpdating}
+              size="sm"
+              className="px-4"
+            >
+              {isUpdating ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <p className="text-sm font-medium">
+              Current Rate: <span className="text-primary">1 USD = ₹{settings.usd_to_inr_rate || '86'}</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This rate is used for Razorpay payments. Update this manually when exchange rates change.
+            </p>
+          </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
