@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { CreditCard, Banknote, DollarSign, Globe, Shield, Loader2 } from 'lucide-react';
+
+interface PaymentGateway {
+  id: string;
+  name: string;
+  type: 'api' | 'manual';
+  api_key?: string;
+  api_secret?: string;
+  manual_instructions?: string;
+  enabled: boolean;
+}
+
+interface PaymentGatewaySelectorProps {
+  amount: number;
+  bookingId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  onPaymentSuccess: (paymentData: any) => void;
+  onPaymentError: (error: string) => void;
+}
+
+export function PaymentGatewaySelector({
+  amount,
+  bookingId,
+  customerName,
+  customerEmail,
+  customerPhone,
+  onPaymentSuccess,
+  onPaymentError
+}: PaymentGatewaySelectorProps) {
+  const { toast } = useToast();
+  const [selectedGateway, setSelectedGateway] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { data: gateways, isLoading } = useQuery({
+    queryKey: ['enabled-payment-gateways'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('payment_gateways')
+        .select('*')
+        .eq('enabled', true)
+        .order('name');
+      
+      if (error) throw error;
+      return data as PaymentGateway[];
+    }
+  });
+
+  const getGatewayIcon = (gatewayName: string) => {
+    switch (gatewayName) {
+      case 'razorpay':
+        return <CreditCard className="h-5 w-5 text-blue-600" />;
+      case 'stripe':
+        return <CreditCard className="h-5 w-5 text-purple-600" />;
+      case 'paypal':
+        return <Globe className="h-5 w-5 text-blue-500" />;
+      case 'bank_transfer':
+        return <Banknote className="h-5 w-5 text-green-600" />;
+      case 'cash_on_arrival':
+        return <DollarSign className="h-5 w-5 text-orange-600" />;
+      case 'ccavenue':
+        return <Shield className="h-5 w-5 text-red-600" />;
+      default:
+        return <CreditCard className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!selectedGateway) {
+      toast({
+        title: "Error",
+        description: "Please select a payment method",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const gateway = gateways?.find(g => g.id === selectedGateway);
+    if (!gateway) return;
+
+    setIsProcessing(true);
+
+    try {
+      if (gateway.type === 'manual') {
+        // For manual gateways, mark as pending and show instructions
+        const paymentData = {
+          gateway: gateway.name,
+          type: 'manual',
+          status: 'pending',
+          amount,
+          instructions: gateway.manual_instructions,
+          bookingId
+        };
+
+        // Update booking status to pending payment
+        const { error: updateError } = await supabase
+          .from('new_bookings')
+          .update({
+            payment_gateway: gateway.name,
+            payment_status: 'pending',
+            payment_method: gateway.name
+          })
+          .eq('id', bookingId);
+
+        if (updateError) throw updateError;
+
+        onPaymentSuccess(paymentData);
+        
+        toast({
+          title: "Payment Instructions",
+          description: `Please complete payment using ${gateway.name.replace('_', ' ')}`,
+        });
+      } else {
+        // For API gateways, process payment
+        await processAPIPayment(gateway);
+      }
+    } catch (error: any) {
+      onPaymentError(error.message || 'Payment processing failed');
+      toast({
+        title: "Payment Error",
+        description: error.message || 'Failed to process payment',
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const processAPIPayment = async (gateway: PaymentGateway) => {
+    // This would integrate with actual payment processing
+    // For now, we'll simulate the payment process
+    
+    const paymentData = {
+      gateway: gateway.name,
+      type: 'api',
+      status: 'completed',
+      amount,
+      transactionId: `txn_${Date.now()}`,
+      bookingId
+    };
+
+    // Update booking with payment success
+    const { error: updateError } = await supabase
+      .from('new_bookings')
+      .update({
+        payment_gateway: gateway.name,
+        payment_status: 'completed',
+        payment_method: gateway.name,
+        payment_reference: paymentData.transactionId
+      })
+      .eq('id', bookingId);
+
+    if (updateError) throw updateError;
+
+    onPaymentSuccess(paymentData);
+    
+    toast({
+      title: "Payment Successful",
+      description: `Payment completed via ${gateway.name}`,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading payment methods...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!gateways || gateways.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">No payment methods available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Select Payment Method</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Total Amount: <span className="font-semibold">AED {amount.toFixed(2)}</span>
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <RadioGroup value={selectedGateway} onValueChange={setSelectedGateway}>
+          {gateways.map((gateway) => (
+            <div key={gateway.id} className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50">
+              <RadioGroupItem value={gateway.id} id={gateway.id} />
+              <Label
+                htmlFor={gateway.id}
+                className="flex items-center space-x-3 cursor-pointer flex-1"
+              >
+                {getGatewayIcon(gateway.name)}
+                <div className="flex-1">
+                  <div className="font-medium capitalize">
+                    {gateway.name.replace('_', ' ')}
+                  </div>
+                  {gateway.type === 'manual' && gateway.manual_instructions && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {gateway.manual_instructions.substring(0, 100)}
+                      {gateway.manual_instructions.length > 100 && '...'}
+                    </div>
+                  )}
+                </div>
+                <Badge variant={gateway.type === 'api' ? 'default' : 'secondary'}>
+                  {gateway.type === 'api' ? 'Instant' : 'Manual'}
+                </Badge>
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+
+        <Button
+          onClick={handlePayment}
+          disabled={!selectedGateway || isProcessing}
+          className="w-full"
+          size="lg"
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            `Pay AED ${amount.toFixed(2)}`
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}

@@ -10,7 +10,7 @@ import { Calendar, Clock, User, Users, Mail, Phone, Plus, Minus, MapPin } from '
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import PaymentGatewaySelector from '@/components/common/PaymentGatewaySelector';
+import { PaymentGatewaySelector } from '@/components/checkout/PaymentGatewaySelector';
 import type { Tour } from '@/types/tourism';
 
 interface MobileFriendlyTourBookingProps {
@@ -167,15 +167,12 @@ const MobileFriendlyTourBooking = ({ tour }: MobileFriendlyTourBookingProps) => 
     return (
       <div className="w-full max-w-md mx-auto p-4">
         <PaymentGatewaySelector
-          paymentData={{
-            customerName: formData.leadGuestName,
-            customerEmail: formData.email,
-            customerPhone: formData.mobile,
-            amount: totalPrice,
-            bookingReference: bookingReference,
-            serviceTitle: tour.title
-          }}
-          onPaymentSuccess={handlePaymentSuccess}
+          amount={totalPrice}
+          bookingId={bookingReference}
+          customerName={formData.leadGuestName}
+          customerEmail={formData.email}
+          customerPhone={formData.mobile}
+          onPaymentSuccess={(data) => handlePaymentSuccess(data.transactionId || '')}
           onPaymentError={(error) => {
             toast({
               title: "Payment Error",

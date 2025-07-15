@@ -15,7 +15,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
-import SimplePaymentFlow from '@/components/booking/SimplePaymentFlow';
+import { PaymentGatewaySelector } from '@/components/checkout/PaymentGatewaySelector';
 
 interface Service {
   id: string;
@@ -207,13 +207,20 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           </div>
 
           <div className="max-w-2xl mx-auto">
-            <SimplePaymentFlow
+            <PaymentGatewaySelector
               amount={calculateTotal()}
               bookingId={bookingId}
               customerName={formData.customerName}
               customerEmail={formData.customerEmail}
               customerPhone={formData.customerPhone}
-              onSuccess={handlePaymentSuccess}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={(error) => {
+                toast({
+                  title: "Payment Failed",
+                  description: error,
+                  variant: "destructive"
+                });
+              }}
             />
           </div>
         </div>

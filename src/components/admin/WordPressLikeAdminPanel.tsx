@@ -10,7 +10,7 @@ import TransferManagement from './TransferManagement';
 import OkToBoardManagement from './OkToBoardManagement';
 import BookingManagement from './BookingManagement';
 import TrendingProductsManagement from './TrendingProductsManagement';
-import PaymentGatewaySettings from './PaymentGatewaySettings';
+import { PaymentGatewayManagement } from './PaymentGatewayManagement';
 import ContentManagementSystem from './ContentManagementSystem';
 import BulkUpload from './BulkUpload';
 import SystemSettings from './SystemSettings';
@@ -40,7 +40,7 @@ const WordPressLikeAdminPanel = () => {
       case 'trending':
         return <TrendingProductsManagement />;
       case 'payments':
-        return <PaymentGatewaySettings />;
+        return <PaymentGatewayManagement />;
       case 'content':
         return <ContentManagementSystem />;
       case 'bulk-upload':

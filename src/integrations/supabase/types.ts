@@ -612,71 +612,35 @@ export type Database = {
         Row: {
           api_key: string | null
           api_secret: string | null
-          bank_details: Json | null
-          configuration: Json | null
-          country: string | null
-          created_at: string | null
-          description: string | null
-          display_name: string
-          gateway_name: Database["public"]["Enums"]["gateway_type"]
+          created_at: string
+          enabled: boolean
           id: string
-          ifsc_code: string | null
-          instructions: string | null
-          is_enabled: boolean | null
-          max_amount: number | null
-          min_amount: number | null
-          priority: number | null
-          supported_currencies: string[] | null
-          test_mode: boolean | null
-          updated_at: string | null
-          webhook_secret: string | null
-          webhook_url: string | null
+          manual_instructions: string | null
+          name: string
+          type: string
+          updated_at: string
         }
         Insert: {
           api_key?: string | null
           api_secret?: string | null
-          bank_details?: Json | null
-          configuration?: Json | null
-          country?: string | null
-          created_at?: string | null
-          description?: string | null
-          display_name: string
-          gateway_name: Database["public"]["Enums"]["gateway_type"]
+          created_at?: string
+          enabled?: boolean
           id?: string
-          ifsc_code?: string | null
-          instructions?: string | null
-          is_enabled?: boolean | null
-          max_amount?: number | null
-          min_amount?: number | null
-          priority?: number | null
-          supported_currencies?: string[] | null
-          test_mode?: boolean | null
-          updated_at?: string | null
-          webhook_secret?: string | null
-          webhook_url?: string | null
+          manual_instructions?: string | null
+          name: string
+          type: string
+          updated_at?: string
         }
         Update: {
           api_key?: string | null
           api_secret?: string | null
-          bank_details?: Json | null
-          configuration?: Json | null
-          country?: string | null
-          created_at?: string | null
-          description?: string | null
-          display_name?: string
-          gateway_name?: Database["public"]["Enums"]["gateway_type"]
+          created_at?: string
+          enabled?: boolean
           id?: string
-          ifsc_code?: string | null
-          instructions?: string | null
-          is_enabled?: boolean | null
-          max_amount?: number | null
-          min_amount?: number | null
-          priority?: number | null
-          supported_currencies?: string[] | null
-          test_mode?: boolean | null
-          updated_at?: string | null
-          webhook_secret?: string | null
-          webhook_url?: string | null
+          manual_instructions?: string | null
+          name?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { PaymentProvider } from '@/contexts/PaymentContext';
+
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 import Homepage from '@/pages/Homepage';
 import ToursPage from '@/pages/ToursPage';
@@ -50,8 +50,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <PaymentProvider>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
             <ScrollToTopHandler />
             <div className="App pb-16 md:pb-0" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
               <StickyMobileBookingButton />
@@ -98,7 +97,6 @@ function App() {
               </Routes>
             </div>
           </QueryClientProvider>
-        </PaymentProvider>
       </AuthProvider>
     </Router>
   );
