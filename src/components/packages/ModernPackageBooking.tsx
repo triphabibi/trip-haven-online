@@ -10,6 +10,7 @@ import { CalendarIcon, Plus, Minus, Users, Phone, Mail, Hotel, Plane, MapPin } f
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
+import { supabase } from '@/integrations/supabase/client';
 import type { TourPackage } from '@/types/tourism';
 
 interface ModernPackageBookingProps {
@@ -38,10 +39,51 @@ const ModernPackageBooking = ({ pkg }: ModernPackageBookingProps) => {
 
     setIsSubmitting(true);
     
-    setTimeout(() => {
-      alert('Package booking confirmed! Redirecting to payment...');
+    try {
+      // Create booking in database
+      const { data: booking, error } = await supabase
+        .from('new_bookings')
+        .insert({
+          service_id: pkg.id,
+          service_type: 'package',
+          service_title: pkg.title,
+          customer_name: `${adults} Adult${adults > 1 ? 's' : ''}${children > 0 ? `, ${children} Child${children > 1 ? 'ren' : ''}` : ''}${infants > 0 ? `, ${infants} Infant${infants > 1 ? 's' : ''}` : ''}`,
+          customer_email: email,
+          customer_phone: phone,
+          travel_date: checkIn.toISOString().split('T')[0],
+          adults_count: adults,
+          children_count: children,
+          infants_count: infants,
+          total_amount: totalPrice,
+          final_amount: totalPrice,
+          base_amount: totalPrice,
+          booking_status: 'pending',
+          payment_status: 'pending',
+          special_requests: `Check-in: ${checkIn.toDateString()}, Check-out: ${checkOut.toDateString()}`
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Redirect to payment page
+      const bookingParams = new URLSearchParams({
+        type: 'package',
+        id: pkg.id,
+        bookingId: booking.id,
+        amount: totalPrice.toString(),
+        customerName: `${adults} Adult${adults > 1 ? 's' : ''}${children > 0 ? `, ${children} Child${children > 1 ? 'ren' : ''}` : ''}${infants > 0 ? `, ${infants} Infant${infants > 1 ? 's' : ''}` : ''}`,
+        customerEmail: email,
+        customerPhone: phone
+      });
+
+      window.location.href = `/booking-payment?${bookingParams.toString()}`;
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('Failed to create booking. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 2000);
+    }
   };
 
   return (

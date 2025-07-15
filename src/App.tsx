@@ -82,8 +82,9 @@ function App() {
                     <AdminPage />
                   </AdminRoute>
                 } />
-                <Route path="/booking" element={<BookingPage />} />
-                <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+            <Route path="/booking" element={<BookingPage />} />
+            <Route path="/booking-payment" element={<BookingPaymentPage />} />
+            <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
                 <Route path="/tours/:id" element={<TourDetailPage />} />
                 <Route path="/tours/:slug" element={<TourDetailPage />} />
                 <Route path="/tickets/:id" element={<TicketDetailPage />} />
