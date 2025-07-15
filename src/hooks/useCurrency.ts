@@ -119,27 +119,10 @@ export const useCurrency = () => {
     return `${symbol}${formattedNumber}`;
   };
 
-  // Convert price for payment gateway (based on gateway requirements)
-  const convertForPayment = (price: number, paymentMethod: string): { amount: number; currency: string } => {
-    switch (paymentMethod) {
-      case 'razorpay':
-      case 'ccavenue':
-        // Convert to INR for Indian payment gateways
-        const inrAmount = convertPrice(price, displayCurrency, 'INR');
-        return { amount: Math.round(inrAmount * 100), currency: 'INR' }; // Amount in paise
-      
-      case 'stripe':
-      case 'paypal':
-        // Convert to USD for international gateways
-        const usdAmount = convertPrice(price, displayCurrency, 'USD');
-        return { amount: Math.round(usdAmount * 100), currency: 'USD' }; // Amount in cents
-      
-      case 'bank_transfer':
-      case 'cash_on_arrival':
-      default:
-        // Keep in display currency
-        return { amount: Math.round(price * 100), currency: displayCurrency };
-    }
+  // Convert price for payment gateway (returns base amount, not multiplied by 100)
+  const convertForPayment = (price: number, targetCurrency: string): number => {
+    // Convert from USD base to target currency
+    return convertPrice(price, 'USD', targetCurrency);
   };
 
   return {

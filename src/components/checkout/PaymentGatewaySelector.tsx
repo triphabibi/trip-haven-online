@@ -131,7 +131,7 @@ export function PaymentGatewaySelector({
     try {
       console.log('Processing payment with gateway:', gateway.name);
       
-      // Convert amount to target currency
+      // Convert amount to target currency for display and payment
       const targetCurrency = getTargetCurrency(gateway.name);
       const convertedAmount = convertForPayment(amount, targetCurrency);
       
@@ -233,7 +233,7 @@ export function PaymentGatewaySelector({
                 gateway: 'razorpay',
                 type: 'api',
                 status: 'completed',
-                amount: checkoutData.amount / 100,
+                amount: checkoutData.amount / 100, // Convert paise back to INR for display
                 currency: 'INR',
                 transactionId: response.razorpay_payment_id
               });
