@@ -49,6 +49,21 @@ const CurrencySettings = ({ settings, onSettingChange, onSettingUpdate }: Curren
           <Label htmlFor="auto_currency_conversion">Enable Auto Currency Conversion</Label>
         </div>
         
+        <div>
+          <Label htmlFor="usd_to_inr_rate">USD to INR Exchange Rate</Label>
+          <Input
+            id="usd_to_inr_rate"
+            type="number"
+            step="0.01"
+            value={settings.usd_to_inr_rate || '86'}
+            onChange={(e) => onSettingChange('usd_to_inr_rate', e.target.value)}
+            placeholder="86.00"
+          />
+          <p className="text-sm text-muted-foreground mt-1">
+            Current rate: 1 USD = {settings.usd_to_inr_rate || '86'} INR
+          </p>
+        </div>
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="stripe_currency">Stripe Currency</Label>

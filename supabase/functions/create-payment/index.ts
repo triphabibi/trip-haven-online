@@ -70,7 +70,8 @@ serve(async (req) => {
           customerName,
           customerEmail,
           customerPhone,
-          bookingId
+          bookingId,
+          supabase
         });
         break;
 
@@ -119,12 +120,24 @@ serve(async (req) => {
 });
 
 async function handleRazorpay(params: any) {
-  const { gateway, amount, customerName, customerEmail, customerPhone, bookingId } = params;
+  const { gateway, amount, customerName, customerEmail, customerPhone, bookingId, supabase } = params;
   
   // Extract numeric amount value
   const numericAmount = typeof amount === 'object' && amount.amount ? amount.amount : amount;
   
   logStep("💳 Processing Razorpay payment", { amount: numericAmount, bookingId });
+  
+  // Get USD to INR exchange rate from settings
+  const { data: exchangeRateData } = await supabase
+    .from('site_settings')
+    .select('setting_value')
+    .eq('setting_key', 'usd_to_inr_rate')
+    .single();
+  
+  const exchangeRate = exchangeRateData?.setting_value ? parseFloat(exchangeRateData.setting_value) : 86;
+  const amountInINR = Math.round(numericAmount * exchangeRate);
+  
+  logStep("💱 Currency conversion", { usdAmount: numericAmount, exchangeRate, inrAmount: amountInINR });
 
   if (!gateway.api_secret) {
     throw new Error('Razorpay secret key not configured');
@@ -132,13 +145,15 @@ async function handleRazorpay(params: any) {
 
   // Create Razorpay order using their API
   const orderData = {
-    amount: Math.round(numericAmount * 100), // Convert to paise (INR)
+    amount: Math.round(amountInINR * 100), // Convert INR to paise
     currency: 'INR',
     receipt: bookingId,
     notes: {
       booking_id: bookingId,
       customer_name: customerName,
-      customer_email: customerEmail
+      customer_email: customerEmail,
+      original_usd_amount: numericAmount,
+      exchange_rate: exchangeRate
     }
   };
 
