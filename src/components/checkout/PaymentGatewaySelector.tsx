@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/hooks/useCurrency';
 import { CreditCard, Banknote, DollarSign, Globe, Shield, Loader2 } from 'lucide-react';
 
 interface PaymentGateway {
@@ -39,8 +40,22 @@ export function PaymentGatewaySelector({
   onPaymentError
 }: PaymentGatewaySelectorProps) {
   const { toast } = useToast();
+  const { formatPrice, convertForPayment } = useCurrency();
   const [selectedGateway, setSelectedGateway] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const { data: gateways, isLoading } = useQuery({
     queryKey: ['enabled-payment-gateways'],
@@ -75,6 +90,19 @@ export function PaymentGatewaySelector({
     }
   };
 
+  const getTargetCurrency = (gatewayName: string) => {
+    switch (gatewayName) {
+      case 'razorpay':
+      case 'ccavenue':
+        return 'INR';
+      case 'stripe':
+      case 'paypal':
+        return 'USD';
+      default:
+        return 'USD'; // Default currency
+    }
+  };
+
   const handlePayment = async () => {
     if (!selectedGateway) {
       toast({
@@ -88,20 +116,34 @@ export function PaymentGatewaySelector({
     const gateway = gateways?.find(g => g.id === selectedGateway);
     if (!gateway) return;
 
+    // Check if Razorpay is selected but not loaded
+    if (gateway.name === 'razorpay' && !razorpayLoaded) {
+      toast({
+        title: "Payment Error",
+        description: "Razorpay is still loading. Please try again in a moment.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       console.log('Processing payment with gateway:', gateway.name);
       
-      // Convert amount to INR for processing (assuming AED to INR rate of 22.5)
-      const amountInINR = amount * 22.5;
+      // Convert amount to target currency
+      const targetCurrency = getTargetCurrency(gateway.name);
+      const convertedAmount = convertForPayment(amount, targetCurrency);
+      
+      console.log(`Converting ${amount} USD to ${convertedAmount} ${targetCurrency}`);
       
       // Call the create-payment edge function
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           bookingId,
           paymentMethod: gateway.name,
-          amount: amountInINR,
+          amount: convertedAmount,
+          currency: targetCurrency,
           customerName,
           customerEmail,
           customerPhone
@@ -120,9 +162,10 @@ export function PaymentGatewaySelector({
           // Handle different payment actions
           if (data.actionType === 'razorpay_checkout') {
             await handleRazorpayCheckout(data.checkoutData);
-          } else if (data.actionType === 'redirect') {
-            // Open Stripe checkout in new tab
-            window.open(data.checkoutUrl, '_blank');
+          } else if (data.actionType === 'stripe_redirect') {
+            window.location.href = data.checkoutUrl;
+          } else if (data.actionType === 'paypal_redirect') {
+            window.location.href = data.checkoutUrl;
           }
         } else {
           // Direct success (cash, bank transfer)
@@ -130,8 +173,10 @@ export function PaymentGatewaySelector({
             gateway: gateway.name,
             type: gateway.type,
             status: 'pending',
-            amount: amountInINR,
-            message: data.message
+            amount: convertedAmount,
+            currency: targetCurrency,
+            message: data.message,
+            bankDetails: data.bankDetails
           });
           
           toast({
@@ -157,52 +202,73 @@ export function PaymentGatewaySelector({
 
   const handleRazorpayCheckout = async (checkoutData: any) => {
     return new Promise((resolve, reject) => {
-      const options = {
-        ...checkoutData,
-        handler: async (response: any) => {
-          try {
-            console.log('Razorpay success:', response);
-            
-            // Update booking with payment success
-            const { error: updateError } = await supabase
-              .from('new_bookings')
-              .update({
-                payment_gateway: 'razorpay',
-                payment_status: 'completed',
-                payment_method: 'razorpay',
-                payment_reference: response.razorpay_payment_id
-              })
-              .eq('id', bookingId);
-
-            if (updateError) throw updateError;
-
-            onPaymentSuccess({
-              gateway: 'razorpay',
-              type: 'api',
-              status: 'completed',
-              amount: checkoutData.amount / 100,
-              transactionId: response.razorpay_payment_id
-            });
-            
-            toast({
-              title: "Payment Successful",
-              description: "Payment completed via Razorpay",
-            });
-            
-            resolve(response);
-          } catch (error) {
-            reject(error);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            reject(new Error('Payment cancelled by user'));
-          }
+      try {
+        if (!(window as any).Razorpay) {
+          throw new Error('Razorpay SDK not loaded');
         }
-      };
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
+        const options = {
+          ...checkoutData,
+          handler: async (response: any) => {
+            try {
+              console.log('Razorpay success:', response);
+              
+              // Update booking with payment success
+              const { error: updateError } = await supabase
+                .from('new_bookings')
+                .update({
+                  payment_gateway: 'razorpay',
+                  payment_status: 'completed',
+                  payment_method: 'razorpay',
+                  payment_reference: response.razorpay_payment_id,
+                  gateway_response: response
+                })
+                .eq('id', bookingId);
+
+              if (updateError) {
+                console.error('Update error:', updateError);
+                throw updateError;
+              }
+
+              onPaymentSuccess({
+                gateway: 'razorpay',
+                type: 'api',
+                status: 'completed',
+                amount: checkoutData.amount / 100,
+                currency: 'INR',
+                transactionId: response.razorpay_payment_id
+              });
+              
+              toast({
+                title: "Payment Successful",
+                description: "Payment completed via Razorpay",
+              });
+              
+              resolve(response);
+            } catch (error) {
+              console.error('Razorpay handler error:', error);
+              reject(error);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              console.log('Razorpay payment cancelled by user');
+              reject(new Error('Payment cancelled by user'));
+            }
+          }
+        };
+
+        console.log('Opening Razorpay with options:', options);
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on('payment.failed', (response: any) => {
+          console.error('Razorpay payment failed:', response.error);
+          reject(new Error(response.error.description || 'Payment failed'));
+        });
+        rzp.open();
+      } catch (error) {
+        console.error('Razorpay checkout error:', error);
+        reject(error);
+      }
     });
   };
 
@@ -234,7 +300,7 @@ export function PaymentGatewaySelector({
       <CardHeader>
         <CardTitle>Select Payment Method</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Total Amount: <span className="font-semibold">AED {amount.toFixed(2)}</span>
+          Total Amount: <span className="font-semibold">{formatPrice(amount)}</span>
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -278,7 +344,7 @@ export function PaymentGatewaySelector({
               Processing...
             </>
           ) : (
-            `Pay AED ${amount.toFixed(2)}`
+            `Pay ${formatPrice(amount)}`
           )}
         </Button>
       </CardContent>
