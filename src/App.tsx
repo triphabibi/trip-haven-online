@@ -21,6 +21,7 @@ import AuthPage from '@/pages/AuthPage';
 import NotFound from '@/pages/NotFound';
 import BookingPage from '@/pages/BookingPage';
 import BookingConfirmationPage from '@/pages/BookingConfirmationPage';
+import BookingPaymentPage from '@/pages/BookingPaymentPage';
 import TourDetailPage from '@/pages/TourDetailPage';
 import TicketDetailPage from '@/pages/TicketDetailPage';
 import VisaDetailPage from '@/pages/VisaDetailPage';
@@ -83,7 +84,7 @@ function App() {
                   </AdminRoute>
                 } />
             <Route path="/booking" element={<BookingPage />} />
-            <Route path="/booking-payment" element={<BookingPaymentPage />} />
+          <Route path="/booking-payment" element={<BookingPaymentPage />} />
             <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
                 <Route path="/tours/:id" element={<TourDetailPage />} />
                 <Route path="/tours/:slug" element={<TourDetailPage />} />

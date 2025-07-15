@@ -73,7 +73,7 @@ const EnhancedTourBooking = ({ tour }: EnhancedTourBookingProps) => {
     try {
       const totalAmount = calculateTotal();
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('new_bookings')
         .insert({
           service_id: tour.id,
@@ -93,16 +93,19 @@ const EnhancedTourBooking = ({ tour }: EnhancedTourBookingProps) => {
           special_requests: formData.special_requests,
           booking_status: 'pending',
           payment_status: 'pending'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({
-        title: "🎉 Booking Submitted!",
-        description: `Your booking has been submitted successfully!`,
+        title: "🎉 Booking Created!",
+        description: "Redirecting to payment...",
       });
 
-      setStep(4); // Success step
+      // Redirect to payment page
+      window.location.href = `/booking-payment?type=tour&id=${tour.id}&bookingId=${data.id}&amount=${totalAmount}&customerName=${formData.customer_name}&customerEmail=${formData.customer_email}&customerPhone=${formData.customer_phone}&serviceTitle=${tour.title}`;
     } catch (error) {
       console.error('Booking error:', error);
       toast({

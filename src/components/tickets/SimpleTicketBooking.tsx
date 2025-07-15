@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,28 +62,49 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
     if (validateForm()) {
-      const queryParams = new URLSearchParams({
-        type: 'ticket',
-        id: ticket.id,
-        date: formData.selectedDate,
-        time: formData.selectedTime,
-        adults: formData.adults.toString(),
-        children: formData.children.toString(),
-        infants: formData.infants.toString(),
-        name: formData.leadGuestName,
-        email: formData.email,
-        mobile: formData.mobile,
-        amount: totalPrice.toString()
-      });
-      
-      navigate(`/booking?${queryParams.toString()}`);
-      
-      toast({
-        title: "Booking Initiated",
-        description: "Redirecting to payment gateway...",
-      });
+      try {
+        const { data, error } = await supabase
+          .from('new_bookings')
+          .insert({
+            service_id: ticket.id,
+            service_type: 'ticket',
+            service_title: ticket.title,
+            customer_name: formData.leadGuestName,
+            customer_email: formData.email,
+            customer_phone: formData.mobile,
+            adults_count: formData.adults,
+            children_count: formData.children,
+            infants_count: formData.infants,
+            base_amount: totalPrice,
+            total_amount: totalPrice,
+            final_amount: totalPrice,
+            travel_date: formData.selectedDate,
+            travel_time: formData.selectedTime,
+            booking_status: 'pending',
+            payment_status: 'pending'
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "🎉 Booking Created!",
+          description: "Redirecting to payment...",
+        });
+
+        // Redirect to payment page
+        window.location.href = `/booking-payment?type=ticket&id=${ticket.id}&bookingId=${data.id}&amount=${totalPrice}&customerName=${formData.leadGuestName}&customerEmail=${formData.email}&customerPhone=${formData.mobile}&serviceTitle=${ticket.title}`;
+      } catch (error) {
+        console.error('Booking error:', error);
+        toast({
+          title: "Booking Failed",
+          description: "Please try again or contact support.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

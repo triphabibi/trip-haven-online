@@ -90,18 +90,40 @@ const ModernVisaBooking = ({ service }: ModernVisaBookingProps) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data, error } = await supabase
+        .from('new_bookings')
+        .insert({
+          service_id: service.id,
+          service_type: 'visa',
+          service_title: `${service.country} ${service.visa_type} Visa`,
+          customer_name: formData.travelers[0]?.name || formData.customerName,
+          customer_email: formData.customerEmail,
+          customer_phone: formData.customerPhone,
+          adults_count: formData.travelers.length,
+          children_count: 0,
+          infants_count: 0,
+          base_amount: totalAmount,
+          total_amount: totalAmount,
+          final_amount: totalAmount,
+          travel_date: formData.arrivalDate,
+          special_requests: formData.specialRequests,
+          booking_status: 'pending',
+          payment_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
       
       toast({
         title: "✅ Application Submitted!",
         description: "Redirecting to payment...",
       });
       
-      setTimeout(() => {
-        window.location.href = `/payment?service=${service.id}&amount=${totalAmount}`;
-      }, 1500);
+      // Redirect to payment page
+      window.location.href = `/booking-payment?type=visa&id=${service.id}&bookingId=${data.id}&amount=${totalAmount}&customerName=${formData.travelers[0]?.name || ''}&customerEmail=${formData.customerEmail}&customerPhone=${formData.customerPhone}&serviceTitle=${service.country} ${service.visa_type} Visa`;
     } catch (error) {
+      console.error('Visa booking error:', error);
       toast({
         title: "Error",
         description: "Please try again.",

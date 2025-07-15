@@ -56,8 +56,16 @@ const TransfersPage = () => {
     transfer.to.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleTransferBooking = (transferId: string) => {
-    navigate(`/booking?type=transfer&id=${transferId}`);
+  const handleTransferBooking = async (transferId: string) => {
+    try {
+      const transfer = transfers.find(t => t.id === transferId);
+      if (!transfer) return;
+
+      // Create booking and redirect to payment
+      window.location.href = `/booking-payment?type=transfer&id=${transferId}&amount=${transfer.price}&serviceTitle=${transfer.title}`;
+    } catch (error) {
+      console.error('Transfer booking error:', error);
+    }
   };
 
   return (

@@ -139,13 +139,15 @@ const BookingPaymentPage = () => {
 
           {/* Payment Gateway */}
           <div className="lg:col-span-2">
-            <PaymentGatewaySelector
-              amount={bookingData.amount}
-              bookingId={bookingData.bookingId}
-              customerName={bookingData.customerName}
-              customerEmail={bookingData.customerEmail}
-              customerPhone={bookingData.customerPhone}
-            />
+          <PaymentGatewaySelector
+            amount={bookingData.amount}
+            bookingId={bookingData.bookingId}
+            customerName={bookingData.customerName}
+            customerEmail={bookingData.customerEmail}
+            customerPhone={bookingData.customerPhone}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+          />
           </div>
         </div>
       </main>
