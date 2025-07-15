@@ -142,8 +142,7 @@ export function PaymentGatewaySelector({
         body: {
           bookingId,
           paymentMethod: gateway.name,
-          amount: convertedAmount,
-          currency: targetCurrency,
+          amount: convertedAmount, // Pass as number directly
           customerName,
           customerEmail,
           customerPhone

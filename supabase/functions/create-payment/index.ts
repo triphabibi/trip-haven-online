@@ -121,7 +121,10 @@ serve(async (req) => {
 async function handleRazorpay(params: any) {
   const { gateway, amount, customerName, customerEmail, customerPhone, bookingId } = params;
   
-  logStep("💳 Processing Razorpay payment", { amount, bookingId });
+  // Extract numeric amount value
+  const numericAmount = typeof amount === 'object' && amount.amount ? amount.amount : amount;
+  
+  logStep("💳 Processing Razorpay payment", { amount: numericAmount, bookingId });
 
   return {
     success: true,
@@ -130,7 +133,7 @@ async function handleRazorpay(params: any) {
     actionType: 'razorpay_checkout',
     checkoutData: {
       key: gateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
-      amount: Math.round(amount * 100), // Convert to paise (INR)
+      amount: Math.round(numericAmount * 100), // Convert to paise (INR)
       currency: 'INR',
       name: 'Trip Habibi',
       description: 'Tour Booking Payment',
@@ -150,7 +153,10 @@ async function handleRazorpay(params: any) {
 async function handleStripe(params: any) {
   const { gateway, amount, customerName, customerEmail, customerPhone, bookingId, origin } = params;
   
-  logStep("💳 Processing Stripe payment", { amount, bookingId });
+  // Extract numeric amount value
+  const numericAmount = typeof amount === 'object' && amount.amount ? amount.amount : amount;
+  
+  logStep("💳 Processing Stripe payment", { amount: numericAmount, bookingId });
 
   if (!gateway.api_secret) {
     throw new Error('Stripe secret key not configured');
@@ -166,12 +172,12 @@ async function handleStripe(params: any) {
       line_items: [
         {
           price_data: {
-            currency: 'inr',
+            currency: 'usd',
             product_data: {
               name: 'Trip Habibi Booking',
               description: `Booking ID: ${bookingId}`,
             },
-            unit_amount: Math.round(amount * 100), // Convert to paise
+            unit_amount: Math.round(numericAmount * 100), // Convert to cents
           },
           quantity: 1,
         },
