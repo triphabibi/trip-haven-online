@@ -463,6 +463,7 @@ export type Database = {
       }
       new_bookings: {
         Row: {
+          admin_notes: string | null
           adults_count: number | null
           base_amount: number
           booking_reference: string
@@ -484,6 +485,7 @@ export type Database = {
           payment_reference: string | null
           payment_status: string | null
           pickup_location: string | null
+          proof_of_payment: string | null
           selected_language: string | null
           service_id: string
           service_title: string
@@ -494,8 +496,11 @@ export type Database = {
           travel_date: string | null
           travel_time: string | null
           updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
+          admin_notes?: string | null
           adults_count?: number | null
           base_amount?: number
           booking_reference?: string
@@ -517,6 +522,7 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string | null
           pickup_location?: string | null
+          proof_of_payment?: string | null
           selected_language?: string | null
           service_id: string
           service_title: string
@@ -527,8 +533,11 @@ export type Database = {
           travel_date?: string | null
           travel_time?: string | null
           updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
+          admin_notes?: string | null
           adults_count?: number | null
           base_amount?: number
           booking_reference?: string
@@ -550,6 +559,7 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string | null
           pickup_location?: string | null
+          proof_of_payment?: string | null
           selected_language?: string | null
           service_id?: string
           service_title?: string
@@ -560,6 +570,8 @@ export type Database = {
           travel_date?: string | null
           travel_time?: string | null
           updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }

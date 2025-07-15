@@ -36,6 +36,7 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { UnifiedBooking, BookingStatus } from '../BookingManagement';
 import BookingDetailsDialog from './BookingDetailsDialog';
+import BankTransferManager from './BankTransferManager';
 
 interface EnhancedBookingTableProps {
   bookings: UnifiedBooking[];
@@ -226,8 +227,23 @@ const EnhancedBookingTable = ({
                 
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    {/* Status Update Buttons */}
-                    {booking.booking_status === 'pending' && (
+                    {/* Bank Transfer Special Handling */}
+                    {booking.payment_method === 'bank_transfer' && !booking.verified_at && (
+                      <BankTransferManager
+                        bookingId={booking.id}
+                        bookingReference={booking.booking_reference}
+                        customerName={booking.customer_name}
+                        amount={booking.final_amount}
+                        paymentStatus={booking.payment_status}
+                        proofOfPayment={booking.proof_of_payment}
+                        verifiedAt={booking.verified_at}
+                        verifiedBy={booking.verified_by}
+                        onVerificationComplete={() => window.location.reload()}
+                      />
+                    )}
+                    
+                    {/* Regular Status Update Buttons */}
+                    {booking.payment_method !== 'bank_transfer' && booking.booking_status === 'pending' && (
                       <>
                         <Button
                           size="sm"
@@ -281,7 +297,7 @@ const EnhancedBookingTable = ({
                         <DropdownMenuItem 
                           onClick={() => {
                             setNotesDialog(booking.id);
-                            setNotes(booking.special_requests || '');
+                            setNotes(booking.admin_notes || '');
                           }}
                         >
                           <Edit3 className="mr-2 h-4 w-4" />

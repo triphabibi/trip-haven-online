@@ -27,9 +27,11 @@ export interface UnifiedBooking {
   pickup_location?: string;
   payment_reference?: string;
   gateway_response?: any;
-  // Additional fields for enhanced functionality
+  // Enhanced fields for admin functionality
   admin_notes?: string;
   proof_of_payment?: string;
+  verified_at?: string;
+  verified_by?: string;
 }
 
 const BookingManagement = () => {
@@ -82,6 +84,11 @@ const BookingManagement = () => {
         pickup_location: booking.pickup_location,
         payment_reference: booking.payment_reference,
         gateway_response: booking.gateway_response,
+        // Enhanced admin fields
+        admin_notes: booking.admin_notes,
+        proof_of_payment: booking.proof_of_payment,
+        verified_at: booking.verified_at,
+        verified_by: booking.verified_by,
       }));
 
       console.log('📊 [BOOKING-MANAGEMENT] Unified bookings prepared:', {
@@ -164,9 +171,7 @@ const BookingManagement = () => {
       const { error } = await supabase
         .from('new_bookings')
         .update({ 
-          // Add admin_notes column if it doesn't exist in new_bookings
-          // For now, we'll store it in special_requests as a workaround
-          special_requests: notes,
+          admin_notes: notes,
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId);
