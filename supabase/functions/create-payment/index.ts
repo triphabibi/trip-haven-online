@@ -126,28 +126,72 @@ async function handleRazorpay(params: any) {
   
   logStep("💳 Processing Razorpay payment", { amount: numericAmount, bookingId });
 
-  return {
-    success: true,
-    paymentMethod: 'razorpay',
-    requiresAction: true,
-    actionType: 'razorpay_checkout',
-    checkoutData: {
-      key: gateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
-      amount: Math.round(numericAmount * 100), // Convert to paise (INR)
-      currency: 'INR',
-      name: 'Trip Habibi',
-      description: 'Tour Booking Payment',
-      order_id: bookingId,
-      prefill: {
-        name: customerName,
-        email: customerEmail,
-        contact: customerPhone
-      },
-      theme: {
-        color: '#3B82F6'
-      }
+  if (!gateway.api_secret) {
+    throw new Error('Razorpay secret key not configured');
+  }
+
+  // Create Razorpay order using their API
+  const orderData = {
+    amount: Math.round(numericAmount * 100), // Convert to paise (INR)
+    currency: 'INR',
+    receipt: bookingId,
+    notes: {
+      booking_id: bookingId,
+      customer_name: customerName,
+      customer_email: customerEmail
     }
   };
+
+  logStep("🔨 Creating Razorpay order", orderData);
+
+  try {
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${btoa(`${gateway.api_key}:${gateway.api_secret}`)}`
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logStep("❌ Razorpay order creation failed", { status: response.status, error: errorText });
+      throw new Error(`Razorpay order creation failed: ${response.status} ${errorText}`);
+    }
+
+    const razorpayOrder = await response.json();
+    logStep("✅ Razorpay order created successfully", razorpayOrder);
+
+    return {
+      success: true,
+      paymentMethod: 'razorpay',
+      requiresAction: true,
+      actionType: 'razorpay_checkout',
+      checkoutData: {
+        key: gateway.api_key,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: 'Trip Habibi',
+        description: 'Tour Booking Payment',
+        order_id: razorpayOrder.id, // Use actual Razorpay order ID
+        prefill: {
+          name: customerName,
+          email: customerEmail,
+          contact: customerPhone
+        },
+        theme: {
+          color: '#3B82F6'
+        },
+        notes: {
+          booking_id: bookingId
+        }
+      }
+    };
+  } catch (error: any) {
+    logStep("🚨 Razorpay error", error.message);
+    throw new Error(`Razorpay payment failed: ${error.message}`);
+  }
 }
 
 async function handleStripe(params: any) {
