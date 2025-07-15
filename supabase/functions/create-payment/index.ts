@@ -49,8 +49,8 @@ serve(async (req) => {
     const { data: gateway, error: gatewayError } = await supabase
       .from('payment_gateways')
       .select('*')
-      .eq('gateway_name', paymentMethod)
-      .eq('is_enabled', true)
+      .eq('name', paymentMethod)
+      .eq('enabled', true)
       .single();
 
     if (gatewayError || !gateway) {
@@ -58,7 +58,7 @@ serve(async (req) => {
       throw new Error(`Payment gateway ${paymentMethod} not found or disabled`);
     }
 
-    logStep("✅ Gateway found", gateway.display_name);
+    logStep("✅ Gateway found", gateway.name);
 
     let result;
 
@@ -130,8 +130,8 @@ async function handleRazorpay(params: any) {
     actionType: 'razorpay_checkout',
     checkoutData: {
       key: gateway.api_key || 'rzp_test_9wuOSlATpSiUGq',
-      amount: Math.round(amount * 100), // Convert to paise
-      currency: 'AED',
+      amount: Math.round(amount * 100), // Convert to paise (INR)
+      currency: 'INR',
       name: 'Trip Habibi',
       description: 'Tour Booking Payment',
       order_id: bookingId,
@@ -166,12 +166,12 @@ async function handleStripe(params: any) {
       line_items: [
         {
           price_data: {
-            currency: 'aed',
+            currency: 'inr',
             product_data: {
-              name: 'Tour Booking',
+              name: 'Trip Habibi Booking',
               description: `Booking ID: ${bookingId}`,
             },
-            unit_amount: Math.round(amount * 100), // Convert to fils
+            unit_amount: Math.round(amount * 100), // Convert to paise
           },
           quantity: 1,
         },
@@ -250,6 +250,6 @@ async function handleBankTransfer(params: any) {
     paymentMethod: 'bank_transfer',
     requiresAction: false,
     message: '🏦 Please transfer the amount to our bank account.',
-    bankDetails: gateway.bank_details
+    bankDetails: gateway.manual_instructions
   };
 }

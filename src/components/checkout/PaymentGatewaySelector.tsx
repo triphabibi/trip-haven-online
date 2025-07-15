@@ -91,40 +91,59 @@ export function PaymentGatewaySelector({
     setIsProcessing(true);
 
     try {
-      if (gateway.type === 'manual') {
-        // For manual gateways, mark as pending and show instructions
-        const paymentData = {
-          gateway: gateway.name,
-          type: 'manual',
-          status: 'pending',
-          amount,
-          instructions: gateway.manual_instructions,
-          bookingId
-        };
+      console.log('Processing payment with gateway:', gateway.name);
+      
+      // Convert amount to INR for processing (assuming AED to INR rate of 22.5)
+      const amountInINR = amount * 22.5;
+      
+      // Call the create-payment edge function
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          bookingId,
+          paymentMethod: gateway.name,
+          amount: amountInINR,
+          customerName,
+          customerEmail,
+          customerPhone
+        }
+      });
 
-        // Update booking status to pending payment
-        const { error: updateError } = await supabase
-          .from('new_bookings')
-          .update({
-            payment_gateway: gateway.name,
-            payment_status: 'pending',
-            payment_method: gateway.name
-          })
-          .eq('id', bookingId);
+      if (error) {
+        console.error('Payment function error:', error);
+        throw error;
+      }
 
-        if (updateError) throw updateError;
+      console.log('Payment response:', data);
 
-        onPaymentSuccess(paymentData);
-        
-        toast({
-          title: "Payment Instructions",
-          description: `Please complete payment using ${gateway.name.replace('_', ' ')}`,
-        });
+      if (data.success) {
+        if (data.requiresAction) {
+          // Handle different payment actions
+          if (data.actionType === 'razorpay_checkout') {
+            await handleRazorpayCheckout(data.checkoutData);
+          } else if (data.actionType === 'redirect') {
+            // Open Stripe checkout in new tab
+            window.open(data.checkoutUrl, '_blank');
+          }
+        } else {
+          // Direct success (cash, bank transfer)
+          onPaymentSuccess({
+            gateway: gateway.name,
+            type: gateway.type,
+            status: 'pending',
+            amount: amountInINR,
+            message: data.message
+          });
+          
+          toast({
+            title: "Payment Confirmed",
+            description: data.message,
+          });
+        }
       } else {
-        // For API gateways, process payment
-        await processAPIPayment(gateway);
+        throw new Error(data.error || 'Payment failed');
       }
     } catch (error: any) {
+      console.error('Payment processing error:', error);
       onPaymentError(error.message || 'Payment processing failed');
       toast({
         title: "Payment Error",
@@ -136,37 +155,54 @@ export function PaymentGatewaySelector({
     }
   };
 
-  const processAPIPayment = async (gateway: PaymentGateway) => {
-    // This would integrate with actual payment processing
-    // For now, we'll simulate the payment process
-    
-    const paymentData = {
-      gateway: gateway.name,
-      type: 'api',
-      status: 'completed',
-      amount,
-      transactionId: `txn_${Date.now()}`,
-      bookingId
-    };
+  const handleRazorpayCheckout = async (checkoutData: any) => {
+    return new Promise((resolve, reject) => {
+      const options = {
+        ...checkoutData,
+        handler: async (response: any) => {
+          try {
+            console.log('Razorpay success:', response);
+            
+            // Update booking with payment success
+            const { error: updateError } = await supabase
+              .from('new_bookings')
+              .update({
+                payment_gateway: 'razorpay',
+                payment_status: 'completed',
+                payment_method: 'razorpay',
+                payment_reference: response.razorpay_payment_id
+              })
+              .eq('id', bookingId);
 
-    // Update booking with payment success
-    const { error: updateError } = await supabase
-      .from('new_bookings')
-      .update({
-        payment_gateway: gateway.name,
-        payment_status: 'completed',
-        payment_method: gateway.name,
-        payment_reference: paymentData.transactionId
-      })
-      .eq('id', bookingId);
+            if (updateError) throw updateError;
 
-    if (updateError) throw updateError;
+            onPaymentSuccess({
+              gateway: 'razorpay',
+              type: 'api',
+              status: 'completed',
+              amount: checkoutData.amount / 100,
+              transactionId: response.razorpay_payment_id
+            });
+            
+            toast({
+              title: "Payment Successful",
+              description: "Payment completed via Razorpay",
+            });
+            
+            resolve(response);
+          } catch (error) {
+            reject(error);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            reject(new Error('Payment cancelled by user'));
+          }
+        }
+      };
 
-    onPaymentSuccess(paymentData);
-    
-    toast({
-      title: "Payment Successful",
-      description: `Payment completed via ${gateway.name}`,
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     });
   };
 

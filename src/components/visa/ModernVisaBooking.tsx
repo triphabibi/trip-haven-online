@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Clock, FileText, Users, CreditCard, MessageCircle, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { PaymentGatewaySelector } from '@/components/checkout/PaymentGatewaySelector';
 
 interface VisaService {
   id: string;
