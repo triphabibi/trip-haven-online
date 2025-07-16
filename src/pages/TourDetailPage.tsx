@@ -103,50 +103,17 @@ const TourDetailPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="lg:col-span-2">
-            {/* Video Section */}
-            {tour.video_url && (
-              <div className="mb-6">
-                <YouTubePlayer 
-                  videoUrl={tour.video_url}
-                  title={tour.title}
-                  className="w-full"
-                />
-              </div>
-            )}
-
-            {/* Image Gallery */}
-            {tour.image_urls && tour.image_urls.length > 0 && (
-              <div className="mb-6">
-                <ImageGallery 
-                  images={tour.image_urls}
-                  title={tour.title}
-                  className="w-full"
-                />
-              </div>
-            )}
-
-            {/* Fallback to featured image if no gallery */}
-            {(!tour.image_urls || tour.image_urls.length === 0) && tour.featured_image && (
-              <div className="relative h-96 rounded-lg overflow-hidden mb-6">
-                <img
-                  src={tour.featured_image}
-                  alt={tour.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
-            
+          <div className="lg:col-span-2 space-y-6">
+            {/* Tour Title and Info */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <MapPin className="h-4 w-4" />
                 <span>{tour.location || 'Location not specified'}</span>
               </div>
               
-              <h1 className="text-3xl font-bold text-gray-900">{tour.title}</h1>
+              <h1 className="text-4xl font-bold text-gray-900">{tour.title}</h1>
               
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 {tour.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -176,8 +143,51 @@ const TourDetailPage = () => {
                     Free Cancellation
                   </Badge>
                 )}
+                {tour.is_featured && (
+                  <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                )}
               </div>
             </div>
+
+            {/* Video Section */}
+            {tour.video_url && (
+              <div className="w-full">
+                <YouTubePlayer 
+                  videoUrl={tour.video_url}
+                  title={tour.title}
+                  className="w-full rounded-xl overflow-hidden shadow-lg"
+                />
+              </div>
+            )}
+
+            {/* Image Gallery */}
+            {tour.image_urls && tour.image_urls.length > 0 && (
+              <div className="w-full">
+                <ImageGallery 
+                  images={tour.image_urls}
+                  title={tour.title}
+                  className="w-full rounded-xl overflow-hidden shadow-lg"
+                />
+              </div>
+            )}
+
+            {/* Fallback to featured image if no gallery or video */}
+            {(!tour.video_url && (!tour.image_urls || tour.image_urls.length === 0)) && (
+              <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
+                {tour.featured_image ? (
+                  <img
+                    src={tour.featured_image}
+                    alt={tour.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <MapPin className="h-16 w-16 text-gray-400" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Booking Card */}

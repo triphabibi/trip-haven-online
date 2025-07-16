@@ -18,6 +18,15 @@ export interface Tour {
   rating?: number;
   total_reviews?: number;
   image_urls?: string[];
+  video_url?: string;
+  featured_image?: string;
+  location?: string;
+  overview?: string;
+  exclusions?: string[];
+  meeting_point?: string;
+  max_capacity?: number;
+  min_age?: number;
+  max_age?: number;
   created_at: string;
   updated_at: string;
 }
@@ -39,6 +48,13 @@ export interface TourPackage {
   rating?: number;
   total_reviews?: number;
   image_urls?: string[];
+  video_url?: string;
+  featured_image?: string;
+  location?: string;
+  overview?: string;
+  exclusions?: string[];
+  instant_confirmation?: boolean;
+  free_cancellation?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -53,11 +69,14 @@ export interface AttractionTicket {
   price_infant: number;
   ticket_pdf_urls?: string[];
   instant_delivery: boolean;
+  instant_confirmation?: boolean;
+  featured_image?: string;
   is_featured: boolean;
   status: 'active' | 'inactive';
   rating?: number;
   total_reviews?: number;
   image_urls?: string[];
+  video_url?: string;
   created_at: string;
   updated_at: string;
 }

@@ -11,6 +11,8 @@ import Loading from '@/components/common/Loading';
 import NotFound from '@/pages/NotFound';
 import SimpleTicketBooking from '@/components/tickets/SimpleTicketBooking';
 import AIAssistant from '@/components/common/AIAssistant';
+import { YouTubePlayer } from '@/components/common/YouTubePlayer';
+import { ImageGallery } from '@/components/common/ImageGallery';
 
 const TicketDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,41 +52,81 @@ const TicketDetailPage = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Header Section */}
-            <div className="mb-8">
-              <div className="flex items-start gap-4 mb-4">
-                <img
-                  src={ticket.image_urls?.[0] || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500'}
-                  alt={ticket.title}
-                  className="w-32 h-32 object-cover rounded-xl shadow-md"
-                />
-                <div className="flex-1">
-                  <h1 className="text-4xl font-bold text-gray-900 mb-3">{ticket.title}</h1>
-                  <div className="flex flex-wrap items-center gap-3 mb-3">
-                    {ticket.is_featured && (
-                      <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
-                    )}
-                    {ticket.instant_delivery && (
-                      <Badge className="bg-green-500 hover:bg-green-600">
-                        <Download className="h-3 w-3 mr-1" />
-                        Instant Delivery
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span>{ticket.rating || 4.5} ({ticket.total_reviews || 0} reviews)</span>
-                    </div>
-                    {ticket.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{ticket.location}</span>
-                      </div>
-                    )}
-                  </div>
+            {/* Hero Media Section */}
+            <div className="space-y-6">
+              {/* Video Section */}
+              {ticket.video_url && (
+                <div className="w-full">
+                  <YouTubePlayer 
+                    videoUrl={ticket.video_url}
+                    title={ticket.title}
+                    className="w-full rounded-xl overflow-hidden shadow-lg"
+                  />
                 </div>
+              )}
+
+              {/* Image Gallery */}
+              {ticket.image_urls && ticket.image_urls.length > 0 && (
+                <div className="w-full">
+                  <ImageGallery 
+                    images={ticket.image_urls}
+                    title={ticket.title}
+                    className="w-full rounded-xl overflow-hidden shadow-lg"
+                  />
+                </div>
+              )}
+
+              {/* Fallback single image if no gallery or video */}
+              {(!ticket.video_url && (!ticket.image_urls || ticket.image_urls.length === 0)) && (
+                <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
+                  <img
+                    src={ticket.featured_image || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800'}
+                    alt={ticket.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {ticket.is_featured && (
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Header Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span>{ticket.location || 'Location not specified'}</span>
+              </div>
+              
+              <h1 className="text-4xl font-bold text-gray-900">{ticket.title}</h1>
+              
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{ticket.rating || 4.5}</span>
+                  <span className="text-gray-600">({ticket.total_reviews || 0} reviews)</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {ticket.is_featured && (
+                  <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                )}
+                {ticket.instant_delivery && (
+                  <Badge className="bg-green-500 hover:bg-green-600">
+                    <Download className="h-3 w-3 mr-1" />
+                    Instant Delivery
+                  </Badge>
+                )}
+                {ticket.instant_confirmation && (
+                  <Badge className="bg-blue-500 hover:bg-blue-600">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Instant Confirmation
+                  </Badge>
+                )}
               </div>
             </div>
 
