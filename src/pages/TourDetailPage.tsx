@@ -165,11 +165,11 @@ const TourDetailPage = () => {
               )}
 
               {/* Image Gallery */}
-              {tour.image_urls && tour.image_urls.length > 0 && (
+              {tour.gallery_images && tour.gallery_images.length > 0 && (
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
                     <ImageGallery 
-                      images={tour.image_urls}
+                      images={tour.gallery_images}
                       title={tour.title}
                       enableLightbox={true}
                       className="w-full"
@@ -179,7 +179,7 @@ const TourDetailPage = () => {
               )}
 
               {/* Fallback to featured image if no gallery or video */}
-              {(!tour.video_url && (!tour.image_urls || tour.image_urls.length === 0)) && (
+              {(!tour.video_url && (!tour.gallery_images || tour.gallery_images.length === 0)) && (
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
                     <div className="relative h-96">
