@@ -22,7 +22,7 @@ serve(async (req) => {
     // Support both old and new parameter formats
     const requestBody = await req.json();
     const bookingId = requestBody.booking_id || requestBody.bookingId;
-    const emailType = requestBody.template_type || requestBody.emailType;
+    const emailType = requestBody.email_type || requestBody.emailType || requestBody.template_type;
 
     console.log('📧 [SEND-BOOKING-EMAIL] Request received:', { bookingId, emailType });
 
@@ -266,7 +266,10 @@ serve(async (req) => {
       emailType
     });
 
-    // Send actual email using SMTP
+    // Send emails to both customer and admin
+    const adminEmail = 'info@triphabibi.com';
+    const recipients = [booking.customer_email, adminEmail];
+    
     try {
       console.log('📤 [SEND-BOOKING-EMAIL] Connecting to SMTP server...');
       
@@ -282,15 +285,27 @@ serve(async (req) => {
         },
       });
 
+      // Send to customer
       await client.send({
         from: `${emailSettings.from_name} <${emailSettings.from_email}>`,
         to: booking.customer_email,
         subject,
         html: htmlBody,
       });
+      console.log('✅ [SEND-BOOKING-EMAIL] Customer email sent to:', booking.customer_email);
+
+      // Send to admin with admin-specific subject
+      const adminSubject = `[ADMIN] ${subject} - Customer: ${booking.customer_name}`;
+      await client.send({
+        from: `${emailSettings.from_name} <${emailSettings.from_email}>`,
+        to: adminEmail,
+        subject: adminSubject,
+        html: htmlBody,
+      });
+      console.log('✅ [SEND-BOOKING-EMAIL] Admin email sent to:', adminEmail);
 
       await client.close();
-      console.log('✅ [SEND-BOOKING-EMAIL] Email sent successfully via SMTP');
+      console.log('✅ [SEND-BOOKING-EMAIL] All emails sent successfully via SMTP');
       
     } catch (emailError: any) {
       console.error('❌ [SEND-BOOKING-EMAIL] SMTP Error:', emailError);
@@ -303,7 +318,7 @@ serve(async (req) => {
         success: true, 
         message: `${emailType.charAt(0).toUpperCase() + emailType.slice(1)} email sent successfully`,
         booking_reference: booking.booking_reference,
-        email_sent_to: booking.customer_email
+        email_sent_to: [booking.customer_email, 'info@triphabibi.com']
       }),
       {
         status: 200,
