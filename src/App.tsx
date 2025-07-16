@@ -30,6 +30,7 @@ import OkToBoardPage from '@/pages/OkToBoardPage';
 import BookingTrackerPage from '@/pages/BookingTrackerPage';
 import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
 import AdminRoute from '@/components/AdminRoute';
+import TourBookingPage from '@/components/tours/TourBookingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,6 +89,7 @@ function App() {
           <Route path="/booking-payment" element={<BookingPaymentPage />} />
             <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
                 <Route path="/tours/:id" element={<TourDetailPage />} />
+                <Route path="/tours/:id/booking" element={<TourBookingPage />} />
                 <Route path="/tours/:slug" element={<TourDetailPage />} />
                 <Route path="/tickets/:id" element={<TicketDetailPage />} />
                 <Route path="/tickets/:slug" element={<TicketDetailPage />} />

@@ -73,7 +73,7 @@ const TourDetailPage = () => {
   }
 
   const handleBookNow = () => {
-    navigate(`/booking?type=tour&id=${tour.id}`);
+    navigate(`/tours/${tour.id}/booking`);
   };
 
   // Parse itinerary safely

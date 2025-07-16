@@ -121,7 +121,7 @@ const ToursPage = () => {
             <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
               <div className="relative">
                 <img
-                  src={tour.image_urls?.[0] || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500'}
+                  src={tour.featured_image || tour.gallery_images?.[0] || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500'}
                   alt={tour.title}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
