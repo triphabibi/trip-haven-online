@@ -170,7 +170,7 @@ const ToursPage = () => {
                     <span className="text-2xl font-bold text-blue-600">${tour.price_adult}</span>
                     <span className="text-gray-500 text-sm ml-1">per adult</span>
                   </div>
-                  <Link to={`/tours/${tour.id}`}>
+                  <Link to={`/tours/${tour.id}/booking`}>
                     <Button size="sm" className="group">
                       Book Now
                       <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
