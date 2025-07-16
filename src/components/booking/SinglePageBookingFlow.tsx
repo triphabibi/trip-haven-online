@@ -65,8 +65,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
-  console.log('SinglePageBookingFlow rendered with service:', service);
-
   const calculateTotal = () => {
     const adultTotal = formData.adults * service.price_adult;
     const childTotal = formData.children * service.price_child;
