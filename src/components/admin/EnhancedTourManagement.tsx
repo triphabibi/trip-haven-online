@@ -54,6 +54,7 @@ const EnhancedTourManagement = () => {
     status: 'active',
     featured_image: '',
     gallery_images: [],
+    video_url: '',
     instant_confirmation: true,
     free_cancellation: true
   });
@@ -238,6 +239,7 @@ const EnhancedTourManagement = () => {
       status: 'active',
       featured_image: '',
       gallery_images: [],
+      video_url: '',
       instant_confirmation: true,
       free_cancellation: true
     });
@@ -299,6 +301,7 @@ const EnhancedTourManagement = () => {
       status: tour.status || 'active',
       featured_image: tour.featured_image || '',
       gallery_images: Array.isArray(tour.gallery_images) ? tour.gallery_images : [],
+      video_url: tour.video_url || '',
       instant_confirmation: tour.instant_confirmation !== false,
       free_cancellation: tour.free_cancellation !== false
     });
@@ -614,6 +617,31 @@ const EnhancedTourManagement = () => {
                         className="bg-white"
                         placeholder="https://example.com/image.jpg"
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="video_url">YouTube Video URL</Label>
+                      <Input
+                        id="video_url"
+                        value={formData.video_url || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                        className="bg-white"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                      <p className="text-sm text-gray-500 mt-1">Enter a YouTube video URL to showcase your tour</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="gallery_images">Gallery Images (one per line)</Label>
+                      <Textarea
+                        id="gallery_images"
+                        value={formData.gallery_images.join('\n')}
+                        onChange={(e) => handleArrayFieldChange('gallery_images', e.target.value)}
+                        className="bg-white"
+                        rows={4}
+                        placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">Enter up to 5 image URLs, one per line</p>
                     </div>
                   </div>
 
