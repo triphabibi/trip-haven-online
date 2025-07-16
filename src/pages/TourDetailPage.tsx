@@ -100,141 +100,142 @@ const TourDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb - Mobile Friendly */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6 overflow-x-auto">
-          <span className="whitespace-nowrap hover:text-blue-600 transition-colors font-medium">Tours</span>
-          <span>/</span>
-          <span className="text-gray-900 font-medium truncate">{tour.title}</span>
-        </nav>
-        {/* Hero Section - Mobile Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tour Title and Info */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{tour.location || 'Location not specified'}</span>
-              </div>
-              
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">{tour.title}</h1>
-              
-              <div className="flex flex-wrap items-center gap-3">
-                {tour.rating > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{tour.rating}</span>
-                    <span className="text-gray-600 text-sm">({tour.total_reviews} reviews)</span>
-                  </div>
-                )}
-                
-                {tour.duration && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600 text-sm">{tour.duration}</span>
-                  </div>
-                )}
-              </div>
 
-              <div className="flex flex-wrap gap-2">
-                {tour.instant_confirmation && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Instant Confirmation
-                  </Badge>
-                )}
-                {tour.free_cancellation && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Free Cancellation
-                  </Badge>
-                )}
-                {tour.is_featured && (
-                  <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">Featured</Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Media Section - Mobile Optimized */}
-            <div className="space-y-4">
-              {/* Video Section */}
-              {tour.video_url && (
-                <Card className="overflow-hidden border-0 shadow-sm">
-                  <CardContent className="p-0">
-                    <YouTubePlayer 
-                      videoUrl={tour.video_url}
-                      title={tour.title}
-                      className="w-full aspect-video rounded-lg"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Image Gallery */}
-              {tour.gallery_images && tour.gallery_images.length > 0 && (
-                <Card className="overflow-hidden border-0 shadow-sm">
-                  <CardContent className="p-0">
-                    <ImageGallery 
-                      images={tour.gallery_images}
-                      title={tour.title}
-                      enableLightbox={true}
-                      className="w-full rounded-lg"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Fallback to featured image if no gallery or video */}
-              {(!tour.video_url && (!tour.gallery_images || tour.gallery_images.length === 0)) && (
-                <Card className="overflow-hidden border-0 shadow-sm">
-                  <CardContent className="p-0">
-                    <div className="relative h-64 md:h-80 lg:h-96">
-                      {tour.featured_image ? (
-                        <img
-                          src={tour.featured_image}
-                          alt={tour.title}
-                          className="w-full h-full object-cover rounded-lg"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
-                          <MapPin className="h-16 w-16 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-
-          {/* Booking Card - Mobile Responsive */}
-          <div className="lg:col-span-1 order-first lg:order-last">
-            <Card className="lg:sticky lg:top-6 border-0 shadow-lg">
-              <CardContent className="p-4 md:p-6">
-                <div className="space-y-4">
-                  <div className="text-center lg:text-left">
-                    <div className="text-2xl md:text-3xl font-bold text-blue-600">
-                      From {formatPrice(tour.price_adult)}
-                    </div>
-                    <p className="text-sm text-gray-600">per adult</p>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleBookNow}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-                    size="lg"
-                  >
-                    Book Now
-                  </Button>
+      {/* Hero Section */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              {/* Tour Title and Info */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{tour.location || 'Location not specified'}</span>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">{tour.title}</h1>
+                
+                <div className="flex flex-wrap items-center gap-3">
+                  {tour.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{tour.rating}</span>
+                      <span className="text-gray-600 text-sm">({tour.total_reviews} reviews)</span>
+                    </div>
+                  )}
+                  
+                  {tour.duration && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600 text-sm">{tour.duration}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {tour.instant_confirmation && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Instant Confirmation
+                    </Badge>
+                  )}
+                  {tour.free_cancellation && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Free Cancellation
+                    </Badge>
+                  )}
+                  {tour.is_featured && (
+                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">Featured</Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Media Section - Mobile Optimized */}
+              <div className="space-y-4 mt-6">
+                {/* Video Section */}
+                {tour.video_url && (
+                  <Card className="overflow-hidden border-0 shadow-sm">
+                    <CardContent className="p-0">
+                      <YouTubePlayer 
+                        videoUrl={tour.video_url}
+                        title={tour.title}
+                        className="w-full aspect-video rounded-lg"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Image Gallery */}
+                {tour.gallery_images && tour.gallery_images.length > 0 && (
+                  <Card className="overflow-hidden border-0 shadow-sm">
+                    <CardContent className="p-0">
+                      <ImageGallery 
+                        images={tour.gallery_images}
+                        title={tour.title}
+                        enableLightbox={true}
+                        className="w-full rounded-lg"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Fallback to featured image if no gallery or video */}
+                {(!tour.video_url && (!tour.gallery_images || tour.gallery_images.length === 0)) && (
+                  <Card className="overflow-hidden border-0 shadow-sm">
+                    <CardContent className="p-0">
+                      <div className="relative h-64 md:h-80 lg:h-96">
+                        {tour.featured_image ? (
+                          <img
+                            src={tour.featured_image}
+                            alt={tour.title}
+                            className="w-full h-full object-cover rounded-lg"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
+                            <MapPin className="h-16 w-16 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <div className="sticky top-4">
+                {/* Booking Card */}
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-4 md:p-6">
+                    <div className="space-y-4">
+                      <div className="text-center lg:text-left">
+                        <div className="text-2xl md:text-3xl font-bold text-blue-600">
+                          From {formatPrice(tour.price_adult)}
+                        </div>
+                        <p className="text-sm text-gray-600">per adult</p>
+                      </div>
+                      
+                      <Button 
+                        onClick={handleBookNow}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                        size="lg"
+                      >
+                        Book Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Tour Details - Mobile Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tour Details */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Overview */}
             {tour.overview && (
@@ -298,8 +299,8 @@ const TourDetailPage = () => {
             )}
           </div>
 
-          {/* Sidebar Info - Mobile Responsive */}
-          <div className="lg:col-span-1 space-y-4">
+          {/* Sidebar Info */}
+          <div className="lg:col-span-1 space-y-6">
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 md:p-6">
                 <h3 className="font-semibold mb-4">Tour Information</h3>
@@ -353,6 +354,7 @@ const TourDetailPage = () => {
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
