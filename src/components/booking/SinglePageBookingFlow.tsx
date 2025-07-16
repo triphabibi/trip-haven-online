@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
 import { PaymentGatewaySelector } from '@/components/checkout/PaymentGatewaySelector';
+import { BankTransferSuccess } from '@/components/booking/BankTransferSuccess';
 
 interface Service {
   id: string;
@@ -41,8 +42,9 @@ interface Props {
 }
 
 const SinglePageBookingFlow = ({ service, onBack }: Props) => {
-  const [step, setStep] = useState<'details' | 'payment'>('details');
+  const [step, setStep] = useState<'details' | 'payment' | 'bank_transfer'>('details');
   const [bookingId, setBookingId] = useState<string>('');
+  const [bankTransferData, setBankTransferData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     travelDate: undefined as Date | undefined,
@@ -174,21 +176,61 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    console.log('Payment successful, booking confirmed');
+  const handlePaymentSuccess = (paymentData: any) => {
+    console.log('Payment successful, booking confirmed', paymentData);
+    
+    // Handle bank transfer differently
+    if (paymentData.requiresUpload) {
+      // Store bank transfer data and show upload page
+      setBankTransferData(paymentData);
+      setStep('bank_transfer');
+      return;
+    }
+    
     toast({
       title: "🎉 Booking Confirmed!",
       description: "Your booking has been confirmed successfully!",
       duration: 5000,
     });
     
-    setTimeout(() => {
-      onBack();
-    }, 2000);
+    // Redirect to booking confirmation page instead of going back
+    const confirmationUrl = `/booking-confirmation?booking=${bookingId}`;
+    window.location.href = confirmationUrl;
   };
 
   const showTimeField = service.type === 'tour';
   const showPickupField = service.type === 'tour';
+
+  // Bank Transfer Step
+  if (step === 'bank_transfer') {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="outline" onClick={() => setStep('payment')} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Payment
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Complete Bank Transfer</h1>
+              <p className="text-gray-600">Transfer payment and upload proof</p>
+            </div>
+          </div>
+
+          <BankTransferSuccess
+            bookingId={bookingId}
+            bankDetails={bankTransferData?.bankDetails || ''}
+            amount={bankTransferData?.amount || calculateTotal()}
+            currency={bankTransferData?.currency || 'USD'}
+            onUploadComplete={() => {
+              const confirmationUrl = `/booking-confirmation?booking=${bookingId}`;
+              window.location.href = confirmationUrl;
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'payment') {
     console.log('Rendering payment step with booking ID:', bookingId);

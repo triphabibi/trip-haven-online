@@ -127,7 +127,8 @@ const EmailSettings = () => {
   const saveSmtpSettings = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Use upsert with conflict resolution on primary key
+      const { data, error } = await supabase
         .from('email_settings')
         .upsert({
           smtp_host: smtpSettings.smtp_host,
@@ -137,19 +138,28 @@ const EmailSettings = () => {
           from_name: smtpSettings.from_name,
           from_email: smtpSettings.from_email,
           is_enabled: smtpSettings.is_enabled
-        });
+        }, {
+          onConflict: 'id',
+          ignoreDuplicates: false
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('SMTP settings save error:', error);
+        throw error;
+      }
 
+      console.log('SMTP settings saved:', data);
       toast({
         title: "Success",
         description: "SMTP settings saved successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving SMTP settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save SMTP settings",
+        description: error.message || "Failed to save SMTP settings",
         variant: "destructive",
       });
     } finally {

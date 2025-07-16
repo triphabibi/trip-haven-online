@@ -177,9 +177,22 @@ async function handleRazorpay(params: any) {
     }
 
     const razorpayOrder = await response.json();
-    logStep("✅ Razorpay order created successfully", razorpayOrder);
+      logStep("✅ Razorpay order created successfully", razorpayOrder);
 
-    return {
+      // Send booking confirmation emails
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            booking_id: bookingId,
+            email_type: 'booking_confirmation'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the payment for email issues
+      }
+
+      return {
       success: true,
       paymentMethod: 'razorpay',
       requiresAction: true,
@@ -273,9 +286,8 @@ async function handleCash(params: any) {
     .from('new_bookings')
     .update({
       payment_status: 'pending',
-      booking_status: 'confirmed',
-      payment_method: 'cash_on_arrival',
-      confirmed_at: new Date().toISOString()
+      booking_status: 'pending', // Should be pending for admin confirmation
+      payment_method: 'cash_on_arrival'
     })
     .eq('id', bookingId);
 
@@ -284,11 +296,24 @@ async function handleCash(params: any) {
     throw error;
   }
 
+  // Send booking confirmation emails
+  try {
+    await supabase.functions.invoke('send-booking-email', {
+      body: {
+        booking_id: bookingId,
+        email_type: 'booking_confirmation'
+      }
+    });
+  } catch (emailError) {
+    console.error('Email sending failed:', emailError);
+    // Don't fail the payment for email issues
+  }
+
   return {
     success: true,
     paymentMethod: 'cash_on_arrival',
     requiresAction: false,
-    message: '🎉 Booking confirmed! Please pay in cash at the pickup location.'
+    message: '🎉 Booking received! Please pay in cash at the pickup location. Admin will confirm your booking shortly.'
   };
 }
 
@@ -311,11 +336,25 @@ async function handleBankTransfer(params: any) {
     throw error;
   }
 
+  // Send booking confirmation emails
+  try {
+    await supabase.functions.invoke('send-booking-email', {
+      body: {
+        booking_id: bookingId,
+        email_type: 'booking_confirmation'
+      }
+    });
+  } catch (emailError) {
+    console.error('Email sending failed:', emailError);
+    // Don't fail the payment for email issues
+  }
+
   return {
     success: true,
     paymentMethod: 'bank_transfer',
-    requiresAction: false,
-    message: '🏦 Please transfer the amount to our bank account.',
+    requiresAction: true,
+    actionType: 'bank_transfer_details',
+    message: '🏦 Please transfer the amount to our bank account and upload payment proof.',
     bankDetails: gateway.manual_instructions
   };
 }

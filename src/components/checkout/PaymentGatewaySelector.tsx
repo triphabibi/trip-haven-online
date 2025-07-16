@@ -173,16 +173,22 @@ export function PaymentGatewaySelector({
             window.location.href = data.checkoutUrl;
           }
         } else {
-          // Direct success (cash, bank transfer)
-          onPaymentSuccess({
-            gateway: gateway.name,
-            type: gateway.type,
-            status: 'pending',
-            amount: convertedAmount,
-            currency: targetCurrency,
-            message: data.message,
-            bankDetails: data.bankDetails
-          });
+          // For bank transfer, show upload interface
+          if (data.actionType === 'bank_transfer_details') {
+            // Handle bank transfer with upload
+            handleBankTransferFlow(data, gateway.name, convertedAmount, targetCurrency);
+          } else {
+            // Direct success (cash, etc)
+            onPaymentSuccess({
+              gateway: gateway.name,
+              type: gateway.type,
+              status: 'pending',
+              amount: convertedAmount,
+              currency: targetCurrency,
+              message: data.message,
+              bankDetails: data.bankDetails
+            });
+          }
           
           toast({
             title: "Payment Confirmed",
@@ -243,6 +249,19 @@ export function PaymentGatewaySelector({
                 note: 'Converted from paise to rupees for display'
               });
 
+              // Send booking confirmation emails
+              try {
+                await supabase.functions.invoke('send-booking-email', {
+                  body: {
+                    booking_id: bookingId,
+                    email_type: 'booking_confirmation'
+                  }
+                });
+              } catch (emailError) {
+                console.error('Email sending failed:', emailError);
+                // Don't fail the success flow for email issues
+              }
+
               onPaymentSuccess({
                 gateway: 'razorpay',
                 type: 'api',
@@ -282,6 +301,32 @@ export function PaymentGatewaySelector({
         console.error('Razorpay checkout error:', error);
         reject(error);
       }
+    });
+  };
+
+  const handleBankTransferFlow = (data: any, gatewayName: string, amount: number, currency: string) => {
+    // Store bank transfer data in localStorage for the success page
+    localStorage.setItem('bankTransferData', JSON.stringify({
+      gateway: gatewayName,
+      type: 'manual',
+      status: 'pending',
+      amount: amount,
+      currency: currency,
+      message: data.message,
+      bankDetails: data.bankDetails,
+      bookingId: bookingId
+    }));
+    
+    // Redirect to success page with bank transfer instructions
+    onPaymentSuccess({
+      gateway: gatewayName,
+      type: 'manual',
+      status: 'pending',
+      amount: amount,
+      currency: currency,
+      message: data.message,
+      bankDetails: data.bankDetails,
+      requiresUpload: true
     });
   };
 
