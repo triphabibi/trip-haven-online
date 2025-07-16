@@ -298,7 +298,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Service Details */}
-            <TabbedTourDetails tour={service} />
+              <TabbedTourDetails tour={service} />
 
             {/* Trip Details */}
             <Card>
@@ -467,123 +467,124 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
               </CardContent>
             </Card>
 
-            {/* Guest Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Guest Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.customerName}
-                      onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
-                      placeholder="Enter your full name"
-                      className={cn("bg-white border-gray-300", errors.customerName && "border-red-500")}
-                    />
-                    {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
+              {/* Guest Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Guest Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.customerName}
+                        onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
+                        placeholder="Enter your full name"
+                        className={cn("bg-white border-gray-300", errors.customerName && "border-red-500")}
+                      />
+                      {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.customerEmail}
+                        onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
+                        placeholder="Enter your email"
+                        className={cn("bg-white border-gray-300", errors.customerEmail && "border-red-500")}
+                      />
+                      {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="phone">Phone Number</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={formData.customerEmail}
-                      onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
-                      placeholder="Enter your email"
-                      className={cn("bg-white border-gray-300", errors.customerEmail && "border-red-500")}
+                      id="phone"
+                      value={formData.customerPhone}
+                      onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
+                      placeholder="Enter your phone number"
+                      className="bg-white border-gray-300"
                     />
-                    {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    value={formData.customerPhone}
-                    onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
-                    placeholder="Enter your phone number"
-                    className="bg-white border-gray-300"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="requests">Special Requests</Label>
-                  <Textarea
-                    id="requests"
-                    value={formData.specialRequests}
-                    onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
-                    placeholder="Any special requirements or requests"
-                    className="bg-white border-gray-300"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Booking Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Booking Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-medium">{service.title}</h3>
-                  {formData.travelDate && (
-                    <p className="text-sm text-gray-600">
-                      {format(formData.travelDate, "PPP")}
-                      {formData.travelTime && ` at ${formData.travelTime}`}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  {formData.adults > 0 && (
-                    <div className="flex justify-between">
-                      <span>{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
-                      <span>{formatPrice(formData.adults * service.price_adult)}</span>
-                    </div>
-                  )}
-                  {formData.children > 0 && (
-                    <div className="flex justify-between">
-                      <span>{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
-                      <span>{formatPrice(formData.children * service.price_child)}</span>
-                    </div>
-                  )}
-                  {formData.infants > 0 && (
-                    <div className="flex justify-between">
-                      <span>{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
-                      <span>{formatPrice(formData.infants * service.price_infant)}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
+                  <div>
+                    <Label htmlFor="requests">Special Requests</Label>
+                    <Textarea
+                      id="requests"
+                      value={formData.specialRequests}
+                      onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
+                      placeholder="Any special requirements or requests"
+                      className="bg-white border-gray-300"
+                    />
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                <Button 
-                  onClick={handleCreateBooking}
-                  disabled={isProcessing}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Creating Booking...
-                    </>
-                  ) : (
-                    'Continue to Payment'
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Booking Summary */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle>Booking Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-medium">{service.title}</h3>
+                    {formData.travelDate && (
+                      <p className="text-sm text-gray-600">
+                        {format(formData.travelDate, "PPP")}
+                        {formData.travelTime && ` at ${formData.travelTime}`}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    {formData.adults > 0 && (
+                      <div className="flex justify-between">
+                        <span>{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
+                        <span>{formatPrice(formData.adults * service.price_adult)}</span>
+                      </div>
+                    )}
+                    {formData.children > 0 && (
+                      <div className="flex justify-between">
+                        <span>{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
+                        <span>{formatPrice(formData.children * service.price_child)}</span>
+                      </div>
+                    )}
+                    {formData.infants > 0 && (
+                      <div className="flex justify-between">
+                        <span>{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
+                        <span>{formatPrice(formData.infants * service.price_infant)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleCreateBooking}
+                    disabled={isProcessing}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Creating Booking...
+                      </>
+                    ) : (
+                      'Continue to Payment'
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
