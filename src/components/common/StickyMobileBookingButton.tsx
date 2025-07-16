@@ -3,16 +3,8 @@ import { Calendar } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 const StickyMobileBookingButton = () => {
-  const location = useLocation();
-
-  // Show only on product detail pages (tours, visas, tickets, packages, ok-to-board)
-  const isProductDetailPage = location.pathname.includes('/tours/') || 
-                             location.pathname.includes('/visas/') || 
-                             location.pathname.includes('/tickets/') ||
-                             location.pathname.includes('/packages/') ||
-                             location.pathname.includes('/ok-to-board');
-
-  if (!isProductDetailPage) return null;
+  // Disabled - removed sticky book now button as requested
+  return null;
 
   const handleBookNowClick = () => {
     // Try multiple selectors to find booking form
