@@ -409,7 +409,7 @@ const TicketManagement = () => {
                   </div>
 
                   <div>
-                    <Label>Gallery Images</Label>
+                    <Label>Gallery Images (Legacy - Use Image URLs above instead)</Label>
                     <div className="space-y-2">
                       {formData.gallery_images.map((url, index) => (
                         <div key={index} className="flex gap-2">

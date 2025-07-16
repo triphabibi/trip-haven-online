@@ -56,41 +56,50 @@ const TicketDetailPage = () => {
             <div className="space-y-6">
               {/* Video Section */}
               {ticket.video_url && (
-                <div className="w-full">
-                  <YouTubePlayer 
-                    videoUrl={ticket.video_url}
-                    title={ticket.title}
-                    className="w-full rounded-xl overflow-hidden shadow-lg"
-                  />
-                </div>
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <YouTubePlayer 
+                      videoUrl={ticket.video_url}
+                      title={ticket.title}
+                      className="w-full aspect-video"
+                    />
+                  </CardContent>
+                </Card>
               )}
 
               {/* Image Gallery */}
               {ticket.image_urls && ticket.image_urls.length > 0 && (
-                <div className="w-full">
-                  <ImageGallery 
-                    images={ticket.image_urls}
-                    title={ticket.title}
-                    className="w-full rounded-xl overflow-hidden shadow-lg"
-                  />
-                </div>
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <ImageGallery 
+                      images={ticket.image_urls}
+                      title={ticket.title}
+                      enableLightbox={true}
+                      className="w-full"
+                    />
+                  </CardContent>
+                </Card>
               )}
 
               {/* Fallback single image if no gallery or video */}
               {(!ticket.video_url && (!ticket.image_urls || ticket.image_urls.length === 0)) && (
-                <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
-                  <img
-                    src={ticket.featured_image || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800'}
-                    alt={ticket.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  {ticket.is_featured && (
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative h-96">
+                      <img
+                        src={ticket.featured_image || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800'}
+                        alt={ticket.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      {ticket.is_featured && (
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
 

@@ -149,45 +149,57 @@ const TourDetailPage = () => {
               </div>
             </div>
 
-            {/* Video Section */}
-            {tour.video_url && (
-              <div className="w-full">
-                <YouTubePlayer 
-                  videoUrl={tour.video_url}
-                  title={tour.title}
-                  className="w-full rounded-xl overflow-hidden shadow-lg"
-                />
-              </div>
-            )}
+            {/* Media Section */}
+            <div className="space-y-6">
+              {/* Video Section */}
+              {tour.video_url && (
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <YouTubePlayer 
+                      videoUrl={tour.video_url}
+                      title={tour.title}
+                      className="w-full aspect-video"
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Image Gallery */}
-            {tour.image_urls && tour.image_urls.length > 0 && (
-              <div className="w-full">
-                <ImageGallery 
-                  images={tour.image_urls}
-                  title={tour.title}
-                  className="w-full rounded-xl overflow-hidden shadow-lg"
-                />
-              </div>
-            )}
+              {/* Image Gallery */}
+              {tour.image_urls && tour.image_urls.length > 0 && (
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <ImageGallery 
+                      images={tour.image_urls}
+                      title={tour.title}
+                      enableLightbox={true}
+                      className="w-full"
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Fallback to featured image if no gallery or video */}
-            {(!tour.video_url && (!tour.image_urls || tour.image_urls.length === 0)) && (
-              <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
-                {tour.featured_image ? (
-                  <img
-                    src={tour.featured_image}
-                    alt={tour.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <MapPin className="h-16 w-16 text-gray-400" />
-                  </div>
-                )}
-              </div>
-            )}
+              {/* Fallback to featured image if no gallery or video */}
+              {(!tour.video_url && (!tour.image_urls || tour.image_urls.length === 0)) && (
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative h-96">
+                      {tour.featured_image ? (
+                        <img
+                          src={tour.featured_image}
+                          alt={tour.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <MapPin className="h-16 w-16 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
 
           {/* Booking Card */}
