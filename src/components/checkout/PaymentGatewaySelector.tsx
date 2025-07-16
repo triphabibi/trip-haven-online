@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CreditCard, Banknote, DollarSign, Globe, Shield, Loader2 } from 'lucide-react';
@@ -30,6 +31,13 @@ interface PaymentGatewaySelectorProps {
   onPaymentError: (error: string) => void;
 }
 
+interface BankTransferData {
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  upi: string;
+}
+
 export function PaymentGatewaySelector({
   amount,
   bookingId,
@@ -44,6 +52,11 @@ export function PaymentGatewaySelector({
   const [selectedGateway, setSelectedGateway] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [showBankTransfer, setShowBankTransfer] = useState(false);
+  const [bankTransferData, setBankTransferData] = useState<BankTransferData | null>(null);
+  const [transferMessage, setTransferMessage] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
 
   // Load Razorpay script
   useEffect(() => {
@@ -175,8 +188,10 @@ export function PaymentGatewaySelector({
         } else {
           // For bank transfer, show upload interface
           if (data.actionType === 'bank_transfer_details') {
-            // Handle bank transfer with upload
-            handleBankTransferFlow(data, gateway.name, convertedAmount, targetCurrency);
+            // Show bank transfer details UI
+            setBankTransferData(data.bankDetails);
+            setTransferMessage(data.message);
+            setShowBankTransfer(true);
           } else {
             // Direct success (cash, etc)
             onPaymentSuccess({
@@ -188,12 +203,12 @@ export function PaymentGatewaySelector({
               message: data.message,
               bankDetails: data.bankDetails
             });
+            
+            toast({
+              title: "Payment Confirmed",
+              description: data.message,
+            });
           }
-          
-          toast({
-            title: "Payment Confirmed",
-            description: data.message,
-          });
         }
       } else {
         throw new Error(data.error || 'Payment failed');
@@ -304,30 +319,96 @@ export function PaymentGatewaySelector({
     });
   };
 
-  const handleBankTransferFlow = (data: any, gatewayName: string, amount: number, currency: string) => {
-    // Store bank transfer data in localStorage for the success page
-    localStorage.setItem('bankTransferData', JSON.stringify({
-      gateway: gatewayName,
-      type: 'manual',
-      status: 'pending',
-      amount: amount,
-      currency: currency,
-      message: data.message,
-      bankDetails: data.bankDetails,
-      bookingId: bookingId
-    }));
-    
-    // Redirect to success page with bank transfer instructions
-    onPaymentSuccess({
-      gateway: gatewayName,
-      type: 'manual',
-      status: 'pending',
-      amount: amount,
-      currency: currency,
-      message: data.message,
-      bankDetails: data.bankDetails,
-      requiresUpload: true
-    });
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a JPG, PNG, or PDF file",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setProofFile(file);
+    }
+  };
+
+  const handleSubmitProof = async () => {
+    if (!proofFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a payment proof file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploadingProof(true);
+    try {
+      // Convert file to base64 for storage
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64String = reader.result as string;
+        
+        // Update booking with proof of payment
+        const { error } = await supabase
+          .from('new_bookings')
+          .update({
+            proof_of_payment: base64String,
+            payment_status: 'pending',
+            payment_method: 'bank_transfer'
+          })
+          .eq('id', bookingId);
+
+        if (error) throw error;
+
+        // Call success handler
+        const gateway = gateways?.find(g => g.id === selectedGateway);
+        const targetCurrency = getTargetCurrency(gateway?.name || 'bank_transfer');
+        const convertedAmount = convertForPayment(amount, targetCurrency);
+
+        onPaymentSuccess({
+          gateway: 'bank_transfer',
+          type: 'manual',
+          status: 'pending',
+          amount: convertedAmount,
+          currency: targetCurrency,
+          message: transferMessage,
+          bankDetails: bankTransferData,
+          proofUploaded: true
+        });
+
+        toast({
+          title: "Payment Proof Submitted",
+          description: "Your payment proof has been submitted for verification",
+        });
+      };
+      
+      reader.readAsDataURL(proofFile);
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || 'Failed to upload payment proof',
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploadingProof(false);
+    }
   };
 
   if (isLoading) {
@@ -348,6 +429,101 @@ export function PaymentGatewaySelector({
       <Card>
         <CardContent className="p-6 text-center">
           <p className="text-muted-foreground">No payment methods available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show bank transfer details if selected
+  if (showBankTransfer && bankTransferData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Bank Transfer Details</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {transferMessage}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Bank Details */}
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h3 className="font-semibold text-blue-900 mb-3">Bank Account Details</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-blue-700">Account Name:</span>
+                <span className="font-medium text-blue-900">{bankTransferData.accountName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">Account Number:</span>
+                <span className="font-medium text-blue-900">{bankTransferData.accountNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">IFSC Code:</span>
+                <span className="font-medium text-blue-900">{bankTransferData.ifsc}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">UPI ID:</span>
+                <span className="font-medium text-blue-900">{bankTransferData.upi}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Amount to Transfer */}
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex justify-between items-center">
+              <span className="text-green-700 font-medium">Amount to Transfer:</span>
+              <span className="text-2xl font-bold text-green-900">{formatPrice(amount)}</span>
+            </div>
+          </div>
+
+          {/* Upload Payment Proof */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="payment-proof" className="text-sm font-medium">
+                Upload Payment Proof (Image or PDF)
+              </Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Please upload a screenshot or photo of your payment confirmation
+              </p>
+              <Input
+                id="payment-proof"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={handleFileUpload}
+                className="cursor-pointer"
+              />
+              {proofFile && (
+                <p className="text-xs text-green-600 mt-1">
+                  Selected: {proofFile.name}
+                </p>
+              )}
+            </div>
+
+            <Button
+              onClick={handleSubmitProof}
+              disabled={!proofFile || isUploadingProof}
+              className="w-full"
+              size="lg"
+            >
+              {isUploadingProof ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                "Submit Payment Proof"
+              )}
+            </Button>
+          </div>
+
+          {/* Back button */}
+          <Button
+            variant="outline"
+            onClick={() => setShowBankTransfer(false)}
+            className="w-full"
+          >
+            Back to Payment Methods
+          </Button>
         </CardContent>
       </Card>
     );
