@@ -100,65 +100,71 @@ const TourDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumb - Mobile Friendly */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6 overflow-x-auto">
+          <span className="whitespace-nowrap hover:text-blue-600 transition-colors font-medium">Tours</span>
+          <span>/</span>
+          <span className="text-gray-900 font-medium truncate">{tour.title}</span>
+        </nav>
+        {/* Hero Section - Mobile Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Tour Title and Info */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="h-4 w-4" />
-                <span>{tour.location || 'Location not specified'}</span>
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{tour.location || 'Location not specified'}</span>
               </div>
               
-              <h1 className="text-4xl font-bold text-gray-900">{tour.title}</h1>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">{tour.title}</h1>
               
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 {tour.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     <span className="font-medium">{tour.rating}</span>
-                    <span className="text-gray-600">({tour.total_reviews} reviews)</span>
+                    <span className="text-gray-600 text-sm">({tour.total_reviews} reviews)</span>
                   </div>
                 )}
                 
                 {tour.duration && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600">{tour.duration}</span>
+                    <span className="text-gray-600 text-sm">{tour.duration}</span>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {tour.instant_confirmation && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Instant Confirmation
                   </Badge>
                 )}
                 {tour.free_cancellation && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
                     <Shield className="h-3 w-3 mr-1" />
                     Free Cancellation
                   </Badge>
                 )}
                 {tour.is_featured && (
-                  <Badge className="bg-yellow-500 hover:bg-yellow-600">Featured</Badge>
+                  <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">Featured</Badge>
                 )}
               </div>
             </div>
 
-            {/* Media Section */}
-            <div className="space-y-6">
+            {/* Media Section - Mobile Optimized */}
+            <div className="space-y-4">
               {/* Video Section */}
               {tour.video_url && (
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden border-0 shadow-sm">
                   <CardContent className="p-0">
                     <YouTubePlayer 
                       videoUrl={tour.video_url}
                       title={tour.title}
-                      className="w-full aspect-video"
+                      className="w-full aspect-video rounded-lg"
                     />
                   </CardContent>
                 </Card>
@@ -166,13 +172,13 @@ const TourDetailPage = () => {
 
               {/* Image Gallery */}
               {tour.gallery_images && tour.gallery_images.length > 0 && (
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden border-0 shadow-sm">
                   <CardContent className="p-0">
                     <ImageGallery 
                       images={tour.gallery_images}
                       title={tour.title}
                       enableLightbox={true}
-                      className="w-full"
+                      className="w-full rounded-lg"
                     />
                   </CardContent>
                 </Card>
@@ -180,18 +186,18 @@ const TourDetailPage = () => {
 
               {/* Fallback to featured image if no gallery or video */}
               {(!tour.video_url && (!tour.gallery_images || tour.gallery_images.length === 0)) && (
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden border-0 shadow-sm">
                   <CardContent className="p-0">
-                    <div className="relative h-96">
+                    <div className="relative h-64 md:h-80 lg:h-96">
                       {tour.featured_image ? (
                         <img
                           src={tour.featured_image}
                           alt={tour.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover rounded-lg"
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
                           <MapPin className="h-16 w-16 text-gray-400" />
                         </div>
                       )}
@@ -202,13 +208,13 @@ const TourDetailPage = () => {
             </div>
           </div>
 
-          {/* Booking Card */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardContent className="p-6">
+          {/* Booking Card - Mobile Responsive */}
+          <div className="lg:col-span-1 order-first lg:order-last">
+            <Card className="lg:sticky lg:top-6 border-0 shadow-lg">
+              <CardContent className="p-4 md:p-6">
                 <div className="space-y-4">
-                  <div>
-                    <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-center lg:text-left">
+                    <div className="text-2xl md:text-3xl font-bold text-blue-600">
                       From {formatPrice(tour.price_adult)}
                     </div>
                     <p className="text-sm text-gray-600">per adult</p>
@@ -216,7 +222,7 @@ const TourDetailPage = () => {
                   
                   <Button 
                     onClick={handleBookNow}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
                     size="lg"
                   >
                     Book Now
@@ -227,13 +233,13 @@ const TourDetailPage = () => {
           </div>
         </div>
 
-        {/* Tour Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        {/* Tour Details - Mobile Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Overview */}
             {tour.overview && (
-              <Card>
-                <CardContent className="p-6">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 md:p-6">
                   <h2 className="text-xl font-semibold mb-4">Overview</h2>
                   <p className="text-gray-700 leading-relaxed">{tour.overview}</p>
                 </CardContent>
@@ -242,12 +248,12 @@ const TourDetailPage = () => {
 
             {/* Highlights */}
             {tour.highlights && tour.highlights.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 md:p-6">
                   <h2 className="text-xl font-semibold mb-4">Highlights</h2>
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {tour.highlights.map((highlight: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2">
+                      <li key={index} className="flex items-start gap-3">
                         <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{highlight}</span>
                       </li>
@@ -259,12 +265,12 @@ const TourDetailPage = () => {
 
             {/* What's Included */}
             {tour.whats_included && tour.whats_included.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 md:p-6">
                   <h2 className="text-xl font-semibold mb-4">What's Included</h2>
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {tour.whats_included.map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2">
+                      <li key={index} className="flex items-start gap-3">
                         <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{item}</span>
                       </li>
@@ -276,12 +282,12 @@ const TourDetailPage = () => {
 
             {/* Itinerary */}
             {parsedItinerary && parsedItinerary.days && parsedItinerary.days.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 md:p-6">
                   <h2 className="text-xl font-semibold mb-4">Itinerary</h2>
                   <div className="space-y-4">
                     {parsedItinerary.days.map((day: any, index: number) => (
-                      <div key={index} className="border-l-2 border-blue-200 pl-4">
+                      <div key={index} className="border-l-3 border-blue-200 pl-4 py-2">
                         <h3 className="font-medium text-lg">Day {index + 1}: {day.title}</h3>
                         <p className="text-gray-600 mt-1">{day.description}</p>
                       </div>
@@ -292,28 +298,28 @@ const TourDetailPage = () => {
             )}
           </div>
 
-          {/* Sidebar Info */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardContent className="p-6">
+          {/* Sidebar Info - Mobile Responsive */}
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4 md:p-6">
                 <h3 className="font-semibold mb-4">Tour Information</h3>
                 <div className="space-y-3">
                   {tour.duration && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Duration:</span>
-                      <span className="font-medium">{tour.duration}</span>
+                      <span className="font-medium text-right">{tour.duration}</span>
                     </div>
                   )}
                   {tour.max_capacity && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Max Capacity:</span>
-                      <span className="font-medium">{tour.max_capacity} people</span>
+                      <span className="font-medium text-right">{tour.max_capacity} people</span>
                     </div>
                   )}
                   {tour.languages && tour.languages.length > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span className="text-gray-600">Languages:</span>
-                      <span className="font-medium">{tour.languages.join(', ')}</span>
+                      <span className="font-medium text-right max-w-[60%]">{tour.languages.join(', ')}</span>
                     </div>
                   )}
                 </div>
@@ -321,22 +327,22 @@ const TourDetailPage = () => {
             </Card>
 
             {/* Pricing Breakdown */}
-            <Card>
-              <CardContent className="p-6">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4 md:p-6">
                 <h3 className="font-semibold mb-4">Pricing</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600">Adult:</span>
                     <span className="font-medium">{formatPrice(tour.price_adult)}</span>
                   </div>
                   {tour.price_child > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Child:</span>
                       <span className="font-medium">{formatPrice(tour.price_child)}</span>
                     </div>
                   )}
                   {tour.price_infant > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Infant:</span>
                       <span className="font-medium">{formatPrice(tour.price_infant)}</span>
                     </div>
