@@ -15,7 +15,8 @@ import {
   PlaneIcon,
   Building,
   Settings,
-  Images
+  Images,
+  Mail
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -36,6 +37,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: 'trending', label: 'Trending Products', icon: TrendingUp },
     { id: 'payments', label: 'Payment Settings', icon: CreditCard },
     { id: 'bank-settings', label: 'Bank Transfer Settings', icon: Building },
+    { id: 'email-settings', label: 'Email Settings', icon: Mail },
     { id: 'sliders', label: 'Homepage Sliders', icon: Images },
     { id: 'content', label: 'Content', icon: Globe },
     { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload },

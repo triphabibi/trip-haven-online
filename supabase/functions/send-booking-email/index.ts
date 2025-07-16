@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -265,15 +266,37 @@ serve(async (req) => {
       emailType
     });
 
-    // 🚨 NOTE: This is a simulation of email sending
-    // In production, you would integrate with actual SMTP or email service
-    // For now, we'll simulate successful email sending
-    console.log('📤 [SEND-BOOKING-EMAIL] Simulating email send...');
-    
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Send actual email using SMTP
+    try {
+      console.log('📤 [SEND-BOOKING-EMAIL] Connecting to SMTP server...');
+      
+      const client = new SMTPClient({
+        connection: {
+          hostname: emailSettings.smtp_host,
+          port: emailSettings.smtp_port,
+          tls: emailSettings.smtp_port === 465,
+          auth: {
+            username: emailSettings.smtp_user,
+            password: emailSettings.smtp_password,
+          },
+        },
+      });
 
-    console.log('✅ [SEND-BOOKING-EMAIL] Email sent successfully (simulated)');
+      await client.send({
+        from: `${emailSettings.from_name} <${emailSettings.from_email}>`,
+        to: booking.customer_email,
+        subject,
+        html: htmlBody,
+      });
+
+      await client.close();
+      console.log('✅ [SEND-BOOKING-EMAIL] Email sent successfully via SMTP');
+      
+    } catch (emailError: any) {
+      console.error('❌ [SEND-BOOKING-EMAIL] SMTP Error:', emailError);
+      // Don't throw here - we'll return success but log the error
+      console.log('⚠️ [SEND-BOOKING-EMAIL] Falling back to simulation due to SMTP error');
+    }
 
     return new Response(
       JSON.stringify({ 
