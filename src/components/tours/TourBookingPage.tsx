@@ -87,96 +87,134 @@ const TourBookingPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Top Section - Tour Title and Booking Form */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Tour Info */}
-            <div className="lg:col-span-2">
-              <div className="space-y-4">
-                <h1 className="text-4xl font-bold text-gray-900">{tour.title}</h1>
-                {tour.location && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-5 w-5" />
-                    <span className="text-lg">{tour.location}</span>
-                  </div>
-                )}
-                {tour.duration && (
-                  <div className="text-lg text-gray-600">
-                    <span className="font-medium">Duration:</span> {tour.duration}
-                  </div>
-                )}
-                {tour.overview && (
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900">About This Experience</h3>
-                    <p className="text-gray-700 leading-relaxed">{tour.overview}</p>
-                  </div>
-                )}
+        {/* Hero Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold text-gray-900 mb-4">{tour.title}</h1>
+            {tour.location && (
+              <div className="flex items-center justify-center gap-2 text-xl text-gray-600 mb-4">
+                <MapPin className="h-6 w-6" />
+                <span>{tour.location}</span>
               </div>
-            </div>
+            )}
+            {tour.overview && (
+              <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">{tour.overview}</p>
+            )}
+          </div>
 
-            {/* Right Column - Booking Form */}
-            <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                <SinglePageBookingFlow service={serviceData} onBack={() => navigate('/tours')} />
-              </div>
+          {/* Booking Section */}
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Book Your Experience</h2>
+              <p className="text-gray-600">Complete your booking in just a few steps</p>
             </div>
+            
+            <SinglePageBookingFlow service={serviceData} onBack={() => navigate('/tours')} />
           </div>
         </div>
 
-        {/* Bottom Section - Media Content */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900 text-center">Tour Gallery & Preview</h2>
+        {/* Media Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Preview Your Experience</h2>
+            <p className="text-gray-600 text-lg">Get a glimpse of what awaits you</p>
+          </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-8">
             {/* Video Section */}
             {tour.video_url && (
-              <div className="space-y-3">
-                <h3 className="text-xl font-semibold text-gray-900">Watch Tour Preview</h3>
-                <Card className="overflow-hidden shadow-lg">
-                  <CardContent className="p-0">
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-900 text-center">Watch the Experience</h3>
+                <div className="max-w-4xl mx-auto">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <YouTubePlayer 
                       videoUrl={tour.video_url}
                       title={tour.title}
                       className="w-full aspect-video"
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Image Gallery */}
             {tour.gallery_images && tour.gallery_images.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xl font-semibold text-gray-900">Tour Gallery</h3>
-                <Card className="overflow-hidden shadow-lg">
-                  <CardContent className="p-0">
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-900 text-center">Photo Gallery</h3>
+                <div className="max-w-4xl mx-auto">
+                  <div className="rounded-2xl overflow-hidden shadow-2xl">
                     <ImageGallery 
                       images={tour.gallery_images}
                       title={tour.title}
                       enableLightbox={true}
                       className="w-full"
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Fallback to featured image if no gallery or video */}
+            {/* Fallback Image */}
             {(!tour.video_url && (!tour.gallery_images || tour.gallery_images.length === 0)) && tour.featured_image && (
-              <div className="lg:col-span-2 space-y-3">
-                <h3 className="text-xl font-semibold text-gray-900">Tour Image</h3>
-                <Card className="overflow-hidden shadow-lg">
-                  <CardContent className="p-0">
-                    <div className="relative h-96">
-                      <img
-                        src={tour.featured_image}
-                        alt={tour.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-900 text-center">Experience Preview</h3>
+                <div className="max-w-4xl mx-auto">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                    <img
+                      src={tour.featured_image}
+                      alt={tour.title}
+                      className="w-full h-96 object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Tour Details */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {tour.highlights && tour.highlights.length > 0 && (
+              <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+                <h4 className="text-xl font-semibold text-green-900 mb-4">✨ Highlights</h4>
+                <ul className="space-y-2">
+                  {tour.highlights.slice(0, 4).map((highlight: string, index: number) => (
+                    <li key={index} className="text-green-800 flex items-start gap-2">
+                      <span className="text-green-600 mt-1">•</span>
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {tour.whats_included && tour.whats_included.length > 0 && (
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                <h4 className="text-xl font-semibold text-blue-900 mb-4">✅ What's Included</h4>
+                <ul className="space-y-2">
+                  {tour.whats_included.slice(0, 4).map((item: string, index: number) => (
+                    <li key={index} className="text-blue-800 flex items-start gap-2">
+                      <span className="text-blue-600 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {tour.duration && (
+              <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                <h4 className="text-xl font-semibold text-purple-900 mb-4">⏰ Tour Info</h4>
+                <div className="space-y-3">
+                  <div className="text-purple-800">
+                    <span className="font-medium">Duration:</span> {tour.duration}
+                  </div>
+                  {tour.languages && tour.languages.length > 0 && (
+                    <div className="text-purple-800">
+                      <span className="font-medium">Languages:</span> {tour.languages.join(', ')}
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               </div>
             )}
           </div>
