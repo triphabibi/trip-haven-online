@@ -212,7 +212,19 @@ export function PaymentGatewaySelector({
             setShowBankTransfer(true);
           }
         } else {
-          // Direct success (cash, etc)
+          // Direct success (cash, etc) - Send confirmation email
+          try {
+            await supabase.functions.invoke('send-booking-email', {
+              body: {
+                booking_id: bookingId,
+                email_type: 'booking_confirmation'
+              }
+            });
+          } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            // Don't fail the success flow for email issues
+          }
+
           onPaymentSuccess({
             gateway: gateway.name,
             type: gateway.type,
@@ -405,6 +417,19 @@ export function PaymentGatewaySelector({
             title: "Payment Proof Submitted",
             description: "Your payment proof has been submitted for verification",
           });
+
+          // Send booking confirmation emails for bank transfer
+          try {
+            await supabase.functions.invoke('send-booking-email', {
+              body: {
+                booking_id: bookingId,
+                email_type: 'booking_confirmation'
+              }
+            });
+          } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            // Don't fail the success flow for email issues
+          }
 
           // Call success handler with proper error handling
           try {

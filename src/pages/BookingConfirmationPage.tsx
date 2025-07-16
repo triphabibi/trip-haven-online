@@ -22,8 +22,25 @@ const BookingConfirmationPage = () => {
   useEffect(() => {
     if (bookingId) {
       fetchBookingDetails();
+      // Send confirmation email when confirmation page loads (for direct redirects)
+      sendConfirmationEmail();
     }
   }, [bookingId]);
+
+  const sendConfirmationEmail = async () => {
+    try {
+      await supabase.functions.invoke('send-booking-email', {
+        body: {
+          booking_id: bookingId,
+          email_type: 'booking_confirmation'
+        }
+      });
+      console.log('Confirmation email sent for booking:', bookingId);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+      // Don't show error to user as this is background operation
+    }
+  };
 
   const fetchBookingDetails = async () => {
     try {
