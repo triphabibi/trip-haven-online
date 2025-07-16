@@ -113,7 +113,20 @@ const VisaBookingForm = ({ service }: VisaBookingFormProps) => {
         description: `Your application has been submitted successfully!`,
       });
 
-      setStep(4);
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            booking_id: booking.id,
+            email_type: 'booking_confirmation'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the success flow for email issues
+      }
+
+      setStep(5);
     } catch (error) {
       console.error('Visa application error:', error);
       toast({

@@ -267,7 +267,7 @@ serve(async (req) => {
     });
 
     // Send emails to both customer and admin
-    const adminEmail = 'info@triphabibi.com';
+    const adminEmail = 'info@triphabibi.in';
     const recipients = [booking.customer_email, adminEmail];
     
     try {
@@ -318,7 +318,7 @@ serve(async (req) => {
         success: true, 
         message: `${emailType.charAt(0).toUpperCase() + emailType.slice(1)} email sent successfully`,
         booking_reference: booking.booking_reference,
-        email_sent_to: [booking.customer_email, 'info@triphabibi.com']
+        email_sent_to: [booking.customer_email, 'info@triphabibi.in']
       }),
       {
         status: 200,

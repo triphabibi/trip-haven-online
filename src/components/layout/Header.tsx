@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, User, LogOut, Plane, Car, FileText, Ticket } from 'lucide-react';
+import { Menu, User, LogOut, Plane, Car, FileText, Ticket, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
@@ -71,6 +71,14 @@ const Header = () => {
             })}
           </nav>
 
+          {/* Track Booking Button */}
+          <Link to="/track-booking">
+            <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Track Booking
+            </Button>
+          </Link>
+
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             {user ? (
@@ -134,9 +142,19 @@ const Header = () => {
                         {item.name}
                       </Link>
                     );
-                  })}
-                  
-                  <div className="pt-4 border-t">
+                   })}
+                   
+                   {/* Track Booking in Mobile Menu */}
+                   <Link
+                     to="/track-booking"
+                     className="flex items-center gap-3 font-medium py-3 px-4 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all duration-300"
+                     onClick={() => setIsOpen(false)}
+                   >
+                     <Search className="h-5 w-5" />
+                     Track Booking
+                   </Link>
+                   
+                   <div className="pt-4 border-t">
                     {user ? (
                       <div className="space-y-2">
                         {isAdmin && (

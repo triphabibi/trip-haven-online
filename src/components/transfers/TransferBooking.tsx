@@ -95,6 +95,19 @@ const TransferBooking = ({ transfer }: TransferBookingProps) => {
         description: "Redirecting to payment...",
       });
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            booking_id: data.id,
+            email_type: 'booking_confirmation'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the success flow for email issues
+      }
+
       // Redirect to payment page
       window.location.href = `/booking-payment?type=transfer&id=${transfer.id}&bookingId=${data.id}&amount=${transfer.price}&customerName=${formData.customerName}&customerEmail=${formData.customerEmail}&customerPhone=${formData.customerPhone}&serviceTitle=${transfer.title}`;
     } catch (error) {

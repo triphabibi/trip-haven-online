@@ -138,6 +138,19 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
         description: "Documents uploaded successfully. Redirecting to payment...",
       });
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            booking_id: booking.id,
+            email_type: 'booking_confirmation'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the success flow for email issues
+      }
+
       // Redirect to payment page
       const bookingParams = new URLSearchParams({
         type: 'ok-to-board',

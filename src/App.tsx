@@ -27,6 +27,7 @@ import TicketDetailPage from '@/pages/TicketDetailPage';
 import VisaDetailPage from '@/pages/VisaDetailPage';
 import PackageDetailPage from '@/pages/PackageDetailPage';
 import OkToBoardPage from '@/pages/OkToBoardPage';
+import BookingTrackerPage from '@/pages/BookingTrackerPage';
 import StickyMobileBookingButton from '@/components/common/StickyMobileBookingButton';
 import AdminRoute from '@/components/AdminRoute';
 
@@ -95,6 +96,7 @@ function App() {
                 <Route path="/packages/:id" element={<PackageDetailPage />} />
                 <Route path="/packages/:slug" element={<PackageDetailPage />} />
                 <Route path="/ok-to-board" element={<OkToBoardPage />} />
+                <Route path="/track-booking" element={<BookingTrackerPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>

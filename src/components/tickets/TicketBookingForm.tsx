@@ -88,6 +88,19 @@ const TicketBookingForm = ({
         description: `Your ticket has been booked successfully! You will receive confirmation via email.`,
       });
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            booking_id: data.id,
+            email_type: 'booking_confirmation'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the success flow for email issues
+      }
+
       // Reset form
       setFormData({
         customerName: '',
