@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plane, Clock, CheckCircle, Upload } from 'lucide-react';
+import { Plane, Clock, CheckCircle, Upload, FileText } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import CountryDropdown from '@/components/common/CountryDropdown';
 
 interface OkToBoardService {
   id: string;
@@ -42,6 +43,14 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
     specialRequests: ''
   });
 
+  const [documents, setDocuments] = useState({
+    passportFirstPage: null as File | null,
+    passportLastPage: null as File | null,
+    visa: null as File | null,
+    flightBookingPage1: null as File | null,
+    flightBookingPage2: null as File | null
+  });
+
   const totalAmount = service.base_price + service.processing_fee + (service.base_price * service.tax_rate);
 
   const handleInputChange = (field: string, value: string) => {
@@ -50,14 +59,25 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
 
   const validateForm = () => {
     const requiredFields = ['passengerName', 'passportNumber', 'nationality', 'flightNumber', 'departureDate', 'email', 'phone'];
-    return requiredFields.every(field => formData[field].trim() !== '');
+    const formValid = requiredFields.every(field => formData[field].trim() !== '');
+    const documentsValid = documents.passportFirstPage && documents.visa && documents.flightBookingPage1;
+    return formValid && documentsValid;
+  };
+
+  const handleFileUpload = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleBooking = async () => {
     if (!validateForm()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields and upload required documents.",
         variant: "destructive",
       });
       return;
@@ -66,6 +86,25 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
     setLoading(true);
     
     try {
+      // Upload documents
+      const uploadedDocs: Record<string, string> = {};
+      
+      if (documents.passportFirstPage) {
+        uploadedDocs.passport_first_page = await handleFileUpload(documents.passportFirstPage);
+      }
+      if (documents.passportLastPage) {
+        uploadedDocs.passport_last_page = await handleFileUpload(documents.passportLastPage);
+      }
+      if (documents.visa) {
+        uploadedDocs.visa = await handleFileUpload(documents.visa);
+      }
+      if (documents.flightBookingPage1) {
+        uploadedDocs.flight_booking_page1 = await handleFileUpload(documents.flightBookingPage1);
+      }
+      if (documents.flightBookingPage2) {
+        uploadedDocs.flight_booking_page2 = await handleFileUpload(documents.flightBookingPage2);
+      }
+
       // Create booking in database
       const { data: booking, error } = await supabase
         .from('new_bookings')
@@ -86,7 +125,8 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
           tax_amount: service.base_price * service.tax_rate,
           booking_status: 'pending',
           payment_status: 'pending',
-          special_requests: `Flight: ${formData.flightNumber}, Airline: ${formData.airline}, Passport: ${formData.passportNumber}, Nationality: ${formData.nationality}. ${formData.specialRequests}`.trim()
+          special_requests: `Flight: ${formData.flightNumber}, Airline: ${formData.airline}, Passport: ${formData.passportNumber}, Nationality: ${formData.nationality}. ${formData.specialRequests}`.trim(),
+          gateway_response: { documents: uploadedDocs }
         })
         .select()
         .single();
@@ -95,7 +135,7 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
 
       toast({
         title: "Booking Created!",
-        description: "Redirecting to payment...",
+        description: "Documents uploaded successfully. Redirecting to payment...",
       });
 
       // Redirect to payment page
@@ -183,12 +223,10 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="nationality">Nationality *</Label>
-              <Input
-                id="nationality"
+              <CountryDropdown
                 value={formData.nationality}
-                onChange={(e) => handleInputChange('nationality', e.target.value)}
-                placeholder="Indian"
-                required
+                onValueChange={(value) => handleInputChange('nationality', value)}
+                placeholder="Select your nationality"
               />
             </div>
             <div className="space-y-2">
@@ -266,20 +304,94 @@ const OkToBoardBooking = ({ service }: OkToBoardBookingProps) => {
           </div>
         </div>
 
-        {/* Requirements Notice */}
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-          <h4 className="font-semibold text-amber-900 mb-2">Required Documents:</h4>
-          <ul className="space-y-1 text-sm text-amber-800">
-            {service.requirements.map((requirement, index) => (
-              <li key={index} className="flex items-center gap-2">
-                <Upload className="h-3 w-3 text-amber-600" />
-                {requirement}
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-amber-700 mt-2">
-            * Documents will be collected after payment confirmation via email or WhatsApp
-          </p>
+        {/* Document Upload Section */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg text-gray-900">Required Documents</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="passport-first">Passport Copy (First Page) *</Label>
+              <Input
+                id="passport-first"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDocuments(prev => ({ ...prev, passportFirstPage: file }));
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="passport-last">Passport Copy (Last Page)</Label>
+              <Input
+                id="passport-last"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDocuments(prev => ({ ...prev, passportLastPage: file }));
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="visa">Valid Visa *</Label>
+              <Input
+                id="visa"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDocuments(prev => ({ ...prev, visa: file }));
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="flight-booking">Flight Booking Confirmation *</Label>
+              <Input
+                id="flight-booking"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDocuments(prev => ({ ...prev, flightBookingPage1: file }));
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="flight-booking-2">Flight Booking Page 2 (Optional)</Label>
+              <Input
+                id="flight-booking-2"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDocuments(prev => ({ ...prev, flightBookingPage2: file }));
+                }}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="h-4 w-4 text-blue-600" />
+              <h4 className="font-semibold text-blue-900">Document Requirements</h4>
+            </div>
+            <ul className="space-y-1 text-sm text-blue-800">
+              <li>• Files must be in JPG, PNG, or PDF format</li>
+              <li>• Maximum file size: 5MB per document</li>
+              <li>• Documents should be clear and readable</li>
+              <li>• All required documents must be uploaded before booking</li>
+            </ul>
+          </div>
         </div>
 
         {/* Price Breakdown */}

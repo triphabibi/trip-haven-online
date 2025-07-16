@@ -97,9 +97,9 @@ const ToursPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="0-1000">Under ₹1,000</SelectItem>
-                <SelectItem value="1000-5000">₹1,000 - ₹5,000</SelectItem>
-                <SelectItem value="5000+">₹5,000+</SelectItem>
+                <SelectItem value="0-1000">Under $1,000</SelectItem>
+                <SelectItem value="1000-5000">$1,000 - $5,000</SelectItem>
+                <SelectItem value="5000+">$5,000+</SelectItem>
               </SelectContent>
             </Select>
 
@@ -167,7 +167,7 @@ const ToursPage = () => {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-bold text-blue-600">₹{tour.price_adult}</span>
+                    <span className="text-2xl font-bold text-blue-600">${tour.price_adult}</span>
                     <span className="text-gray-500 text-sm ml-1">per adult</span>
                   </div>
                   <Link to={`/tours/${tour.id}`}>

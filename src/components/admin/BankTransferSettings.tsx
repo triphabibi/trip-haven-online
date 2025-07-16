@@ -39,11 +39,18 @@ const BankTransferSettings = () => {
   const saveBankSettings = async () => {
     setLoading(true);
     try {
-      // Update payment gateway instructions
-      await supabase
+      // First check if a bank transfer gateway exists
+      const { data: existingGateway, error: checkError } = await supabase
         .from('payment_gateways')
-        .update({
-          manual_instructions: `Account Name: ${settings.account_name}
+        .select('id')
+        .eq('type', 'bank_transfer')
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing gateway:', checkError);
+      }
+
+      const instructions = `Account Name: ${settings.account_name}
 Bank Name: ${settings.bank_name}
 Account Number: ${settings.account_number}
 IFSC Code: ${settings.ifsc_code}
@@ -51,14 +58,45 @@ SWIFT Code: ${settings.swift_code}
 UPI ID: ${settings.upi_id}
 Branch: ${settings.branch_name}
 
-${settings.instructions}`,
-          enabled: settings.is_active
-        })
-        .eq('type', 'manual');
+${settings.instructions}`;
+
+      let result;
+      if (existingGateway?.id) {
+        // Update existing gateway
+        result = await supabase
+          .from('payment_gateways')
+          .update({
+            manual_instructions: instructions,
+            enabled: settings.is_active,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingGateway.id)
+          .select()
+          .single();
+      } else {
+        // Create new gateway
+        result = await supabase
+          .from('payment_gateways')
+          .insert({
+            name: 'Bank Transfer',
+            type: 'bank_transfer',
+            manual_instructions: instructions,
+            enabled: settings.is_active
+          })
+          .select()
+          .single();
+      }
+
+      if (result.error) {
+        console.error('Bank settings save error:', result.error);
+        throw result.error;
+      }
+
+      console.log('Bank settings saved successfully:', result.data);
 
       toast({
         title: "Success",
-        description: "Bank transfer settings saved successfully",
+        description: "Bank transfer settings saved successfully! Changes will be reflected in the payment options.",
       });
     } catch (error: any) {
       console.error('Error saving bank settings:', error);

@@ -485,7 +485,7 @@ export function PaymentGatewaySelector({
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <div className="flex justify-between items-center">
               <span className="text-green-700 font-medium">Amount to Transfer:</span>
-              <span className="text-2xl font-bold text-green-900">{formatPrice(amount)}</span>
+              <span className="text-2xl font-bold text-green-900">₹{convertForPayment(amount, 'INR').toLocaleString()}</span>
             </div>
           </div>
 
