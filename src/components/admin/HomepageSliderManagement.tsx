@@ -314,11 +314,17 @@ const HomepageSliderManagement = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <img 
-                    src={slider.image_url} 
-                    alt={slider.title}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                  {slider.image_url ? (
+                    <img 
+                      src={slider.image_url} 
+                      alt={slider.title}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center">
+                      <span className="text-white text-xs">No Image</span>
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-semibold">{slider.title}</h3>
                     <p className="text-sm text-gray-600">{slider.subtitle}</p>

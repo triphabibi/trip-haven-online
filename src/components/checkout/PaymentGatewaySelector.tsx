@@ -184,31 +184,28 @@ export function PaymentGatewaySelector({
             window.location.href = data.checkoutUrl;
           } else if (data.actionType === 'paypal_redirect') {
             window.location.href = data.checkoutUrl;
-          }
-        } else {
-          // For bank transfer, show upload interface
-          if (data.actionType === 'bank_transfer_details') {
+          } else if (data.actionType === 'bank_transfer_details') {
             // Show bank transfer details UI
             setBankTransferData(data.bankDetails);
             setTransferMessage(data.message);
             setShowBankTransfer(true);
-          } else {
-            // Direct success (cash, etc)
-            onPaymentSuccess({
-              gateway: gateway.name,
-              type: gateway.type,
-              status: 'pending',
-              amount: convertedAmount,
-              currency: targetCurrency,
-              message: data.message,
-              bankDetails: data.bankDetails
-            });
-            
-            toast({
-              title: "Payment Confirmed",
-              description: data.message,
-            });
           }
+        } else {
+          // Direct success (cash, etc)
+          onPaymentSuccess({
+            gateway: gateway.name,
+            type: gateway.type,
+            status: 'pending',
+            amount: convertedAmount,
+            currency: targetCurrency,
+            message: data.message,
+            bankDetails: data.bankDetails
+          });
+          
+          toast({
+            title: "Payment Confirmed",
+            description: data.message,
+          });
         }
       } else {
         throw new Error(data.error || 'Payment failed');

@@ -51,7 +51,9 @@ const HeroSlider = () => {
         >
           <div
             className="w-full h-full bg-cover bg-center relative"
-            style={{ backgroundImage: `url(${slide.image_url})` }}
+            style={{ 
+              backgroundImage: slide.image_url ? `url(${slide.image_url})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}
           >
             <div className="absolute inset-0 bg-black bg-opacity-40" />
             <div className="relative h-full flex items-center justify-center">

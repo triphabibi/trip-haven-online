@@ -126,7 +126,7 @@ const IntegratedBookingFlow = ({
       {/* Service Summary Card */}
       <Card>
         <CardContent className="p-4">
-          {serviceImage && (
+          {serviceImage && serviceImage.trim() && (
             <img src={serviceImage} alt={serviceTitle} className="w-full h-32 object-cover rounded-lg mb-3" />
           )}
           <div className="space-y-2">
