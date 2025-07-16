@@ -15,6 +15,7 @@ import ContentManagementSystem from './ContentManagementSystem';
 import BulkUpload from './BulkUpload';
 import SystemSettings from './SystemSettings';
 import HomepageSliderManagement from './HomepageSliderManagement';
+import BankTransferSettings from './BankTransferSettings';
 
 const WordPressLikeAdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -47,6 +48,8 @@ const WordPressLikeAdminPanel = () => {
         return <BulkUpload />;
       case 'sliders':
         return <HomepageSliderManagement />;
+      case 'bank-settings':
+        return <BankTransferSettings />;
       case 'settings':
         return <SystemSettings />;
       default:

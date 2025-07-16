@@ -77,10 +77,38 @@ const BookingConfirmationPage = () => {
     }
   };
 
-  const downloadInvoice = () => {
-    // This would generate and download a PDF invoice
-    // For now, we'll just show a toast
-    console.log('Download invoice for booking:', booking?.booking_reference);
+  const downloadInvoice = async () => {
+    if (!booking) return;
+    
+    try {
+      // Create invoice content
+      const invoiceContent = `
+        INVOICE - ${booking.booking_reference}
+        
+        Customer: ${booking.customer_name}
+        Email: ${booking.customer_email}
+        Service: ${service?.title || 'Travel Service'}
+        Travel Date: ${booking.travel_date ? new Date(booking.travel_date).toLocaleDateString() : 'N/A'}
+        Total Amount: AED ${booking.final_amount}
+        Payment Status: ${booking.payment_status}
+        Booking Status: ${booking.booking_status}
+        
+        Thank you for choosing TripHabibi!
+      `;
+      
+      // Create and download the file
+      const blob = new Blob([invoiceContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${booking.booking_reference}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    }
   };
 
   if (loading) {

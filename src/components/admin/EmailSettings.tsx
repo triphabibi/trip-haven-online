@@ -127,30 +127,53 @@ const EmailSettings = () => {
   const saveSmtpSettings = async () => {
     setLoading(true);
     try {
-      // Use upsert with conflict resolution on primary key
-      const { data, error } = await supabase
+      // First, try to get existing settings
+      const { data: existingData } = await supabase
         .from('email_settings')
-        .upsert({
-          smtp_host: smtpSettings.smtp_host,
-          smtp_port: smtpSettings.smtp_port,
-          smtp_user: smtpSettings.smtp_user,
-          smtp_password: smtpSettings.smtp_password,
-          from_name: smtpSettings.from_name,
-          from_email: smtpSettings.from_email,
-          is_enabled: smtpSettings.is_enabled
-        }, {
-          onConflict: 'id',
-          ignoreDuplicates: false
-        })
-        .select()
+        .select('id')
         .single();
 
-      if (error) {
-        console.error('SMTP settings save error:', error);
-        throw error;
+      let result;
+      
+      if (existingData?.id) {
+        // Update existing record
+        result = await supabase
+          .from('email_settings')
+          .update({
+            smtp_host: smtpSettings.smtp_host,
+            smtp_port: smtpSettings.smtp_port,
+            smtp_user: smtpSettings.smtp_user,
+            smtp_password: smtpSettings.smtp_password,
+            from_name: smtpSettings.from_name,
+            from_email: smtpSettings.from_email,
+            is_enabled: smtpSettings.is_enabled
+          })
+          .eq('id', existingData.id)
+          .select()
+          .single();
+      } else {
+        // Insert new record
+        result = await supabase
+          .from('email_settings')
+          .insert({
+            smtp_host: smtpSettings.smtp_host,
+            smtp_port: smtpSettings.smtp_port,
+            smtp_user: smtpSettings.smtp_user,
+            smtp_password: smtpSettings.smtp_password,
+            from_name: smtpSettings.from_name,
+            from_email: smtpSettings.from_email,
+            is_enabled: smtpSettings.is_enabled
+          })
+          .select()
+          .single();
       }
 
-      console.log('SMTP settings saved:', data);
+      if (result.error) {
+        console.error('SMTP settings save error:', result.error);
+        throw result.error;
+      }
+
+      console.log('SMTP settings saved:', result.data);
       toast({
         title: "Success",
         description: "SMTP settings saved successfully",
