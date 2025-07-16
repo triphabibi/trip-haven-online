@@ -17,6 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 import TabbedTourDetails from '@/components/tours/TabbedTourDetails';
 import { PaymentGatewaySelector } from '@/components/checkout/PaymentGatewaySelector';
 import { BankTransferSuccess } from '@/components/booking/BankTransferSuccess';
+import BeautifulLoading from '@/components/common/BeautifulLoading';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 
 interface Service {
   id: string;
@@ -45,6 +47,8 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   const [step, setStep] = useState<'details' | 'payment' | 'bank_transfer'>('details');
   const [bookingId, setBookingId] = useState<string>('');
   const [bankTransferData, setBankTransferData] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   
   const [formData, setFormData] = useState({
     travelDate: undefined as Date | undefined,
@@ -60,7 +64,6 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
@@ -119,6 +122,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
     }
 
     setIsProcessing(true);
+    setLoadingMessage('Creating your booking...');
 
     try {
       const totalAmount = calculateTotal();
@@ -269,24 +273,31 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Book {service.title}</h1>
-            <p className="text-gray-600">Complete your booking details</p>
+    <>
+      <LoadingOverlay 
+        isVisible={isProcessing} 
+        type="booking" 
+        message={loadingMessage}
+      />
+      
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Book {service.title}</h1>
+              <p className="text-gray-600">Complete your booking details</p>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Service Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Service Details */}
             <TabbedTourDetails tour={service} />
 
             {/* Trip Details */}
@@ -576,7 +587,7 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

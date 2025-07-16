@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Loading from '@/components/common/Loading';
+import BeautifulLoading from '@/components/common/BeautifulLoading';
 import { YouTubePlayer } from '@/components/common/YouTubePlayer';
 import { ImageGallery } from '@/components/common/ImageGallery';
 import { MapPin } from 'lucide-react';
@@ -43,7 +43,7 @@ const TourBookingPage = () => {
     return (
       <div className="min-h-screen">
         <Header />
-        <Loading />
+        <BeautifulLoading type="page" message="Loading your amazing tour experience..." fullScreen />
         <Footer />
       </div>
     );
