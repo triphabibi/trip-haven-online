@@ -185,9 +185,30 @@ export function PaymentGatewaySelector({
           } else if (data.actionType === 'paypal_redirect') {
             window.location.href = data.checkoutUrl;
           } else if (data.actionType === 'bank_transfer_details') {
-            // Show bank transfer details UI
-            setBankTransferData(data.bankDetails);
-            setTransferMessage(data.message);
+            // Parse bank details from manual instructions if needed
+            let bankDetails = data.bankDetails;
+            
+            // If bankDetails not structured, parse from manual instructions
+            if (!bankDetails && gateway && gateway.manual_instructions) {
+              const instructions = gateway.manual_instructions;
+              const parseValue = (label: string) => {
+                const regex = new RegExp(`${label}:\\s*(.+?)(?=\\n|$)`, 'i');
+                const match = instructions.match(regex);
+                return match ? match[1].trim() : '';
+              };
+              
+              bankDetails = {
+                accountName: parseValue('Account Name'),
+                accountNumber: parseValue('Account Number'),
+                ifsc: parseValue('IFSC Code'),
+                upi: parseValue('UPI ID'),
+                bankName: parseValue('Bank Name'),
+                branch: parseValue('Branch')
+              };
+            }
+            
+            setBankTransferData(bankDetails);
+            setTransferMessage(data.message || 'Please transfer the amount to our bank account and upload payment proof.');
             setShowBankTransfer(true);
           }
         } else {

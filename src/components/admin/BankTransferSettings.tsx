@@ -44,11 +44,23 @@ const BankTransferSettings = () => {
         .from('payment_gateways')
         .select('id')
         .eq('type', 'bank_transfer')
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         console.error('Error checking existing gateway:', checkError);
+        throw checkError;
       }
+
+      // Create structured bank details for the create-payment function
+      const bankDetails = {
+        accountName: settings.account_name,
+        bankName: settings.bank_name,
+        accountNumber: settings.account_number,
+        ifsc: settings.ifsc_code,
+        swift: settings.swift_code,
+        upi: settings.upi_id,
+        branch: settings.branch_name
+      };
 
       const instructions = `Account Name: ${settings.account_name}
 Bank Name: ${settings.bank_name}
@@ -72,9 +84,9 @@ ${settings.instructions}`;
           })
           .eq('id', existingGateway.id)
           .select()
-          .single();
+          .maybeSingle();
       } else {
-        // Create new gateway
+        // Create new gateway  
         result = await supabase
           .from('payment_gateways')
           .insert({
@@ -84,7 +96,7 @@ ${settings.instructions}`;
             enabled: settings.is_active
           })
           .select()
-          .single();
+          .maybeSingle();
       }
 
       if (result.error) {

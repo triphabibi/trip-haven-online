@@ -336,6 +336,29 @@ async function handleBankTransfer(params: any) {
     throw error;
   }
 
+  // Parse bank details from manual instructions
+  let bankDetails = null;
+  if (gateway.manual_instructions) {
+    const instructions = gateway.manual_instructions;
+    const parseValue = (label: string) => {
+      const regex = new RegExp(`${label}:\\s*(.+?)(?=\\n|$)`, 'i');
+      const match = instructions.match(regex);
+      return match ? match[1].trim() : '';
+    };
+    
+    bankDetails = {
+      accountName: parseValue('Account Name'),
+      bankName: parseValue('Bank Name'),
+      accountNumber: parseValue('Account Number'),
+      ifsc: parseValue('IFSC Code'),
+      upi: parseValue('UPI ID'),
+      swift: parseValue('SWIFT Code'),
+      branch: parseValue('Branch')
+    };
+    
+    logStep("📋 Parsed bank details", bankDetails);
+  }
+
   // Send booking confirmation emails
   try {
     await supabase.functions.invoke('send-booking-email', {
@@ -355,6 +378,6 @@ async function handleBankTransfer(params: any) {
     requiresAction: true,
     actionType: 'bank_transfer_details',
     message: '🏦 Please transfer the amount to our bank account and upload payment proof.',
-    bankDetails: gateway.manual_instructions
+    bankDetails: bankDetails
   };
 }

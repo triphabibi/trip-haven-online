@@ -37,22 +37,36 @@ const SystemSettings = () => {
 
   const updateSetting = async (key: string, value: string) => {
     try {
+      console.log('Updating setting:', key, '=', value);
+      
       const { error } = await supabase
         .from('site_settings')
         .upsert({
           setting_key: key,
           setting_value: value,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'setting_key'
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
       
       setSettings(prev => ({ ...prev, [key]: value }));
-    } catch (error) {
+      
+      toast({
+        title: "Success",
+        description: `${key} updated successfully`,
+      });
+      
+      console.log('Setting updated successfully:', key);
+    } catch (error: any) {
       console.error('Error updating setting:', error);
       toast({
         title: "Error",
-        description: "Failed to update setting",
+        description: error.message || "Failed to update setting",
         variant: "destructive",
       });
     }
@@ -65,27 +79,36 @@ const SystemSettings = () => {
   const handleSaveAll = async () => {
     setLoading(true);
     try {
+      console.log('Saving all settings:', settings);
+      
       const updates = Object.entries(settings).map(([key, value]) => ({
         setting_key: key,
-        setting_value: value,
+        setting_value: typeof value === 'string' ? value : String(value),
         updated_at: new Date().toISOString()
       }));
 
       const { error } = await supabase
         .from('site_settings')
-        .upsert(updates);
+        .upsert(updates, {
+          onConflict: 'setting_key'
+        });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Bulk save error:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
         description: "All settings saved successfully",
       });
-    } catch (error) {
+      
+      console.log('All settings saved successfully');
+    } catch (error: any) {
       console.error('Error saving settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save settings",
+        description: error.message || "Failed to save settings",
         variant: "destructive",
       });
     } finally {
