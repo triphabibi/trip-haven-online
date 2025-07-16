@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, FileText, Shield, CheckCircle, AlertCircle, Globe } from 'lucide-react';
-import SinglePageBookingFlow from '@/components/booking/SinglePageBookingFlow';
+import EnhancedVisaBooking from '@/components/visa/EnhancedVisaBooking';
 import { useCurrency } from '@/hooks/useCurrency';
 
 const VisaDetailPage = () => {
@@ -56,15 +56,8 @@ const VisaDetailPage = () => {
 
   if (showBooking) {
     return (
-      <SinglePageBookingFlow
-        service={{
-          id: visa.id,
-          title: `${visa.country} ${visa.visa_type}`,
-          price_adult: visa.price,
-          price_child: 0,
-          price_infant: 0,
-          type: 'visa'
-        }}
+      <EnhancedVisaBooking
+        visa={visa}
         onBack={() => setShowBooking(false)}
       />
     );
