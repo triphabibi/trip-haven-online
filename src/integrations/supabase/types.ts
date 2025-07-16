@@ -52,6 +52,7 @@ export type Database = {
           title: string
           total_reviews: number | null
           updated_at: string | null
+          video_url: string | null
           whats_included: string[] | null
         }
         Insert: {
@@ -91,6 +92,7 @@ export type Database = {
           title: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Update: {
@@ -130,6 +132,7 @@ export type Database = {
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Relationships: []
@@ -956,6 +959,7 @@ export type Database = {
           title: string
           total_reviews: number | null
           updated_at: string | null
+          video_url: string | null
           whats_included: string[] | null
         }
         Insert: {
@@ -996,6 +1000,7 @@ export type Database = {
           title: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Update: {
@@ -1036,6 +1041,7 @@ export type Database = {
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Relationships: []
@@ -1081,6 +1087,7 @@ export type Database = {
           title: string
           total_reviews: number | null
           updated_at: string | null
+          video_url: string | null
           whats_included: string[] | null
         }
         Insert: {
@@ -1123,6 +1130,7 @@ export type Database = {
           title: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Update: {
@@ -1165,6 +1173,7 @@ export type Database = {
           title?: string
           total_reviews?: number | null
           updated_at?: string | null
+          video_url?: string | null
           whats_included?: string[] | null
         }
         Relationships: []
@@ -1467,9 +1476,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      extract_youtube_id: {
+        Args: { url: string }
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      validate_youtube_url: {
+        Args: { url: string }
+        Returns: boolean
       }
     }
     Enums: {

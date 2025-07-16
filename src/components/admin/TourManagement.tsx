@@ -62,7 +62,8 @@ const TourManagement = () => {
       status: 'active',
       highlights: [],
       whats_included: [],
-      image_urls: []
+      image_urls: [],
+      video_url: ''
     });
     setIsDialogOpen(true);
   };
@@ -274,6 +275,31 @@ const TourManagement = () => {
                     onChange={(e) => setEditingTour({...editingTour, duration: e.target.value})}
                     placeholder="e.g., Full Day, 4 Hours"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="video_url">YouTube Video URL</Label>
+                  <Input
+                    id="video_url"
+                    value={editingTour.video_url || ''}
+                    onChange={(e) => setEditingTour({...editingTour, video_url: e.target.value})}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="image_urls">Image URLs (one per line)</Label>
+                  <Textarea
+                    id="image_urls"
+                    value={Array.isArray(editingTour.image_urls) ? editingTour.image_urls.join('\n') : ''}
+                    onChange={(e) => {
+                      const urls = e.target.value.split('\n').filter(url => url.trim() !== '');
+                      setEditingTour({...editingTour, image_urls: urls});
+                    }}
+                    placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+                    rows={4}
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">Enter up to 5 image URLs, one per line</p>
                 </div>
 
                 <div className="flex items-center space-x-2">

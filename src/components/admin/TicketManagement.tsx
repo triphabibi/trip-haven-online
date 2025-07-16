@@ -33,6 +33,8 @@ const TicketManagement = () => {
     available_times: [],
     featured_image: '',
     gallery_images: [],
+    image_urls: [],
+    video_url: '',
     instant_confirmation: true,
     free_cancellation: true,
     instant_delivery: true,
@@ -139,6 +141,8 @@ const TicketManagement = () => {
       available_times: [],
       featured_image: '',
       gallery_images: [],
+      image_urls: [],
+      video_url: '',
       instant_confirmation: true,
       free_cancellation: true,
       instant_delivery: true,
@@ -177,6 +181,8 @@ const TicketManagement = () => {
       available_times: ticket.available_times || [],
       featured_image: ticket.featured_image || '',
       gallery_images: ticket.gallery_images || [],
+      image_urls: ticket.image_urls || [],
+      video_url: ticket.video_url || '',
       instant_confirmation: ticket.instant_confirmation !== false,
       free_cancellation: ticket.free_cancellation !== false,
       instant_delivery: ticket.instant_delivery !== false,
@@ -362,6 +368,33 @@ const TicketManagement = () => {
                       className="bg-white"
                       rows={4}
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="video_url">YouTube Video URL</Label>
+                    <Input
+                      id="video_url"
+                      value={formData.video_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                      className="bg-white"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="image_urls">Image URLs (one per line)</Label>
+                    <Textarea
+                      id="image_urls"
+                      value={Array.isArray(formData.image_urls) ? formData.image_urls.join('\n') : ''}
+                      onChange={(e) => {
+                        const urls = e.target.value.split('\n').filter(url => url.trim() !== '');
+                        setFormData(prev => ({ ...prev, image_urls: urls }));
+                      }}
+                      className="bg-white"
+                      placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+                      rows={4}
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">Enter up to 5 image URLs, one per line</p>
                   </div>
 
                   <div>

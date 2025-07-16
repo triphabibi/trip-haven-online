@@ -9,6 +9,8 @@ import { MapPin, Clock, Star, CheckCircle, Shield } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { YouTubePlayer } from '@/components/common/YouTubePlayer';
+import { ImageGallery } from '@/components/common/ImageGallery';
 
 const TourDetailPage = () => {
   const { id } = useParams();
@@ -102,12 +104,36 @@ const TourDetailPage = () => {
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
-            {tour.featured_image && (
+            {/* Video Section */}
+            {tour.video_url && (
+              <div className="mb-6">
+                <YouTubePlayer 
+                  videoUrl={tour.video_url}
+                  title={tour.title}
+                  className="w-full"
+                />
+              </div>
+            )}
+
+            {/* Image Gallery */}
+            {tour.image_urls && tour.image_urls.length > 0 && (
+              <div className="mb-6">
+                <ImageGallery 
+                  images={tour.image_urls}
+                  title={tour.title}
+                  className="w-full"
+                />
+              </div>
+            )}
+
+            {/* Fallback to featured image if no gallery */}
+            {(!tour.image_urls || tour.image_urls.length === 0) && tour.featured_image && (
               <div className="relative h-96 rounded-lg overflow-hidden mb-6">
                 <img
                   src={tour.featured_image}
                   alt={tour.title}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
             )}

@@ -35,6 +35,8 @@ const PackageManagement = () => {
     available_times: [],
     featured_image: '',
     gallery_images: [],
+    image_urls: [],
+    video_url: '',
     itinerary: { days: [] },
     cancellation_policy: '',
     refund_policy: '',
@@ -151,6 +153,8 @@ const PackageManagement = () => {
       available_times: [],
       featured_image: '',
       gallery_images: [],
+      image_urls: [],
+      video_url: '',
       itinerary: { days: [] },
       cancellation_policy: '',
       refund_policy: '',
@@ -199,6 +203,8 @@ const PackageManagement = () => {
       available_times: pkg.available_times || [],
       featured_image: pkg.featured_image || '',
       gallery_images: pkg.gallery_images || [],
+      image_urls: pkg.image_urls || [],
+      video_url: pkg.video_url || '',
       itinerary: pkg.itinerary || { days: [] },
       cancellation_policy: pkg.cancellation_policy || '',
       refund_policy: pkg.refund_policy || '',
@@ -419,6 +425,33 @@ const PackageManagement = () => {
                       className="bg-white"
                       rows={4}
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="video_url">YouTube Video URL</Label>
+                    <Input
+                      id="video_url"
+                      value={formData.video_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                      className="bg-white"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="image_urls">Image URLs (one per line)</Label>
+                    <Textarea
+                      id="image_urls"
+                      value={Array.isArray(formData.image_urls) ? formData.image_urls.join('\n') : ''}
+                      onChange={(e) => {
+                        const urls = e.target.value.split('\n').filter(url => url.trim() !== '');
+                        setFormData(prev => ({ ...prev, image_urls: urls }));
+                      }}
+                      className="bg-white"
+                      placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+                      rows={4}
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">Enter up to 5 image URLs, one per line</p>
                   </div>
 
                   <div>
