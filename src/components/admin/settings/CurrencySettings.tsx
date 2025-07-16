@@ -22,15 +22,26 @@ const CurrencySettings = ({ settings, onSettingChange, onSettingUpdate }: Curren
   const handleSaveExchangeRate = async () => {
     setIsUpdating(true);
     try {
-      await onSettingUpdate('usd_to_inr_rate', settings.usd_to_inr_rate || '86');
+      const rate = parseFloat(settings.usd_to_inr_rate || '86');
+      if (isNaN(rate) || rate <= 0) {
+        throw new Error('Please enter a valid exchange rate greater than 0');
+      }
+      
+      await onSettingUpdate('usd_to_inr_rate', rate.toString());
+      
       toast({
         title: "Success",
-        description: "Exchange rate updated successfully! This will be used for all future payments.",
+        description: `Exchange rate updated to ₹${rate} per USD! This will be used for all future payments.`,
       });
-    } catch (error) {
+      
+      // Refresh the page after a short delay to reload exchange rates
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
       toast({
         title: "Error", 
-        description: "Failed to update exchange rate",
+        description: error.message || "Failed to update exchange rate",
         variant: "destructive"
       });
     } finally {

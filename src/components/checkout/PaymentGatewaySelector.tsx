@@ -359,40 +359,56 @@ export function PaymentGatewaySelector({
       // Convert file to base64 for storage
       const reader = new FileReader();
       reader.onload = async () => {
-        const base64String = reader.result as string;
-        
-        // Update booking with proof of payment
-        const { error } = await supabase
-          .from('new_bookings')
-          .update({
-            proof_of_payment: base64String,
-            payment_status: 'pending',
-            payment_method: 'bank_transfer'
-          })
-          .eq('id', bookingId);
+        try {
+          const base64String = reader.result as string;
+          
+          // Update booking with proof of payment
+          const { error } = await supabase
+            .from('new_bookings')
+            .update({
+              proof_of_payment: base64String,
+              payment_status: 'pending',
+              payment_method: 'bank_transfer'
+            })
+            .eq('id', bookingId);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        // Call success handler
-        const gateway = gateways?.find(g => g.id === selectedGateway);
-        const targetCurrency = getTargetCurrency(gateway?.name || 'bank_transfer');
-        const convertedAmount = convertForPayment(amount, targetCurrency);
+          // Call success handler
+          const gateway = gateways?.find(g => g.id === selectedGateway);
+          const targetCurrency = getTargetCurrency(gateway?.name || 'bank_transfer');
+          const convertedAmount = convertForPayment(amount, targetCurrency);
 
-        onPaymentSuccess({
-          gateway: 'bank_transfer',
-          type: 'manual',
-          status: 'pending',
-          amount: convertedAmount,
-          currency: targetCurrency,
-          message: transferMessage,
-          bankDetails: bankTransferData,
-          proofUploaded: true
-        });
+          // Show success toast first
+          toast({
+            title: "Payment Proof Submitted",
+            description: "Your payment proof has been submitted for verification",
+          });
 
-        toast({
-          title: "Payment Proof Submitted",
-          description: "Your payment proof has been submitted for verification",
-        });
+          // Call success handler with proper error handling
+          try {
+            onPaymentSuccess({
+              gateway: 'bank_transfer',
+              type: 'manual',
+              status: 'pending',
+              amount: convertedAmount,
+              currency: targetCurrency,
+              message: transferMessage,
+              bankDetails: bankTransferData,
+              proofUploaded: true
+            });
+          } catch (successError) {
+            console.error('Success handler error:', successError);
+            // Don't fail the whole process if success handler has issues
+          }
+        } catch (innerError: any) {
+          console.error('Inner upload error:', innerError);
+          throw innerError;
+        }
+      };
+      
+      reader.onerror = () => {
+        throw new Error('Failed to read file');
       };
       
       reader.readAsDataURL(proofFile);

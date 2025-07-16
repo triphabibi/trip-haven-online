@@ -136,7 +136,7 @@ const ModernVisaCard = ({ visa }: ModernVisaCardProps) => {
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-3xl font-bold text-blue-600">{formatPrice(visa.price)}</span>
+            <span className="text-3xl font-bold text-blue-600">{formatPrice(visa.price, 'USD')}</span>
             <span className="text-gray-500 text-sm ml-2">per person</span>
           </div>
           <Link to={`/visas/${visa.id}`}>

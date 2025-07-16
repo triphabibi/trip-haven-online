@@ -127,11 +127,27 @@ const EmailSettings = () => {
   const saveSmtpSettings = async () => {
     setLoading(true);
     try {
+      // Validate settings before saving
+      if (!smtpSettings.smtp_host || !smtpSettings.smtp_user || !smtpSettings.from_email) {
+        throw new Error('SMTP Host, Username, and From Email are required');
+      }
+
+      // Validate port number
+      const port = parseInt(smtpSettings.smtp_port.toString());
+      if (isNaN(port) || port < 1 || port > 65535) {
+        throw new Error('Please enter a valid port number (1-65535)');
+      }
+
       // First, try to get existing settings
-      const { data: existingData } = await supabase
+      const { data: existingData, error: fetchError } = await supabase
         .from('email_settings')
         .select('id')
         .single();
+
+      // Ignore "no rows" error as it means no settings exist yet
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching existing settings:', fetchError);
+      }
 
       let result;
       
@@ -141,12 +157,13 @@ const EmailSettings = () => {
           .from('email_settings')
           .update({
             smtp_host: smtpSettings.smtp_host,
-            smtp_port: smtpSettings.smtp_port,
+            smtp_port: port,
             smtp_user: smtpSettings.smtp_user,
             smtp_password: smtpSettings.smtp_password,
             from_name: smtpSettings.from_name,
             from_email: smtpSettings.from_email,
-            is_enabled: smtpSettings.is_enabled
+            is_enabled: smtpSettings.is_enabled,
+            updated_at: new Date().toISOString()
           })
           .eq('id', existingData.id)
           .select()
@@ -157,7 +174,7 @@ const EmailSettings = () => {
           .from('email_settings')
           .insert({
             smtp_host: smtpSettings.smtp_host,
-            smtp_port: smtpSettings.smtp_port,
+            smtp_port: port,
             smtp_user: smtpSettings.smtp_user,
             smtp_password: smtpSettings.smtp_password,
             from_name: smtpSettings.from_name,
@@ -173,10 +190,24 @@ const EmailSettings = () => {
         throw result.error;
       }
 
-      console.log('SMTP settings saved:', result.data);
+      console.log('SMTP settings saved successfully:', result.data);
+      
+      // Update local state with saved data
+      if (result.data) {
+        setSmtpSettings({
+          smtp_host: result.data.smtp_host,
+          smtp_port: result.data.smtp_port,
+          smtp_user: result.data.smtp_user,
+          smtp_password: result.data.smtp_password,
+          from_name: result.data.from_name,
+          from_email: result.data.from_email,
+          is_enabled: result.data.is_enabled
+        });
+      }
+
       toast({
         title: "Success",
-        description: "SMTP settings saved successfully",
+        description: "SMTP settings saved successfully! You can now send emails.",
       });
     } catch (error: any) {
       console.error('Error saving SMTP settings:', error);

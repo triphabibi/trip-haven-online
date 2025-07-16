@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Users, Star, MapPin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const PackagesPage = () => {
   const { data: packages, isLoading, error } = usePackages();
+  const { formatPrice } = useCurrency();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   if (isLoading) {
@@ -120,7 +122,7 @@ const PackagesPage = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-2xl font-bold text-blue-600">₹{pkg.price_adult}</span>
+                      <span className="text-2xl font-bold text-blue-600">{formatPrice(pkg.price_adult, 'USD')}</span>
                       <span className="text-gray-500 text-sm ml-1">per person</span>
                     </div>
                     <Link to={`/packages/${pkg.id}`}>
