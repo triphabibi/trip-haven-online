@@ -11,6 +11,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { YouTubePlayer } from '@/components/common/YouTubePlayer';
 import { ImageGallery } from '@/components/common/ImageGallery';
+import UnifiedTourBooking from '@/components/tours/UnifiedTourBooking';
 
 const TourDetailPage = () => {
   const { id } = useParams();
@@ -206,27 +207,7 @@ const TourDetailPage = () => {
             
             <div className="lg:col-span-1">
               <div className="sticky top-4">
-                {/* Booking Card */}
-                <Card className="border-0 shadow-lg">
-                  <CardContent className="p-4 md:p-6">
-                    <div className="space-y-4">
-                      <div className="text-center lg:text-left">
-                        <div className="text-2xl md:text-3xl font-bold text-blue-600">
-                          From {formatPrice(tour.price_adult)}
-                        </div>
-                        <p className="text-sm text-gray-600">per adult</p>
-                      </div>
-                      
-                      <Button 
-                        onClick={handleBookNow}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-                        size="lg"
-                      >
-                        Book Now
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <UnifiedTourBooking tour={tour} />
               </div>
             </div>
           </div>

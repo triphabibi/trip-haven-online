@@ -118,171 +118,203 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
   };
 
   return (
-    <Card className="shadow-xl border-0">
-      <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
-        <CardTitle className="text-xl text-center">Book Tickets</CardTitle>
+    <Card className="shadow-lg border-0">
+      <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-4 md:p-6">
+        <CardTitle className="text-xl md:text-2xl font-bold text-center">Book Tickets</CardTitle>
         <div className="text-center">
-          <div className="text-2xl font-bold">{formatPrice(totalPrice)}</div>
-          <div className="text-white/80">Total for {formData.adults + formData.children + formData.infants} people</div>
+          <div className="text-2xl md:text-3xl font-bold">{formatPrice(totalPrice)}</div>
+          <div className="text-white/90 text-sm">Total for {formData.adults + formData.children + formData.infants} people</div>
         </div>
       </CardHeader>
       
-      <CardContent className="p-6 space-y-4">
-        {/* Date */}
+      <CardContent className="p-4 md:p-6 space-y-4">
+        {/* Select Date */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 font-medium">
-            <Calendar className="h-4 w-4" />
-            Select Date *
-          </Label>
-          <Input
-            type="date"
-            value={formData.selectedDate}
-            onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
-            min={new Date().toISOString().split('T')[0]}
-            className={`h-12 ${errors.selectedDate ? 'border-red-500' : ''}`}
-          />
-          {errors.selectedDate && <p className="text-red-500 text-sm">{errors.selectedDate}</p>}
+          <Label className="text-sm font-medium">Select Date *</Label>
+          <div className="relative">
+            <Input
+              type="date"
+              value={formData.selectedDate}
+              onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
+              min={new Date().toISOString().split('T')[0]}
+              className={`h-12 pl-10 ${errors.selectedDate ? 'border-red-500' : ''}`}
+            />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+          {errors.selectedDate && <p className="text-red-500 text-xs">{errors.selectedDate}</p>}
         </div>
 
         {/* Lead Guest Name */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 font-medium">
-            <User className="h-4 w-4" />
-            Lead Guest Full Name *
-          </Label>
-          <Input
-            value={formData.leadGuestName}
-            onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
-            placeholder="Enter full name"
-            className={`h-12 ${errors.leadGuestName ? 'border-red-500' : ''}`}
-          />
-          {errors.leadGuestName && <p className="text-red-500 text-sm">{errors.leadGuestName}</p>}
+          <Label className="text-sm font-medium">Lead Guest Full Name *</Label>
+          <div className="relative">
+            <Input
+              value={formData.leadGuestName}
+              onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
+              placeholder="Enter full name"
+              className={`h-12 pl-10 ${errors.leadGuestName ? 'border-red-500' : ''}`}
+            />
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+          {errors.leadGuestName && <p className="text-red-500 text-xs">{errors.leadGuestName}</p>}
         </div>
 
-        {/* Time */}
+        {/* Select Time */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 font-medium">
-            <Clock className="h-4 w-4" />
-            Select Time *
-          </Label>
-          <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
-            <SelectTrigger className={`h-12 ${errors.selectedTime ? 'border-red-500' : ''}`}>
-              <SelectValue placeholder="Choose time" />
-            </SelectTrigger>
-            <SelectContent>
-              {timeSlots.map((time) => (
-                <SelectItem key={time} value={time}>{time}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.selectedTime && <p className="text-red-500 text-sm">{errors.selectedTime}</p>}
+          <Label className="text-sm font-medium">Select Time *</Label>
+          <div className="relative">
+            <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
+              <SelectTrigger className={`h-12 pl-10 ${errors.selectedTime ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder="Choose time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeSlots.map((time) => (
+                  <SelectItem key={time} value={time}>{time}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+          {errors.selectedTime && <p className="text-red-500 text-xs">{errors.selectedTime}</p>}
         </div>
 
         {/* Number of People */}
         <div className="space-y-3">
-          <Label className="flex items-center gap-2 font-medium">
-            <Users className="h-4 w-4" />
-            Number of People
-          </Label>
+          <Label className="text-sm font-medium">Number of People</Label>
           
-          {/* Adults */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <div className="font-medium">Adults</div>
-              <div className="text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => updateCount('adults', false)}
-                disabled={formData.adults <= 1}
-                className="h-8 w-8 p-0"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span className="w-8 text-center font-medium">{formData.adults}</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => updateCount('adults', true)}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {ticket.price_child && ticket.price_child > 0 && (
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="space-y-3">
+            {/* Adults */}
+            <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium">Children</div>
-                <div className="text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
+                <div className="font-medium">Adults</div>
+                <div className="text-xs text-gray-600">{formatPrice(ticket.price_adult)} each</div>
               </div>
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => updateCount('children', false)}
-                  disabled={formData.children <= 0}
-                  className="h-8 w-8 p-0"
+                  onClick={() => updateCount('adults', false)}
+                  disabled={formData.adults <= 1}
+                  className="h-10 w-10 p-0 rounded-md"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center font-medium">{formData.children}</span>
+                <span className="w-8 text-center font-medium text-lg">{formData.adults}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => updateCount('children', true)}
-                  className="h-8 w-8 p-0"
+                  onClick={() => updateCount('adults', true)}
+                  className="h-10 w-10 p-0 rounded-md"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          )}
+
+            {/* Children */}
+            {ticket.price_child && ticket.price_child > 0 && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">Children</div>
+                  <div className="text-xs text-gray-600">{formatPrice(ticket.price_child)} each</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCount('children', false)}
+                    disabled={formData.children <= 0}
+                    className="h-10 w-10 p-0 rounded-md"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-lg">{formData.children}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCount('children', true)}
+                    className="h-10 w-10 p-0 rounded-md"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Infants */}
+            {ticket.price_infant && ticket.price_infant > 0 && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">Infants</div>
+                  <div className="text-xs text-gray-600">{formatPrice(ticket.price_infant)} each</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCount('infants', false)}
+                    disabled={formData.infants <= 0}
+                    className="h-10 w-10 p-0 rounded-md"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-lg">{formData.infants}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCount('infants', true)}
+                    className="h-10 w-10 p-0 rounded-md"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Email */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 font-medium">
-            <Mail className="h-4 w-4" />
-            Email Address *
-          </Label>
-          <Input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="Enter email address"
-            className={`h-12 ${errors.email ? 'border-red-500' : ''}`}
-          />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          <Label className="text-sm font-medium">Email Address *</Label>
+          <div className="relative">
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="Enter email address"
+              className={`h-12 pl-10 ${errors.email ? 'border-red-500' : ''}`}
+            />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+          {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
         </div>
 
-        {/* Mobile */}
+        {/* Mobile Number */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 font-medium">
-            <Phone className="h-4 w-4" />
-            Mobile Number *
-          </Label>
-          <Input
-            type="tel"
-            value={formData.mobile}
-            onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
-            placeholder="Enter mobile number"
-            className={`h-12 ${errors.mobile ? 'border-red-500' : ''}`}
-          />
-          {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
+          <Label className="text-sm font-medium">Mobile Number *</Label>
+          <div className="relative">
+            <Input
+              type="tel"
+              value={formData.mobile}
+              onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
+              placeholder="Enter mobile number"
+              className={`h-12 pl-10 ${errors.mobile ? 'border-red-500' : ''}`}
+            />
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+          {errors.mobile && <p className="text-red-500 text-xs">{errors.mobile}</p>}
         </div>
 
         {/* Book Now Button */}
         <Button
           onClick={handleBookNow}
-          className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
         >
           Book Now - {formatPrice(totalPrice)}
         </Button>
