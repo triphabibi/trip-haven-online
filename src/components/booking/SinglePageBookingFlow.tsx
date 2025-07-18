@@ -273,67 +273,87 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   }
 
   return (
+    
     <>
-      <LoadingOverlay 
-        isVisible={isProcessing} 
-        type="booking" 
-        message={loadingMessage}
-      />
-      
-      <style>{`
-        @media (max-width: 768px) {
-          .booking-container, .step-box, .form-field {
-            width: 100% !important;
-            padding: 15px !important;
-            margin: 0 auto !important;
-            box-sizing: border-box !important;
-          }
-          .mobile-full-width {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-          }
-          .mobile-card {
-            border-radius: 12px !important;
-            margin-bottom: 16px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-          }
-          .mobile-input {
-            height: 48px !important;
-            font-size: 16px !important;
-          }
-          .mobile-button {
-            height: 48px !important;
-            font-size: 16px !important;
-            border-radius: 12px !important;
-          }
-        }
-      `}</style>
-      
-      <div className="min-h-screen bg-gray-50 py-4 md:py-8">
-        <div className="mobile-full-width max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-6 md:mb-8">
-            <Button variant="outline" onClick={onBack} className="flex items-center gap-2 mobile-button">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">Book {service.title}</h1>
-              <p className="text-gray-600 text-sm md:text-base">Complete your booking details</p>
-            </div>
-          </div>
+  <LoadingOverlay 
+    isVisible={isProcessing} 
+    type="booking" 
+    message={loadingMessage}
+  />
+  
+  <style>{`
+    /* MOBILE STYLES */
+    @media (max-width: 768px) {
+      /* Ensure full width and padding for main container */
+      .booking-container {
+        display: block !important;  /* disable grid on mobile */
+        width: 100% !important;
+        padding: 0 16px !important;
+        margin: 0 auto !important;
+      }
 
-          <div className="booking-container grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-4 md:space-y-6">
-              {/* Service Details */}
-              <div className="mobile-card">
-                <TabbedTourDetails tour={service} />
-              </div>
+      /* Make step boxes and cards full width */
+      .step-box, .form-field, .mobile-card {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+      }
+
+      /* Input and buttons bigger touch targets */
+      .mobile-input {
+        height: 48px !important;
+        font-size: 16px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+      
+      .mobile-button {
+        height: 48px !important;
+        font-size: 16px !important;
+        border-radius: 12px !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+      }
+
+      /* Fix Booking Summary card sticky on mobile */
+      .lg\\:sticky {
+        position: static !important;
+        top: auto !important;
+      }
+
+      /* Fix gaps and margins */
+      .gap-4 {
+        gap: 1rem !important;
+      }
+
+      .gap-8 {
+        gap: 1.5rem !important;
+      }
+    }
+  `}</style>
+  
+  <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mobile-full-width">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6 md:mb-8 flex-wrap">
+        <Button variant="outline" onClick={onBack} className="flex items-center gap-2 mobile-button">
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">Book {service.title}</h1>
+          <p className="text-gray-600 text-sm md:text-base">Complete your booking details</p>
+        </div>
+      </div>
+
+      <div className="booking-container grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          {/* Service Details */}
+          <div className="mobile-card">
+            <TabbedTourDetails tour={service} />
+          </div>
 
               {/* Trip Details */}
               <Card className="mobile-card step-box">
