@@ -73,14 +73,14 @@ const ModernVisaCard = ({ visa }: ModernVisaCardProps) => {
           </div>
         </div>
         
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
           {visa.is_featured && (
-            <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
+            <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 h-6">
               Featured
             </Badge>
           )}
-          <Badge className={`${getVisaTypeBadge(visa.visa_type)} border-0`}>
-            {visa.visa_type}
+          <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 h-6">
+            Trending
           </Badge>
         </div>
       </div>

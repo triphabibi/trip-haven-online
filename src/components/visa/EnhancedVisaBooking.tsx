@@ -16,6 +16,7 @@ interface VisaService {
   country: string;
   visa_type: string;
   price: number;
+  child_price?: number;
   processing_time?: string;
   requirements?: string[];
   description?: string;
@@ -70,7 +71,9 @@ const EnhancedVisaBooking = ({ visa, onBack }: EnhancedVisaBookingProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalTravelers = adultsCount + childrenCount;
-  const totalAmount = totalTravelers * visa.price;
+  const adultPrice = visa.price;
+  const childPrice = visa.child_price || visa.price; // Fallback to adult price if child price not set
+  const totalAmount = (adultsCount * adultPrice) + (childrenCount * childPrice);
 
   // Initialize traveler forms when needed
   const initializeTravelers = () => {
@@ -275,30 +278,65 @@ const EnhancedVisaBooking = ({ visa, onBack }: EnhancedVisaBookingProps) => {
             <p className="text-muted-foreground">Step 1: How many travelers?</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="adults">No. of Adults (required)</Label>
-                <Input
-                  id="adults"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={adultsCount}
-                  onChange={(e) => setAdultsCount(parseInt(e.target.value) || 1)}
-                  className="text-center text-lg font-semibold"
-                />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div>
+                  <Label className="font-medium text-lg">Adults (12–99 years)</Label>
+                  <div className="text-sm text-gray-600">{formatPrice(adultPrice, 'USD')} per person</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAdultsCount(Math.max(1, adultsCount - 1))}
+                    disabled={adultsCount <= 1}
+                    className="h-10 w-10 p-0 rounded-full"
+                  >
+                    −
+                  </Button>
+                  <span className="w-12 text-center text-xl font-bold">{adultsCount}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAdultsCount(Math.min(10, adultsCount + 1))}
+                    disabled={adultsCount >= 10}
+                    className="h-10 w-10 p-0 rounded-full"
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="children">No. of Children (optional)</Label>
-                <Input
-                  id="children"
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={childrenCount}
-                  onChange={(e) => setChildrenCount(parseInt(e.target.value) || 0)}
-                  className="text-center text-lg font-semibold"
-                />
+
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div>
+                  <Label className="font-medium text-lg">Children (0–12 years)</Label>
+                  <div className="text-sm text-gray-600">{formatPrice(childPrice, 'USD')} per person</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                    disabled={childrenCount <= 0}
+                    className="h-10 w-10 p-0 rounded-full"
+                  >
+                    −
+                  </Button>
+                  <span className="w-12 text-center text-xl font-bold">{childrenCount}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setChildrenCount(Math.min(10, childrenCount + 1))}
+                    disabled={childrenCount >= 10}
+                    className="h-10 w-10 p-0 rounded-full"
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
             </div>
 

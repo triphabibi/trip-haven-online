@@ -1385,6 +1385,7 @@ export type Database = {
         Row: {
           booking_count: number | null
           cancellation_policy: string | null
+          child_price: number | null
           country: string
           created_at: string | null
           description: string | null
@@ -1414,6 +1415,7 @@ export type Database = {
         Insert: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          child_price?: number | null
           country: string
           created_at?: string | null
           description?: string | null
@@ -1443,6 +1445,7 @@ export type Database = {
         Update: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          child_price?: number | null
           country?: string
           created_at?: string | null
           description?: string | null

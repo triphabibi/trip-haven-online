@@ -19,6 +19,7 @@ const EnhancedVisaManagement = () => {
     country: '',
     visa_type: '',
     price: 0,
+    child_price: 0,
     processing_time: '',
     description: '',
     overview: '',
@@ -128,7 +129,7 @@ const EnhancedVisaManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      country: '', visa_type: '', price: 0, processing_time: '', description: '', overview: '',
+      country: '', visa_type: '', price: 0, child_price: 0, processing_time: '', description: '', overview: '',
       highlights: [], whats_included: [], exclusions: [], requirements: [],
       cancellation_policy: '', refund_policy: '', terms_conditions: '',
       seo_title: '', seo_description: '', seo_keywords: '', slug: '',
@@ -153,6 +154,7 @@ const EnhancedVisaManagement = () => {
       country: visa.country || '',
       visa_type: visa.visa_type || '',
       price: visa.price || 0,
+      child_price: visa.child_price || 0,
       processing_time: visa.processing_time || '',
       description: visa.description || '',
       overview: visa.overview || '',
@@ -268,9 +270,9 @@ const EnhancedVisaManagement = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="price">Price *</Label>
+                      <Label htmlFor="price">Adult Price *</Label>
                       <Input
                         id="price"
                         type="number"
@@ -279,6 +281,19 @@ const EnhancedVisaManagement = () => {
                         required
                         min="0"
                         step="0.01"
+                        placeholder="Adult visa price"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="child_price">Child Price (optional)</Label>
+                      <Input
+                        id="child_price"
+                        type="number"
+                        value={formData.child_price}
+                        onChange={(e) => setFormData(prev => ({ ...prev, child_price: Number(e.target.value) }))}
+                        min="0"
+                        step="0.01"
+                        placeholder="Child visa price (defaults to adult price)"
                       />
                     </div>
                     <div>

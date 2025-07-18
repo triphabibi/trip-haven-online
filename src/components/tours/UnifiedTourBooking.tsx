@@ -111,7 +111,17 @@ const UnifiedTourBooking = ({ tour }: UnifiedTourBookingProps) => {
           </div>
         </CardHeader>
         
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 space-y-4">
+          <style>{`
+            @media (max-width: 768px) {
+              .booking-container, .step-box, .form-field {
+                width: 100% !important;
+                padding: 10px !important;
+                margin: 0 auto !important;
+                box-sizing: border-box !important;
+              }
+            }
+          `}</style>
           {/* Tour Date */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2 font-medium">
