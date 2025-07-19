@@ -493,20 +493,13 @@ const EnhancedVisaManagement = () => {
                     </Button>
                   </div>
                 </form>
-               </CardContent>
-             </Card>
-           </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </div>
+  );
+};
 
-           <TabsContent value="categories">
-             <div className="p-6 text-center">
-               <h3 className="text-lg font-semibold mb-2">Visa Categories Management</h3>
-               <p className="text-gray-600">Category management functionality will be available soon.</p>
-             </div>
-           </TabsContent>
-         </Tabs>
-       </Card>
-     </div>
-   );
- };
- 
- export default EnhancedVisaManagement;
+export default EnhancedVisaManagement;
