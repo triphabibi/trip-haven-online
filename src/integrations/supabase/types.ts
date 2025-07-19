@@ -1381,10 +1381,47 @@ export type Database = {
         }
         Relationships: []
       }
+      visa_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon_emoji: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       visa_services: {
         Row: {
           booking_count: number | null
           cancellation_policy: string | null
+          category_id: string | null
           child_price: number | null
           country: string
           created_at: string | null
@@ -1415,6 +1452,7 @@ export type Database = {
         Insert: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          category_id?: string | null
           child_price?: number | null
           country: string
           created_at?: string | null
@@ -1445,6 +1483,7 @@ export type Database = {
         Update: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          category_id?: string | null
           child_price?: number | null
           country?: string
           created_at?: string | null
@@ -1472,7 +1511,15 @@ export type Database = {
           visa_type?: string
           whats_included?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "visa_services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "visa_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

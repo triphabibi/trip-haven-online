@@ -427,16 +427,171 @@ const PackageManagement = () => {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="video_url">YouTube Video URL</Label>
-                    <Input
-                      id="video_url"
-                      value={formData.video_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                      className="bg-white"
-                      placeholder="https://www.youtube.com/watch?v=..."
-                    />
-                  </div>
+                   <div>
+                     <Label htmlFor="video_url">YouTube Video URL</Label>
+                     <Input
+                       id="video_url"
+                       value={formData.video_url}
+                       onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                       className="bg-white"
+                       placeholder="https://www.youtube.com/watch?v=..."
+                     />
+                   </div>
+
+                   <div>
+                     <Label>Package Itinerary</Label>
+                     <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
+                       <div className="text-sm text-gray-600 mb-4">
+                         Create a day-by-day itinerary for your package. Each day should include activities, meals, and accommodation details.
+                       </div>
+                       
+                       {formData.itinerary?.days?.map((day: any, index: number) => (
+                         <div key={index} className="border rounded-lg p-4 bg-white">
+                           <div className="flex items-center justify-between mb-3">
+                             <h4 className="font-semibold">Day {index + 1}</h4>
+                             <Button
+                               type="button"
+                               variant="outline"
+                               size="sm"
+                               onClick={() => {
+                                 const newItinerary = { ...formData.itinerary };
+                                 newItinerary.days = newItinerary.days.filter((_: any, i: number) => i !== index);
+                                 setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                               }}
+                               className="text-red-600 hover:text-red-700"
+                             >
+                               <X className="h-4 w-4" />
+                             </Button>
+                           </div>
+                           
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                               <Label>Day Title</Label>
+                               <Input
+                                 value={day.title || ''}
+                                 onChange={(e) => {
+                                   const newItinerary = { ...formData.itinerary };
+                                   newItinerary.days[index] = { ...day, title: e.target.value };
+                                   setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                                 }}
+                                 placeholder="e.g., Arrival & City Tour"
+                                 className="bg-white"
+                               />
+                             </div>
+                             
+                             <div>
+                               <Label>Location</Label>
+                               <Input
+                                 value={day.location || ''}
+                                 onChange={(e) => {
+                                   const newItinerary = { ...formData.itinerary };
+                                   newItinerary.days[index] = { ...day, location: e.target.value };
+                                   setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                                 }}
+                                 placeholder="e.g., Dubai City"
+                                 className="bg-white"
+                               />
+                             </div>
+                           </div>
+                           
+                           <div className="mt-4">
+                             <Label>Activities & Description</Label>
+                             <Textarea
+                               value={day.description || ''}
+                               onChange={(e) => {
+                                 const newItinerary = { ...formData.itinerary };
+                                 newItinerary.days[index] = { ...day, description: e.target.value };
+                                 setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                               }}
+                               placeholder="Describe the day's activities, meals, and accommodations..."
+                               className="bg-white"
+                               rows={3}
+                             />
+                           </div>
+                           
+                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                             <div>
+                               <Label>Breakfast</Label>
+                               <Input
+                                 value={day.breakfast || ''}
+                                 onChange={(e) => {
+                                   const newItinerary = { ...formData.itinerary };
+                                   newItinerary.days[index] = { ...day, breakfast: e.target.value };
+                                   setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                                 }}
+                                 placeholder="Hotel/Restaurant"
+                                 className="bg-white"
+                               />
+                             </div>
+                             
+                             <div>
+                               <Label>Lunch</Label>
+                               <Input
+                                 value={day.lunch || ''}
+                                 onChange={(e) => {
+                                   const newItinerary = { ...formData.itinerary };
+                                   newItinerary.days[index] = { ...day, lunch: e.target.value };
+                                   setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                                 }}
+                                 placeholder="Restaurant/Hotel"
+                                 className="bg-white"
+                               />
+                             </div>
+                             
+                             <div>
+                               <Label>Dinner</Label>
+                               <Input
+                                 value={day.dinner || ''}
+                                 onChange={(e) => {
+                                   const newItinerary = { ...formData.itinerary };
+                                   newItinerary.days[index] = { ...day, dinner: e.target.value };
+                                   setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                                 }}
+                                 placeholder="Hotel/Restaurant"
+                                 className="bg-white"
+                               />
+                             </div>
+                           </div>
+                           
+                           <div className="mt-4">
+                             <Label>Accommodation</Label>
+                             <Input
+                               value={day.accommodation || ''}
+                               onChange={(e) => {
+                                 const newItinerary = { ...formData.itinerary };
+                                 newItinerary.days[index] = { ...day, accommodation: e.target.value };
+                                 setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                               }}
+                               placeholder="Hotel name and details"
+                               className="bg-white"
+                             />
+                           </div>
+                         </div>
+                       ))}
+                       
+                       <Button
+                         type="button"
+                         variant="outline"
+                         onClick={() => {
+                           const newItinerary = formData.itinerary || { days: [] };
+                           newItinerary.days = [...(newItinerary.days || []), {
+                             title: '',
+                             location: '',
+                             description: '',
+                             breakfast: '',
+                             lunch: '',
+                             dinner: '',
+                             accommodation: ''
+                           }];
+                           setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+                         }}
+                         className="w-full"
+                       >
+                         <Plus className="h-4 w-4 mr-2" />
+                         Add Day
+                       </Button>
+                     </div>
+                   </div>
 
                   <div>
                     <Label htmlFor="image_urls">Image URLs (one per line)</Label>
