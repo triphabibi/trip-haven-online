@@ -347,11 +347,11 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
         </div>
       </div>
 
-      <div className="booking-container grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+      <div className="w-full flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+        <div className="w-full lg:col-span-2 space-y-4 md:space-y-6">
           {/* Service Details */}
-          <div className="mobile-card">
+          <div className="mobile-card w-full">
             <TabbedTourDetails tour={service} />
           </div>
 
