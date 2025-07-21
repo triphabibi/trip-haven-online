@@ -115,136 +115,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
   };
 
   return (
-    <div className="w-full max-w-none overflow-hidden">
-      {/* Mobile-First Responsive Styles */}
-      <style>{`
-        .mobile-responsive-form {
-          width: 100% !important;
-          max-width: none !important;
-          overflow-x: hidden !important;
-        }
-        
-        .form-section {
-          width: 100% !important;
-          margin-bottom: 1.5rem !important;
-        }
-        
-        .form-input {
-          width: 100% !important;
-          min-height: 48px !important;
-          font-size: 16px !important;
-          padding: 12px 16px !important;
-          border-radius: 8px !important;
-          border: 1px solid #d1d5db !important;
-          box-sizing: border-box !important;
-        }
-        
-        .counter-container {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          padding: 16px !important;
-          background: #f9fafb !important;
-          border-radius: 8px !important;
-          margin-bottom: 12px !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-        
-        .counter-controls {
-          display: flex !important;
-          align-items: center !important;
-          gap: 16px !important;
-          flex-shrink: 0 !important;
-        }
-        
-        .counter-btn {
-          width: 40px !important;
-          height: 40px !important;
-          min-width: 40px !important;
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          border: 2px solid #e5e7eb !important;
-          background: white !important;
-          cursor: pointer !important;
-          transition: all 0.2s !important;
-          flex-shrink: 0 !important;
-        }
-        
-        .counter-btn:hover:not(:disabled) {
-          border-color: #3b82f6 !important;
-          background: #eff6ff !important;
-        }
-        
-        .counter-btn:disabled {
-          opacity: 0.5 !important;
-          cursor: not-allowed !important;
-        }
-        
-        .counter-value {
-          font-weight: bold !important;
-          font-size: 18px !important;
-          min-width: 2rem !important;
-          text-align: center !important;
-          flex-shrink: 0 !important;
-        }
-        
-        .price-info {
-          flex: 1 !important;
-          min-width: 0 !important;
-        }
-        
-        .price-title {
-          font-weight: 500 !important;
-          color: #111827 !important;
-          font-size: 16px !important;
-          margin-bottom: 4px !important;
-        }
-        
-        .price-amount {
-          color: #6b7280 !important;
-          font-size: 14px !important;
-        }
-        
-        @media (max-width: 640px) {
-          .form-input {
-            font-size: 16px !important;
-          }
-          
-          .counter-controls {
-            gap: 12px !important;
-          }
-          
-          .counter-btn {
-            width: 36px !important;
-            height: 36px !important;
-            min-width: 36px !important;
-          }
-        }
-      `}</style>
-
-      <div className="mobile-responsive-form space-y-6">
+    <div className="w-full max-w-none overflow-x-hidden min-w-0">
+      <div className="w-full space-y-4 sm:space-y-6 min-w-0">
         {/* Total Price Display */}
-        <div className="form-section">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1 break-words">
+        <div className="w-full min-w-0">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 sm:p-4 rounded-lg text-center w-full">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 break-words">
               {formatPrice(totalPrice)}
             </div>
-            <div className="text-gray-600 text-sm">
+            <div className="text-gray-600 text-xs sm:text-sm">
               Total for {formData.adults + formData.children + formData.infants} people
             </div>
           </div>
         </div>
 
         {/* Date and Time Selection */}
-        <div className="form-section">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="w-full min-w-0">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {/* Date */}
-            <div>
-              <Label className="flex items-center gap-2 font-medium mb-2">
-                <Calendar className="h-4 w-4" />
+            <div className="w-full min-w-0">
+              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 Select Date *
               </Label>
               <Input
@@ -252,19 +143,19 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.selectedDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
-                className={`form-input ${errors.selectedDate ? 'border-red-500' : ''}`}
+                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.selectedDate ? 'border-red-500' : ''}`}
               />
-              {errors.selectedDate && <p className="text-red-500 text-sm mt-1">{errors.selectedDate}</p>}
+              {errors.selectedDate && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.selectedDate}</p>}
             </div>
 
             {/* Time */}
-            <div>
-              <Label className="flex items-center gap-2 font-medium mb-2">
-                <Clock className="h-4 w-4" />
+            <div className="w-full min-w-0">
+              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 Select Time *
               </Label>
               <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
-                <SelectTrigger className={`form-input ${errors.selectedTime ? 'border-red-500' : ''}`}>
+                <SelectTrigger className={`w-full min-h-[48px] text-sm sm:text-base ${errors.selectedTime ? 'border-red-500' : ''}`}>
                   <SelectValue placeholder="Choose time" />
                 </SelectTrigger>
                 <SelectContent>
@@ -273,123 +164,125 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.selectedTime && <p className="text-red-500 text-sm mt-1">{errors.selectedTime}</p>}
+              {errors.selectedTime && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.selectedTime}</p>}
             </div>
           </div>
         </div>
 
         {/* Lead Guest Name */}
-        <div className="form-section">
-          <Label className="flex items-center gap-2 font-medium mb-2">
-            <User className="h-4 w-4" />
+        <div className="w-full min-w-0">
+          <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
+            <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             Lead Guest Full Name *
           </Label>
           <Input
             value={formData.leadGuestName}
             onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
             placeholder="Enter full name"
-            className={`form-input ${errors.leadGuestName ? 'border-red-500' : ''}`}
+            className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.leadGuestName ? 'border-red-500' : ''}`}
           />
-          {errors.leadGuestName && <p className="text-red-500 text-sm mt-1">{errors.leadGuestName}</p>}
+          {errors.leadGuestName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.leadGuestName}</p>}
         </div>
 
         {/* Number of People */}
-        <div className="form-section">
-          <Label className="flex items-center gap-2 font-medium mb-4">
-            <Users className="h-4 w-4" />
+        <div className="w-full min-w-0">
+          <Label className="flex items-center gap-2 font-medium mb-3 sm:mb-4 text-sm sm:text-base">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             Number of People
           </Label>
           
-          {/* Adults */}
-          <div className="counter-container">
-            <div className="price-info">
-              <div className="price-title">Adults</div>
-              <div className="price-amount">{formatPrice(ticket.price_adult)} each</div>
+          <div className="space-y-2 sm:space-y-3 w-full">
+            {/* Adults */}
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
+              <div className="flex-1 min-w-0 mr-3">
+                <div className="font-medium text-sm sm:text-base text-gray-900">Adults</div>
+                <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <button
+                  type="button"
+                  className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={() => updateCount('adults', false)}
+                  disabled={formData.adults <= 1}
+                >
+                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
+                <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.adults}</span>
+                <button
+                  type="button"
+                  className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  onClick={() => updateCount('adults', true)}
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
+              </div>
             </div>
-            <div className="counter-controls">
-              <button
-                type="button"
-                className="counter-btn"
-                onClick={() => updateCount('adults', false)}
-                disabled={formData.adults <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="counter-value">{formData.adults}</span>
-              <button
-                type="button"
-                className="counter-btn"
-                onClick={() => updateCount('adults', true)}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
+
+            {/* Children */}
+            {ticket.price_child && ticket.price_child > 0 && (
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
+                <div className="flex-1 min-w-0 mr-3">
+                  <div className="font-medium text-sm sm:text-base text-gray-900">Children</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                  <button
+                    type="button"
+                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => updateCount('children', false)}
+                    disabled={formData.children <= 0}
+                  >
+                    <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </button>
+                  <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.children}</span>
+                  <button
+                    type="button"
+                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    onClick={() => updateCount('children', true)}
+                  >
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Infants */}
+            {ticket.price_infant && ticket.price_infant > 0 && (
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
+                <div className="flex-1 min-w-0 mr-3">
+                  <div className="font-medium text-sm sm:text-base text-gray-900">Infants</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_infant)} each</div>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                  <button
+                    type="button"
+                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => updateCount('infants', false)}
+                    disabled={formData.infants <= 0}
+                  >
+                    <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </button>
+                  <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.infants}</span>
+                  <button
+                    type="button"
+                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    onClick={() => updateCount('infants', true)}
+                  >
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Children */}
-          {ticket.price_child && ticket.price_child > 0 && (
-            <div className="counter-container">
-              <div className="price-info">
-                <div className="price-title">Children</div>
-                <div className="price-amount">{formatPrice(ticket.price_child)} each</div>
-              </div>
-              <div className="counter-controls">
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => updateCount('children', false)}
-                  disabled={formData.children <= 0}
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="counter-value">{formData.children}</span>
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => updateCount('children', true)}
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Infants */}
-          {ticket.price_infant && ticket.price_infant > 0 && (
-            <div className="counter-container">
-              <div className="price-info">
-                <div className="price-title">Infants</div>
-                <div className="price-amount">{formatPrice(ticket.price_infant)} each</div>
-              </div>
-              <div className="counter-controls">
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => updateCount('infants', false)}
-                  disabled={formData.infants <= 0}
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="counter-value">{formData.infants}</span>
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => updateCount('infants', true)}
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Contact Information */}
-        <div className="form-section">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="w-full min-w-0">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {/* Email */}
-            <div>
-              <Label className="flex items-center gap-2 font-medium mb-2">
-                <Mail className="h-4 w-4" />
+            <div className="w-full min-w-0">
+              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
+                <Mail className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 Email Address *
               </Label>
               <Input
@@ -397,15 +290,15 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 placeholder="Enter email address"
-                className={`form-input ${errors.email ? 'border-red-500' : ''}`}
+                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.email ? 'border-red-500' : ''}`}
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.email}</p>}
             </div>
 
             {/* Mobile */}
-            <div>
-              <Label className="flex items-center gap-2 font-medium mb-2">
-                <Phone className="h-4 w-4" />
+            <div className="w-full min-w-0">
+              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
+                <Phone className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 Mobile Number *
               </Label>
               <Input
@@ -413,18 +306,18 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.mobile}
                 onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
                 placeholder="Enter mobile number"
-                className={`form-input ${errors.mobile ? 'border-red-500' : ''}`}
+                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.mobile ? 'border-red-500' : ''}`}
               />
-              {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile}</p>}
+              {errors.mobile && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile}</p>}
             </div>
           </div>
         </div>
 
         {/* Book Now Button */}
-        <div className="form-section">
+        <div className="w-full min-w-0">
           <Button
             onClick={handleBookNow}
-            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+            className="w-full min-h-[48px] sm:min-h-[56px] text-sm sm:text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
           >
             Book Now - {formatPrice(totalPrice)}
           </Button>
