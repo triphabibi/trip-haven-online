@@ -80,7 +80,7 @@ const VisaPage = () => {
           <div className="mb-6">
             <Globe className="h-16 w-16 mx-auto text-white/90 mb-4" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-6">UAE Visa Services</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-6">Worldwide Visa Services</h1>
           <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-8">
             Get your visa processed quickly and hassle-free with expert assistance and guidance
           </p>
