@@ -216,15 +216,17 @@ export const TicketDetailsTabs: React.FC<TicketDetailsTabsProps> = ({ ticket }) 
         </div>
       </Tabs>
 
-      <style jsx>{`
-        .scrollbar-hide {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .scrollbar-hide {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `
+      }} />
     </div>
   );
 };
