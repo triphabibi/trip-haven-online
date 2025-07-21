@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -273,373 +272,416 @@ const SinglePageBookingFlow = ({ service, onBack }: Props) => {
   }
 
   return (
-    
     <>
-  <LoadingOverlay 
-    isVisible={isProcessing} 
-    type="booking" 
-    message={loadingMessage}
-  />
-  
-  <style>{`
-    /* MOBILE STYLES */
-    @media (max-width: 768px) {
-      /* Ensure full width and padding for main container */
-      .booking-container {
-        display: block !important;  /* disable grid on mobile */
-        width: 100% !important;
-        padding: 0 16px !important;
-        margin: 0 auto !important;
-      }
-
-      /* Make step boxes and cards full width */
-      .step-box, .form-field, .mobile-card {
-        width: 100% !important;
-        margin-bottom: 1rem !important;
-        border-radius: 12px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-      }
-
-      /* Input and buttons bigger touch targets */
-      .mobile-input {
-        height: 48px !important;
-        font-size: 16px !important;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-      }
+      <LoadingOverlay 
+        isVisible={isProcessing} 
+        type="booking" 
+        message={loadingMessage}
+      />
       
-      .mobile-button {
-        height: 48px !important;
-        font-size: 16px !important;
-        border-radius: 12px !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-      }
-
-      /* Fix Booking Summary card sticky on mobile */
-      .lg\\:sticky {
-        position: static !important;
-        top: auto !important;
-      }
-
-      /* Fix gaps and margins */
-      .gap-4 {
-        gap: 1rem !important;
-      }
-
-      .gap-8 {
-        gap: 1.5rem !important;
-      }
-    }
-  `}</style>
-  
-  <div className="min-h-screen bg-gray-50 py-4 md:py-8">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mobile-full-width">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6 md:mb-8 flex-wrap">
-        <Button variant="outline" onClick={onBack} className="flex items-center gap-2 mobile-button">
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">Book {service.title}</h1>
-          <p className="text-gray-600 text-sm md:text-base">Complete your booking details</p>
-        </div>
-      </div>
-
-      <div className="w-full flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Main Content */}
-        <div className="w-full lg:col-span-2 space-y-4 md:space-y-6">
-          {/* Service Details */}
-          <div className="mobile-card w-full">
-            <TabbedTourDetails tour={service} />
-          </div>
-
-              {/* Trip Details */}
-              <Card className="mobile-card step-box">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg md:text-xl">Trip Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 form-field">
-                  {/* Travel Date */}
-                  <div>
-                    <Label htmlFor="travel-date" className="text-sm font-medium">Travel Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal bg-white border-gray-300 mobile-input",
-                            !formData.travelDate && "text-muted-foreground",
-                            errors.travelDate && "border-red-500"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.travelDate ? format(formData.travelDate, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-white border shadow-lg" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.travelDate}
-                          onSelect={(date) => setFormData(prev => ({...prev, travelDate: date}))}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.travelDate && <p className="text-sm text-red-600 mt-1">{errors.travelDate}</p>}
-                  </div>
-
-                  {/* Travel Time - Only for tours */}
-                  {showTimeField && (
-                    <div>
-                      <Label htmlFor="travel-time" className="text-sm font-medium">Select Time *</Label>
-                      <Select value={formData.travelTime} onValueChange={(value) => setFormData(prev => ({...prev, travelTime: value}))}>
-                        <SelectTrigger className={cn("bg-white border-gray-300 mobile-input", errors.travelTime && "border-red-500")}>
-                          <SelectValue placeholder="Choose your preferred time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="09:00">9:00 AM</SelectItem>
-                          <SelectItem value="10:00">10:00 AM</SelectItem>
-                          <SelectItem value="11:00">11:00 AM</SelectItem>
-                          <SelectItem value="14:00">2:00 PM</SelectItem>
-                          <SelectItem value="15:00">3:00 PM</SelectItem>
-                          <SelectItem value="16:00">4:00 PM</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.travelTime && <p className="text-sm text-red-600 mt-1">{errors.travelTime}</p>}
-                    </div>
-                  )}
-
-                  {/* Pickup Location - Only for tours */}
-                  {showPickupField && (
-                    <div>
-                      <Label htmlFor="pickup" className="text-sm font-medium">Pickup Location</Label>
-                      <Input
-                        id="pickup"
-                        value={formData.pickupLocation}
-                        onChange={(e) => setFormData(prev => ({...prev, pickupLocation: e.target.value}))}
-                        placeholder="Enter your pickup location"
-                        className="bg-white border-gray-300 mobile-input"
-                      />
-                    </div>
-                  )}
-
-                  {/* Travelers */}
-                  <div className="space-y-4">
-                    <Label className="text-sm font-medium">Number of Travelers</Label>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm">
-                        <div className="flex-1">
-                          <div className="font-medium text-base">Adults</div>
-                          <div className="text-sm text-gray-600">{formatPrice(service.price_adult)} each</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('adults', false)}
-                            disabled={formData.adults <= 1}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-bold text-lg w-8 text-center">{formData.adults}</span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('adults', true)}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm">
-                        <div className="flex-1">
-                          <div className="font-medium text-base">Children (2-12 years)</div>
-                          <div className="text-sm text-gray-600">{formatPrice(service.price_child)} each</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('children', false)}
-                            disabled={formData.children <= 0}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-bold text-lg w-8 text-center">{formData.children}</span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('children', true)}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm">
-                        <div className="flex-1">
-                          <div className="font-medium text-base">Infants (0-2 years)</div>
-                          <div className="text-sm text-gray-600">{formatPrice(service.price_infant)} each</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('infants', false)}
-                            disabled={formData.infants <= 0}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-bold text-lg w-8 text-center">{formData.infants}</span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => adjustCount('infants', true)}
-                            className="h-10 w-10 rounded-full p-0 border-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Guest Details */}
-              <Card className="mobile-card step-box">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg md:text-xl">Guest Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 form-field">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.customerName}
-                        onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
-                        placeholder="Enter your full name"
-                        className={cn("bg-white border-gray-300 mobile-input", errors.customerName && "border-red-500")}
-                      />
-                      {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.customerEmail}
-                        onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
-                        placeholder="Enter your email"
-                        className={cn("bg-white border-gray-300 mobile-input", errors.customerEmail && "border-red-500")}
-                      />
-                      {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={formData.customerPhone}
-                        onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
-                        placeholder="Enter your phone number"
-                        className="bg-white border-gray-300 mobile-input"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="requests" className="text-sm font-medium">Special Requests</Label>
-                      <Textarea
-                        id="requests"
-                        value={formData.specialRequests}
-                        onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
-                        placeholder="Any special requirements or requests"
-                        className="bg-white border-gray-300 min-h-[80px]"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Mobile-First Responsive Styles */}
+      <style>{`
+        /* Mobile-first responsive styles */
+        .booking-form-container {
+          width: 100% !important;
+          max-width: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        .booking-section {
+          width: 100% !important;
+          margin-bottom: 1.5rem !important;
+          padding: 1rem !important;
+          border-radius: 12px !important;
+          background: white !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        
+        .mobile-input {
+          width: 100% !important;
+          height: 48px !important;
+          font-size: 16px !important;
+          padding: 12px 16px !important;
+          border-radius: 8px !important;
+          border: 1px solid #d1d5db !important;
+          background: white !important;
+        }
+        
+        .mobile-button {
+          width: 100% !important;
+          height: 48px !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          border-radius: 8px !important;
+          margin-top: 8px !important;
+        }
+        
+        .traveler-counter {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 16px !important;
+          background: #f9fafb !important;
+          border-radius: 8px !important;
+          margin-bottom: 12px !important;
+        }
+        
+        .counter-buttons {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+        }
+        
+        .counter-btn {
+          width: 40px !important;
+          height: 40px !important;
+          border-radius: 20px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border: 2px solid #e5e7eb !important;
+          background: white !important;
+          cursor: pointer !important;
+          transition: all 0.2s !important;
+        }
+        
+        .counter-btn:hover {
+          border-color: #3b82f6 !important;
+          background: #eff6ff !important;
+        }
+        
+        .counter-btn:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        .summary-card {
+          position: sticky !important;
+          top: 20px !important;
+          background: white !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+          overflow: hidden !important;
+        }
+        
+        /* Responsive grid fix */
+        @media (max-width: 1024px) {
+          .lg\\:grid-cols-3 {
+            display: block !important;
+          }
+          
+          .lg\\:col-span-2,
+          .lg\\:col-span-1 {
+            width: 100% !important;
+          }
+          
+          .summary-card {
+            position: static !important;
+            margin-top: 1.5rem !important;
+          }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .booking-section {
+            padding: 1.5rem !important;
+          }
+          
+          .mobile-input {
+            height: 44px !important;
+          }
+          
+          .mobile-button {
+            height: 44px !important;
+          }
+        }
+      `}</style>
+      
+      <div className="booking-form-container">
+        <div className="w-full space-y-6">
+          
+          {/* Trip Details Section */}
+          <div className="booking-section">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Trip Details</h3>
+            
+            {/* Travel Date */}
+            <div className="mb-4">
+              <Label htmlFor="travel-date" className="block text-sm font-medium text-gray-700 mb-2">
+                Travel Date *
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "mobile-input justify-start text-left font-normal",
+                      !formData.travelDate && "text-muted-foreground",
+                      errors.travelDate && "border-red-500"
+                    )}
+                  >
+                    <CalendarIcon className="mr-3 h-5 w-5" />
+                    {formData.travelDate ? format(formData.travelDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white border shadow-lg" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.travelDate}
+                    onSelect={(date) => setFormData(prev => ({...prev, travelDate: date}))}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.travelDate && <p className="text-sm text-red-600 mt-1">{errors.travelDate}</p>}
             </div>
 
-            {/* Booking Summary */}
-            <div className="lg:col-span-1 order-first lg:order-last">
-              <Card className="mobile-card lg:sticky lg:top-4">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg md:text-xl">Booking Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-base">{service.title}</h3>
-                    {formData.travelDate && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {format(formData.travelDate, "PPP")}
-                        {formData.travelTime && ` at ${formData.travelTime}`}
-                      </p>
-                    )}
-                  </div>
+            {/* Travel Time - Only for tours */}
+            {showTimeField && (
+              <div className="mb-4">
+                <Label htmlFor="travel-time" className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Time *
+                </Label>
+                <Select value={formData.travelTime} onValueChange={(value) => setFormData(prev => ({...prev, travelTime: value}))}>
+                  <SelectTrigger className={cn("mobile-input", errors.travelTime && "border-red-500")}>
+                    <SelectValue placeholder="Choose your preferred time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="09:00">9:00 AM</SelectItem>
+                    <SelectItem value="10:00">10:00 AM</SelectItem>
+                    <SelectItem value="11:00">11:00 AM</SelectItem>
+                    <SelectItem value="14:00">2:00 PM</SelectItem>
+                    <SelectItem value="15:00">3:00 PM</SelectItem>
+                    <SelectItem value="16:00">4:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.travelTime && <p className="text-sm text-red-600 mt-1">{errors.travelTime}</p>}
+              </div>
+            )}
 
-                  <div className="space-y-3 py-3 border-t border-b">
-                    {formData.adults > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
-                        <span className="font-medium">{formatPrice(formData.adults * service.price_adult)}</span>
-                      </div>
-                    )}
-                    {formData.children > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
-                        <span className="font-medium">{formatPrice(formData.children * service.price_child)}</span>
-                      </div>
-                    )}
-                    {formData.infants > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
-                        <span className="font-medium">{formatPrice(formData.infants * service.price_infant)}</span>
-                      </div>
-                    )}
-                  </div>
+            {/* Pickup Location - Only for tours */}
+            {showPickupField && (
+              <div className="mb-4">
+                <Label htmlFor="pickup" className="block text-sm font-medium text-gray-700 mb-2">
+                  Pickup Location
+                </Label>
+                <Input
+                  id="pickup"
+                  value={formData.pickupLocation}
+                  onChange={(e) => setFormData(prev => ({...prev, pickupLocation: e.target.value}))}
+                  placeholder="Enter your pickup location"
+                  className="mobile-input"
+                />
+              </div>
+            )}
+          </div>
 
-                  <div className="pt-2">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total</span>
-                      <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
-                    </div>
-                  </div>
+          {/* Travelers Section */}
+          <div className="booking-section">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Number of Travelers</h3>
+            
+            {/* Adults */}
+            <div className="traveler-counter">
+              <div>
+                <div className="font-medium text-gray-900">Adults</div>
+                <div className="text-sm text-gray-600">{formatPrice(service.price_adult)} each</div>
+              </div>
+              <div className="counter-buttons">
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('adults', false)}
+                  disabled={formData.adults <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="font-bold text-lg min-w-[2rem] text-center">{formData.adults}</span>
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('adults', true)}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
 
-                  <Button 
-                    onClick={handleCreateBooking}
-                    disabled={isProcessing}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold mobile-button"
-                    size="lg"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Creating Booking...
-                      </>
-                    ) : (
-                      'Continue to Payment'
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
+            {/* Children */}
+            <div className="traveler-counter">
+              <div>
+                <div className="font-medium text-gray-900">Children (2-12 years)</div>
+                <div className="text-sm text-gray-600">{formatPrice(service.price_child)} each</div>
+              </div>
+              <div className="counter-buttons">
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('children', false)}
+                  disabled={formData.children <= 0}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="font-bold text-lg min-w-[2rem] text-center">{formData.children}</span>
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('children', true)}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Infants */}
+            <div className="traveler-counter">
+              <div>
+                <div className="font-medium text-gray-900">Infants (0-2 years)</div>
+                <div className="text-sm text-gray-600">{formatPrice(service.price_infant)} each</div>
+              </div>
+              <div className="counter-buttons">
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('infants', false)}
+                  disabled={formData.infants <= 0}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="font-bold text-lg min-w-[2rem] text-center">{formData.infants}</span>
+                <button
+                  type="button"
+                  className="counter-btn"
+                  onClick={() => adjustCount('infants', true)}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Guest Details Section */}
+          <div className="booking-section">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Guest Details</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.customerName}
+                  onChange={(e) => setFormData(prev => ({...prev, customerName: e.target.value}))}
+                  placeholder="Enter your full name"
+                  className={cn("mobile-input", errors.customerName && "border-red-500")}
+                />
+                {errors.customerName && <p className="text-sm text-red-600 mt-1">{errors.customerName}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.customerEmail}
+                  onChange={(e) => setFormData(prev => ({...prev, customerEmail: e.target.value}))}
+                  placeholder="Enter your email"
+                  className={cn("mobile-input", errors.customerEmail && "border-red-500")}
+                />
+                {errors.customerEmail && <p className="text-sm text-red-600 mt-1">{errors.customerEmail}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  value={formData.customerPhone}
+                  onChange={(e) => setFormData(prev => ({...prev, customerPhone: e.target.value}))}
+                  placeholder="Enter your phone number"
+                  className="mobile-input"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="requests" className="block text-sm font-medium text-gray-700 mb-2">
+                  Special Requests
+                </Label>
+                <Textarea
+                  id="requests"
+                  value={formData.specialRequests}
+                  onChange={(e) => setFormData(prev => ({...prev, specialRequests: e.target.value}))}
+                  placeholder="Any special requirements or requests"
+                  className="w-full min-h-[80px] p-3 text-base border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Booking Summary */}
+          <div className="summary-card">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+              <h3 className="text-xl font-bold text-white">Booking Summary</h3>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <h4 className="font-medium text-base text-gray-900">{service.title}</h4>
+                {formData.travelDate && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {format(formData.travelDate, "PPP")}
+                    {formData.travelTime && ` at ${formData.travelTime}`}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-3 py-3 border-t border-b border-gray-200">
+                {formData.adults > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">{formData.adults} Adult{formData.adults > 1 ? 's' : ''}</span>
+                    <span className="font-medium">{formatPrice(formData.adults * service.price_adult)}</span>
+                  </div>
+                )}
+                {formData.children > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">{formData.children} Child{formData.children > 1 ? 'ren' : ''}</span>
+                    <span className="font-medium">{formatPrice(formData.children * service.price_child)}</span>
+                  </div>
+                )}
+                {formData.infants > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">{formData.infants} Infant{formData.infants > 1 ? 's' : ''}</span>
+                    <span className="font-medium">{formatPrice(formData.infants * service.price_infant)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <div className="flex justify-between font-bold text-lg text-gray-900">
+                  <span>Total</span>
+                  <span className="text-blue-600">{formatPrice(calculateTotal())}</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleCreateBooking}
+                disabled={isProcessing}
+                className="mobile-button bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Creating Booking...
+                  </>
+                ) : (
+                  'Continue to Payment'
+                )}
+              </Button>
             </div>
           </div>
         </div>
