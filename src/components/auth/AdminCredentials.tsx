@@ -34,7 +34,7 @@ const AdminCredentials = () => {
               <Copy className="h-3 w-3" />
             </Button>
           </div>
-          <div><strong>Password:</strong> admin123</div>
+        
         </div>
       </CardContent>
     </Card>
