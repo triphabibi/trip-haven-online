@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Clock, User, Users, Mail, Phone, Plus, Minus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,7 +20,6 @@ interface SimpleTicketBookingProps {
 }
 
 const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
-  const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
   
@@ -118,63 +115,22 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
   };
 
   return (
-    <>
-      <style>{`
-        @media (max-width: 768px) {
-          .ticket-booking-card {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            border-radius: 12px !important;
-          }
+    <div className="space-y-6">
+      {/* Total Price Display */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg text-center">
+        <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+          {formatPrice(totalPrice)}
+        </div>
+        <div className="text-gray-600 text-sm">
+          Total for {formData.adults + formData.children + formData.infants} people
+        </div>
+      </div>
 
-          .ticket-form-field {
-            width: 100% !important;
-            margin-bottom: 1rem !important;
-          }
-
-          .ticket-input {
-            width: 100% !important;
-            height: 48px !important;
-            font-size: 16px !important;
-            padding: 12px !important;
-          }
-
-          .ticket-button {
-            width: 100% !important;
-            height: 48px !important;
-            font-size: 16px !important;
-          }
-
-          .counter-section {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            width: 100% !important;
-            padding: 12px !important;
-          }
-
-          .counter-buttons {
-            display: flex !important;
-            align-items: center !important;
-            gap: 12px !important;
-          }
-        }
-      `}</style>
-      
-      <Card className="shadow-xl border-0 ticket-booking-card w-full max-w-md mx-auto">
-        <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
-          <CardTitle className="text-lg md:text-xl text-center">Book Tickets</CardTitle>
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold">{formatPrice(totalPrice)}</div>
-            <div className="text-white/80 text-sm md:text-base">Total for {formData.adults + formData.children + formData.infants} people</div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-4 md:p-6 space-y-4">
+      {/* Form Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Date */}
-        <div className="space-y-2 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 font-medium">
             <Calendar className="h-4 w-4" />
             Select Date *
           </Label>
@@ -183,34 +139,19 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
             value={formData.selectedDate}
             onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
             min={new Date().toISOString().split('T')[0]}
-            className={`ticket-input h-12 ${errors.selectedDate ? 'border-red-500' : ''}`}
+            className={`h-12 ${errors.selectedDate ? 'border-red-500' : ''}`}
           />
           {errors.selectedDate && <p className="text-red-500 text-sm">{errors.selectedDate}</p>}
         </div>
 
-        {/* Lead Guest Name */}
-        <div className="space-y-2 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
-            <User className="h-4 w-4" />
-            Lead Guest Full Name *
-          </Label>
-          <Input
-            value={formData.leadGuestName}
-            onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
-            placeholder="Enter full name"
-            className={`ticket-input h-12 ${errors.leadGuestName ? 'border-red-500' : ''}`}
-          />
-          {errors.leadGuestName && <p className="text-red-500 text-sm">{errors.leadGuestName}</p>}
-        </div>
-
         {/* Time */}
-        <div className="space-y-2 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 font-medium">
             <Clock className="h-4 w-4" />
             Select Time *
           </Label>
           <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
-            <SelectTrigger className={`ticket-input h-12 ${errors.selectedTime ? 'border-red-500' : ''}`}>
+            <SelectTrigger className={`h-12 ${errors.selectedTime ? 'border-red-500' : ''}`}>
               <SelectValue placeholder="Choose time" />
             </SelectTrigger>
             <SelectContent>
@@ -221,79 +162,98 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
           </Select>
           {errors.selectedTime && <p className="text-red-500 text-sm">{errors.selectedTime}</p>}
         </div>
+      </div>
 
-        {/* Number of People */}
-        <div className="space-y-3 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
-            <Users className="h-4 w-4" />
-            Number of People
-          </Label>
-          
-          {/* Adults */}
-          <div className="counter-section flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+      {/* Lead Guest Name */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 font-medium">
+          <User className="h-4 w-4" />
+          Lead Guest Full Name *
+        </Label>
+        <Input
+          value={formData.leadGuestName}
+          onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
+          placeholder="Enter full name"
+          className={`h-12 ${errors.leadGuestName ? 'border-red-500' : ''}`}
+        />
+        {errors.leadGuestName && <p className="text-red-500 text-sm">{errors.leadGuestName}</p>}
+      </div>
+
+      {/* Number of People */}
+      <div className="space-y-4">
+        <Label className="flex items-center gap-2 font-medium">
+          <Users className="h-4 w-4" />
+          Number of People
+        </Label>
+        
+        {/* Adults */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex-1">
+            <div className="font-medium">Adults</div>
+            <div className="text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => updateCount('adults', false)}
+              disabled={formData.adults <= 1}
+              className="h-8 w-8 p-0"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="w-8 text-center font-medium">{formData.adults}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => updateCount('adults', true)}
+              className="h-8 w-8 p-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Children */}
+        {ticket.price_child && ticket.price_child > 0 && (
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex-1">
-              <div className="font-medium text-sm md:text-base">Adults</div>
-              <div className="text-xs md:text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
+              <div className="font-medium">Children</div>
+              <div className="text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
             </div>
-            <div className="counter-buttons flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => updateCount('adults', false)}
-                disabled={formData.adults <= 1}
-                className="h-8 w-8 p-0 flex-shrink-0"
+                onClick={() => updateCount('children', false)}
+                disabled={formData.children <= 0}
+                className="h-8 w-8 p-0"
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="w-8 text-center font-medium text-sm md:text-base">{formData.adults}</span>
+              <span className="w-8 text-center font-medium">{formData.children}</span>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => updateCount('adults', true)}
-                className="h-8 w-8 p-0 flex-shrink-0"
+                onClick={() => updateCount('children', true)}
+                className="h-8 w-8 p-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
           </div>
+        )}
+      </div>
 
-          {ticket.price_child && ticket.price_child > 0 && (
-            <div className="counter-section flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1">
-                <div className="font-medium text-sm md:text-base">Children</div>
-                <div className="text-xs md:text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
-              </div>
-              <div className="counter-buttons flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateCount('children', false)}
-                  disabled={formData.children <= 0}
-                  className="h-8 w-8 p-0 flex-shrink-0"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center font-medium text-sm md:text-base">{formData.children}</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateCount('children', true)}
-                  className="h-8 w-8 p-0 flex-shrink-0"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-
+      {/* Contact Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Email */}
-        <div className="space-y-2 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 font-medium">
             <Mail className="h-4 w-4" />
             Email Address *
           </Label>
@@ -302,14 +262,14 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             placeholder="Enter email address"
-            className={`ticket-input h-12 ${errors.email ? 'border-red-500' : ''}`}
+            className={`h-12 ${errors.email ? 'border-red-500' : ''}`}
           />
           {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
         {/* Mobile */}
-        <div className="space-y-2 ticket-form-field">
-          <Label className="flex items-center gap-2 font-medium text-sm md:text-base">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 font-medium">
             <Phone className="h-4 w-4" />
             Mobile Number *
           </Label>
@@ -318,21 +278,20 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
             value={formData.mobile}
             onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
             placeholder="Enter mobile number"
-            className={`ticket-input h-12 ${errors.mobile ? 'border-red-500' : ''}`}
+            className={`h-12 ${errors.mobile ? 'border-red-500' : ''}`}
           />
           {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
         </div>
+      </div>
 
-        {/* Book Now Button */}
-        <Button
-          onClick={handleBookNow}
-          className="ticket-button w-full h-12 text-base md:text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-        >
-          Book Now - {formatPrice(totalPrice)}
-        </Button>
-        </CardContent>
-      </Card>
-    </>
+      {/* Book Now Button */}
+      <Button
+        onClick={handleBookNow}
+        className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+      >
+        Book Now - {formatPrice(totalPrice)}
+      </Button>
+    </div>
   );
 };
 
