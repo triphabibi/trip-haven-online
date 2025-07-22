@@ -9,6 +9,8 @@ import Homepage from '@/pages/Homepage';
 import ToursPage from '@/pages/ToursPage';
 import TicketsPage from '@/pages/TicketsPage';
 import VisaPage from '@/pages/VisaPage';
+import { UmrahPage } from '@/pages/UmrahPage';
+import { UmrahDetailPage } from '@/pages/UmrahDetailPage';
 import PackagesPage from '@/pages/PackagesPage';
 import TransfersPage from '@/pages/TransfersPage';
 import AboutPage from '@/pages/AboutPage';
@@ -71,7 +73,9 @@ function App() {
                 <Route path="/" element={<Homepage />} />
                 <Route path="/tours" element={<ToursPage />} />
                 <Route path="/tickets" element={<TicketsPage />} />
-                <Route path="/visas" element={<VisaPage />} />
+                <Route path="/visa" element={<VisaPage />} />
+                <Route path="/umrah" element={<UmrahPage />} />
+                <Route path="/umrah/:slug" element={<UmrahDetailPage />} />
                 <Route path="/packages" element={<PackagesPage />} />
                 <Route path="/transfers" element={<TransfersPage />} />
                 <Route path="/about" element={<AboutPage />} />

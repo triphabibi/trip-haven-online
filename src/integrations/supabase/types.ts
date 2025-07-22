@@ -1381,10 +1381,256 @@ export type Database = {
         }
         Relationships: []
       }
+      umrah_bookings: {
+        Row: {
+          booking_reference: string
+          booking_status: string
+          confirmation_sent: boolean | null
+          created_at: string
+          currency_code: string
+          departure_date: string
+          guest_address: string | null
+          guest_city: string | null
+          guest_country: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone: string
+          guest_whatsapp: string | null
+          id: string
+          payment_gateway_reference: string | null
+          payment_method: string | null
+          payment_status: string
+          return_date: string | null
+          special_requests: string | null
+          total_amount: number
+          total_travelers: number
+          travelers: Json
+          umrah_package_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          booking_reference: string
+          booking_status?: string
+          confirmation_sent?: boolean | null
+          created_at?: string
+          currency_code?: string
+          departure_date: string
+          guest_address?: string | null
+          guest_city?: string | null
+          guest_country?: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone: string
+          guest_whatsapp?: string | null
+          id?: string
+          payment_gateway_reference?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          return_date?: string | null
+          special_requests?: string | null
+          total_amount: number
+          total_travelers: number
+          travelers: Json
+          umrah_package_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          booking_reference?: string
+          booking_status?: string
+          confirmation_sent?: boolean | null
+          created_at?: string
+          currency_code?: string
+          departure_date?: string
+          guest_address?: string | null
+          guest_city?: string | null
+          guest_country?: string | null
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string
+          guest_whatsapp?: string | null
+          id?: string
+          payment_gateway_reference?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          return_date?: string | null
+          special_requests?: string | null
+          total_amount?: number
+          total_travelers?: number
+          travelers?: Json
+          umrah_package_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "umrah_bookings_umrah_package_id_fkey"
+            columns: ["umrah_package_id"]
+            isOneToOne: false
+            referencedRelation: "umrah_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      umrah_packages: {
+        Row: {
+          availability_end: string | null
+          availability_start: string | null
+          booking_deadline_days: number | null
+          cancellation_policy: string | null
+          created_at: string
+          departure_city: string | null
+          description: string | null
+          discount_price: number | null
+          duration_days: number
+          duration_nights: number
+          excludes: string[] | null
+          featured_image: string | null
+          group_size_max: number | null
+          group_size_min: number | null
+          hotel_category: string | null
+          id: string
+          images: string[] | null
+          includes: string[] | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          itinerary: Json | null
+          location: string | null
+          meta_description: string | null
+          meta_title: string | null
+          pickup_points: string[] | null
+          price: number
+          rating: number | null
+          short_description: string | null
+          slug: string | null
+          special_notes: string | null
+          terms_conditions: string | null
+          title: string
+          total_reviews: number | null
+          transportation_type: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          availability_end?: string | null
+          availability_start?: string | null
+          booking_deadline_days?: number | null
+          cancellation_policy?: string | null
+          created_at?: string
+          departure_city?: string | null
+          description?: string | null
+          discount_price?: number | null
+          duration_days: number
+          duration_nights: number
+          excludes?: string[] | null
+          featured_image?: string | null
+          group_size_max?: number | null
+          group_size_min?: number | null
+          hotel_category?: string | null
+          id?: string
+          images?: string[] | null
+          includes?: string[] | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          itinerary?: Json | null
+          location?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          pickup_points?: string[] | null
+          price: number
+          rating?: number | null
+          short_description?: string | null
+          slug?: string | null
+          special_notes?: string | null
+          terms_conditions?: string | null
+          title: string
+          total_reviews?: number | null
+          transportation_type?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          availability_end?: string | null
+          availability_start?: string | null
+          booking_deadline_days?: number | null
+          cancellation_policy?: string | null
+          created_at?: string
+          departure_city?: string | null
+          description?: string | null
+          discount_price?: number | null
+          duration_days?: number
+          duration_nights?: number
+          excludes?: string[] | null
+          featured_image?: string | null
+          group_size_max?: number | null
+          group_size_min?: number | null
+          hotel_category?: string | null
+          id?: string
+          images?: string[] | null
+          includes?: string[] | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          itinerary?: Json | null
+          location?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          pickup_points?: string[] | null
+          price?: number
+          rating?: number | null
+          short_description?: string | null
+          slug?: string | null
+          special_notes?: string | null
+          terms_conditions?: string | null
+          title?: string
+          total_reviews?: number | null
+          transportation_type?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      visa_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon_emoji: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       visa_services: {
         Row: {
           booking_count: number | null
           cancellation_policy: string | null
+          category_id: string | null
           child_price: number | null
           country: string
           created_at: string | null
@@ -1415,6 +1661,7 @@ export type Database = {
         Insert: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          category_id?: string | null
           child_price?: number | null
           country: string
           created_at?: string | null
@@ -1445,6 +1692,7 @@ export type Database = {
         Update: {
           booking_count?: number | null
           cancellation_policy?: string | null
+          category_id?: string | null
           child_price?: number | null
           country?: string
           created_at?: string | null
@@ -1472,7 +1720,15 @@ export type Database = {
           visa_type?: string
           whats_included?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "visa_services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "visa_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
