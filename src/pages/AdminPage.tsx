@@ -1,12 +1,94 @@
-
-import AdminGuard from './AdminGuard';
-import WordPressLikeAdminPanel from '@/components/admin/WordPressLikeAdminPanel';
+import React, { useState, useEffect } from 'react';
+import {
+  LayoutDashboard,
+  Calendar,
+  MapPin,
+  Package,
+  Ticket,
+  FileText,
+  Car,
+  Plane,
+  TrendingUp,
+  Image,
+  Menu,
+  Settings,
+} from 'lucide-react';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminDashboardStats } from '@/components/admin/AdminDashboardStats';
+import { BookingManagement } from '@/components/admin/BookingManagement';
+import { TourManagement } from '@/components/admin/TourManagement';
+import { PackageManagement } from '@/components/admin/PackageManagement';
+import { TicketManagement } from '@/components/admin/TicketManagement';
+import { VisaManagement } from '@/components/admin/VisaManagement';
+import { TransferManagement } from '@/components/admin/TransferManagement';
+import { OkToBoardManagement } from '@/components/admin/OkToBoardManagement';
+import { TrendingProductsManagement } from '@/components/admin/TrendingProductsManagement';
+import { HomepageSliderManagement } from '@/components/admin/HomepageSliderManagement';
+import { MenuManagement } from '@/components/admin/MenuManagement';
+import { ContentManagement } from '@/components/admin/ContentManagement';
+import { SystemSettings } from '@/components/admin/SystemSettings';
+import { UmrahManagement } from '@/components/admin/UmrahManagement';
 
 const AdminPage = () => {
+  const [activeSection, setActiveSection] = useState('dashboard');
+
+  useEffect(() => {
+    const storedSection = localStorage.getItem('adminSection');
+    if (storedSection) {
+      setActiveSection(storedSection);
+    }
+  }, []);
+
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    localStorage.setItem('adminSection', section);
+  };
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'dashboard':
+        return <AdminDashboardStats />;
+      case 'bookings':
+        return <BookingManagement />;
+      case 'tours':
+        return <TourManagement />;
+      case 'packages':
+        return <PackageManagement />;
+      case 'tickets':
+        return <TicketManagement />;
+      case 'visas':
+        return <VisaManagement />;
+      case 'transfers':
+        return <TransferManagement />;
+      case 'umrah': // Add this case
+        return <UmrahManagement />;
+      case 'oktoboard':
+        return <OkToBoardManagement />;
+      case 'trending':
+        return <TrendingProductsManagement />;
+      case 'sliders':
+        return <HomepageSliderManagement />;
+      case 'menus':
+        return <MenuManagement />;
+      case 'content':
+        return <ContentManagement />;
+      case 'settings':
+        return <SystemSettings />;
+      default:
+        return <AdminDashboardStats />;
+    }
+  };
+
   return (
-    <AdminGuard>
-      <WordPressLikeAdminPanel />
-    </AdminGuard>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <AdminSidebar activeSection={activeSection} onSectionChange={handleSectionChange} />
+
+      {/* Content */}
+      <div className="flex-1 p-4">
+        {renderContent()}
+      </div>
+    </div>
   );
 };
 

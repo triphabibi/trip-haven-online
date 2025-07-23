@@ -1,73 +1,59 @@
-
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  Plane, 
-  FileText, 
-  Package, 
-  Ticket, 
-  Calendar, 
-  CreditCard, 
-  Globe, 
-  Upload,
-  TrendingUp,
+import {
+  LayoutDashboard,
+  Calendar,
+  MapPin,
+  Package,
+  Ticket,
+  FileText,
   Car,
-  PlaneIcon,
-  Building,
+  Plane,
+  TrendingUp,
+  Image,
+  Menu,
   Settings,
-  Images,
-  Mail
 } from 'lucide-react';
 
 interface AdminSidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeSection: string;
+  onSectionChange: (section: string) => void;
 }
 
-const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
+export const AdminSidebar = ({ activeSection, onSectionChange }: AdminSidebarProps) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'tours', label: 'Tours', icon: Plane },
-    { id: 'packages', label: 'Packages', icon: Package },
-    { id: 'visas', label: 'Visas', icon: FileText },
-    { id: 'tickets', label: 'Tickets', icon: Ticket },
-    { id: 'transfers', label: 'Transfers', icon: Car },
-    { id: 'ok-to-board', label: 'Ok to Board', icon: PlaneIcon },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
+    { id: 'tours', label: 'Tours', icon: MapPin },
+    { id: 'packages', label: 'Packages', icon: Package },
+    { id: 'tickets', label: 'Tickets', icon: Ticket },
+    { id: 'visas', label: 'Visas', icon: FileText },
+    { id: 'transfers', label: 'Transfers', icon: Car },
+    { id: 'umrah', label: 'Umrah Packages', icon: Package }, // Add this line
+    { id: 'oktoboard', label: 'Ok to Board', icon: Plane },
     { id: 'trending', label: 'Trending Products', icon: TrendingUp },
-    { id: 'payments', label: 'Payment Settings', icon: CreditCard },
-    { id: 'bank-settings', label: 'Bank Transfer Settings', icon: Building },
-    { id: 'email-settings', label: 'Email Settings', icon: Mail },
-    { id: 'sliders', label: 'Homepage Sliders', icon: Images },
-    { id: 'content', label: 'Content', icon: Globe },
-    { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: 'sliders', label: 'Homepage Sliders', icon: Image },
+    { id: 'menus', label: 'Menu Management', icon: Menu },
+    { id: 'content', label: 'Content Management', icon: FileText },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg h-screen overflow-y-auto">
-      <div className="p-6">
-        <h1 className="text-xl font-bold text-gray-900 mb-8">TripHabibi Admin</h1>
-        
-        <nav className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.id}
-                variant={activeTab === item.id ? "default" : "ghost"}
-                className="w-full justify-start"
-                onClick={() => setActiveTab(item.id)}
-              >
-                <Icon className="mr-3 h-4 w-4" />
-                {item.label}
-              </Button>
-            );
-          })}
-        </nav>
+    <div className="w-64 bg-gray-50 border-r border-gray-200 h-full py-4 px-3">
+      <div className="space-y-4">
+        {menuItems.map((item) => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            className={`w-full justify-start ${activeSection === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}
+            onClick={() => onSectionChange(item.id)}
+          >
+            <item.icon className="h-4 w-4 mr-2" />
+            {item.label}
+          </Button>
+        ))}
       </div>
     </div>
   );
 };
-
-export default AdminSidebar;
