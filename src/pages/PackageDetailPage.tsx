@@ -7,10 +7,10 @@ import NotFound from '@/pages/NotFound';
 import AIAssistant from '@/components/common/AIAssistant';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CheckCircle, X } from 'lucide-react';
-import { ModernPackageBooking } from '@/components/packages/ModernPackageBooking';
+import ModernPackageBooking from '@/components/packages/ModernPackageBooking';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PackageInfo } from '@/components/packages/PackageInfo';
-import { PackageHero } from '@/components/packages/PackageHero';
+import PackageInfo from '@/components/packages/PackageInfo';
+import PackageHero from '@/components/packages/PackageHero';
 
 import { PackageItinerary } from '@/components/packages/PackageItinerary';
 
@@ -42,7 +42,7 @@ const PackageDetailPage = () => {
             {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
               {/* Package Hero */}
-              <PackageHero package={packageData} />
+              <PackageHero pkg={packageData} />
               
               {/* Package Info Tabs */}
               <Tabs defaultValue="overview" className="w-full">
@@ -54,7 +54,7 @@ const PackageDetailPage = () => {
                 </TabsList>
                 
                 <TabsContent value="overview" className="mt-6">
-                  <PackageInfo package={packageData} />
+                  <PackageInfo pkg={packageData} isLoading={false} />
                 </TabsContent>
                 
                 <TabsContent value="itinerary" className="mt-6">
@@ -105,7 +105,7 @@ const PackageDetailPage = () => {
             {/* Right Column - Booking */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                <ModernPackageBooking package={packageData} />
+                <ModernPackageBooking pkg={packageData} />
               </div>
             </div>
           </div>

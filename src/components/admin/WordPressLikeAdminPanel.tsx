@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import AdminSidebar from './AdminSidebar';
+import { AdminSidebar } from './AdminSidebar';
 import AdminDashboardStats from './AdminDashboardStats';
 import EnhancedTourManagement from './EnhancedTourManagement';
 import PackageManagement from './PackageManagement';
@@ -62,7 +62,7 @@ const WordPressLikeAdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <AdminSidebar activeSection={activeTab} onSectionChange={setActiveTab} />
       <main className="flex-1 p-8 overflow-y-auto">
         {renderContent()}
       </main>
