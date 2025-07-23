@@ -30,17 +30,13 @@ export const AdminSidebar = ({ activeSection, onSectionChange }: AdminSidebarPro
     { id: 'tickets', label: 'Tickets', icon: Ticket },
     { id: 'visas', label: 'Visas', icon: FileText },
     { id: 'transfers', label: 'Transfers', icon: Car },
-    { id: 'umrah', label: 'Umrah Packages', icon: Package },
-    { id: 'ok-to-board', label: 'Ok to Board', icon: Plane },
+    { id: 'umrah', label: 'Umrah Packages', icon: Package }, // Add this line
+    { id: 'oktoboard', label: 'Ok to Board', icon: Plane },
     { id: 'trending', label: 'Trending Products', icon: TrendingUp },
     { id: 'sliders', label: 'Homepage Sliders', icon: Image },
     { id: 'menus', label: 'Menu Management', icon: Menu },
     { id: 'content', label: 'Content Management', icon: FileText },
-    { id: 'payments', label: 'Payment Gateway', icon: Settings },
-    { id: 'bulk-upload', label: 'Bulk Upload', icon: Settings },
-    { id: 'bank-settings', label: 'Bank Transfer', icon: Settings },
-    { id: 'email-settings', label: 'Email Settings', icon: Settings },
-    { id: 'settings', label: 'System Settings', icon: Settings },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (

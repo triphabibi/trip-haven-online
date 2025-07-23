@@ -20,8 +20,8 @@ import {
   Settings,
   LayoutDashboard,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCurrency } from '@/hooks/useCurrency';
+import { useAuth } from '@/hooks/useAuth';
+import CurrencySelector from '@/components/common/CurrencySelector';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { AnimatedLogo } from '@/components/common/AnimatedLogo';
@@ -99,7 +99,8 @@ const Header = () => {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
-            {/* Currency Selector - Removed for now */}
+            {/* Currency Selector */}
+            <CurrencySelector />
 
             {/* Auth Section */}
             {user ? (

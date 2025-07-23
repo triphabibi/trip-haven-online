@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { AdminSidebar } from './AdminSidebar';
+import AdminSidebar from './AdminSidebar';
 import AdminDashboardStats from './AdminDashboardStats';
 import EnhancedTourManagement from './EnhancedTourManagement';
 import PackageManagement from './PackageManagement';
@@ -17,7 +17,6 @@ import SystemSettings from './SystemSettings';
 import HomepageSliderManagement from './HomepageSliderManagement';
 import BankTransferSettings from './BankTransferSettings';
 import EmailSettings from './EmailSettings';
-import UmrahManagement from './UmrahManagement';
 
 const WordPressLikeAdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -54,8 +53,6 @@ const WordPressLikeAdminPanel = () => {
         return <BankTransferSettings />;
       case 'email-settings':
         return <EmailSettings />;
-      case 'umrah':
-        return <UmrahManagement />;
       case 'settings':
         return <SystemSettings />;
       default:
@@ -65,7 +62,7 @@ const WordPressLikeAdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <AdminSidebar activeSection={activeTab} onSectionChange={setActiveTab} />
+      <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-8 overflow-y-auto">
         {renderContent()}
       </main>
