@@ -96,11 +96,11 @@ const UmrahManagement = () => {
       title: '',
       description: '',
       overview: '',
-      price_per_person: 0,
+      price: 0,
       duration_days: 0,
       hotel_rating: 3,
       is_featured: false,
-      status: 'active',
+      is_active: true,
       inclusions: [],
       exclusions: [],
       itinerary: [],
@@ -181,10 +181,10 @@ const UmrahManagement = () => {
                 <h3 className="font-semibold">{pkg.title}</h3>
                 <p className="text-sm text-gray-600 truncate">{pkg.description}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-sm">{formatPrice(pkg.price_per_person)}</span>
+                  <span className="text-sm">{formatPrice(pkg.price)}</span>
                   <span className="text-sm text-gray-500">• {pkg.duration_days} days</span>
-                  <Badge variant={pkg.status === 'active' ? 'default' : 'secondary'}>
-                    {pkg.status}
+                  <Badge variant={pkg.is_active ? 'default' : 'secondary'}>
+                    {pkg.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                   {pkg.is_featured && <Badge variant="outline">Featured</Badge>}
                 </div>
@@ -225,12 +225,12 @@ const UmrahManagement = () => {
                 >
                   <div className="grid grid-cols-3 gap-4 mt-4">
                     <div>
-                      <label className="text-sm font-medium">Price Per Person *</label>
+                      <label className="text-sm font-medium">Price *</label>
                       <input
                         type="number"
                         className="w-full mt-1 p-2 border rounded"
-                        value={editingPackage.price_per_person}
-                        onChange={(e) => handleFieldChange('price_per_person', Number(e.target.value))}
+                        value={editingPackage.price}
+                        onChange={(e) => handleFieldChange('price', Number(e.target.value))}
                       />
                     </div>
                     <div>

@@ -27,7 +27,7 @@ import HomepageSliderManagement from '@/components/admin/HomepageSliderManagemen
 import MenuManagement from '@/components/admin/MenuManagement';
 import ContentManagementSystem from '@/components/admin/ContentManagementSystem';
 import SystemSettings from '@/components/admin/SystemSettings';
-import { UmrahManagement } from '@/components/admin/UmrahManagement';
+import UmrahManagement from '@/components/admin/UmrahManagement';
 
 const AdminPage = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -62,7 +62,7 @@ const AdminPage = () => {
         return <TransferManagement />;
       case 'umrah': // Add this case
         return <UmrahManagement />;
-      case 'oktoboard':
+      case 'ok-to-board':
         return <OkToBoardManagement />;
       case 'trending':
         return <TrendingProductsManagement />;
