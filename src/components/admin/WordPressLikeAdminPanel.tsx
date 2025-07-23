@@ -17,6 +17,7 @@ import SystemSettings from './SystemSettings';
 import HomepageSliderManagement from './HomepageSliderManagement';
 import BankTransferSettings from './BankTransferSettings';
 import EmailSettings from './EmailSettings';
+import UmrahManagement from './UmrahManagement';
 
 const WordPressLikeAdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -53,6 +54,8 @@ const WordPressLikeAdminPanel = () => {
         return <BankTransferSettings />;
       case 'email-settings':
         return <EmailSettings />;
+      case 'umrah':
+        return <UmrahManagement />;
       case 'settings':
         return <SystemSettings />;
       default:
