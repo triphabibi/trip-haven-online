@@ -42,7 +42,7 @@ const PackageDetailPage = () => {
             {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
               {/* Package Hero */}
-              <PackageHero pkg={packageData} />
+              <PackageHero pkg={packageData} isLoading={isLoading} />
               
               {/* Package Info Tabs */}
               <Tabs defaultValue="overview" className="w-full">
