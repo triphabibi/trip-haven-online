@@ -220,27 +220,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
 
             {/* Children */}
             {ticket.price_child && ticket.price_child > 0 && (
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
-                <div className="flex-1 mr-4">
-                  <div className="font-semibold text-base text-gray-900">Children</div>
-                  <div className="text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg w-full border border-gray-200">
+                <div className="flex-1 min-w-0 pr-3">
+                  <div className="font-semibold text-sm text-gray-900">Children</div>
+                  <div className="text-xs text-gray-600">{formatPrice(ticket.price_child)} each</div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     type="button"
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 disabled:opacity-50"
                     onClick={() => updateCount('children', false)}
                     disabled={formData.children <= 0}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3 w-3" />
                   </button>
-                  <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.children}</span>
+                  <span className="font-bold text-sm min-w-[1.5rem] text-center">{formData.children}</span>
                   <button
                     type="button"
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500"
                     onClick={() => updateCount('children', true)}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3" />
                   </button>
                 </div>
               </div>
@@ -248,27 +248,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
 
             {/* Infants */}
             {ticket.price_infant && ticket.price_infant > 0 && (
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
-                <div className="flex-1 mr-4">
-                  <div className="font-semibold text-base text-gray-900">Infants</div>
-                  <div className="text-sm text-gray-600">{formatPrice(ticket.price_infant)} each</div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg w-full border border-gray-200">
+                <div className="flex-1 min-w-0 pr-3">
+                  <div className="font-semibold text-sm text-gray-900">Infants</div>
+                  <div className="text-xs text-gray-600">{formatPrice(ticket.price_infant)} each</div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     type="button"
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 disabled:opacity-50"
                     onClick={() => updateCount('infants', false)}
                     disabled={formData.infants <= 0}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3 w-3" />
                   </button>
-                  <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.infants}</span>
+                  <span className="font-bold text-sm min-w-[1.5rem] text-center">{formData.infants}</span>
                   <button
                     type="button"
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500"
                     onClick={() => updateCount('infants', true)}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3" />
                   </button>
                 </div>
               </div>

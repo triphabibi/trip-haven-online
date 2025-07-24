@@ -238,6 +238,162 @@ export const UmrahPage = () => {
           </div>
         )}
       </div>
+
+      {/* Body Content - Umrah Features & Information */}
+      <div className="relative py-16 bg-gradient-to-br from-green-900/90 to-yellow-900/90">
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569-13.431-30-30-30s-30 13.431-30 30 13.431 30 30 30 30-13.431 30-30zm-45 0c0-8.284 6.716-15 15-15s15 6.716 15 15-6.716 15-15 15-15-6.716-15-15z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        
+        <div className="container mx-auto px-4 text-white relative z-10">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h3 className="text-4xl font-bold mb-6 golden-text">Why Choose Our Umrah Packages?</h3>
+            <p className="text-xl opacity-90 leading-relaxed">
+              Experience a spiritually enriching journey with our comprehensive Umrah services, 
+              designed to make your pilgrimage comfortable, meaningful, and unforgettable.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {/* Service Features */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🕌</span>
+                </div>
+                <h4 className="text-xl font-bold mb-3">Sacred Guidance</h4>
+                <p className="opacity-90">Expert Islamic scholars accompany you throughout your journey, providing spiritual guidance and religious insights.</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🏨</span>
+                </div>
+                <h4 className="text-xl font-bold mb-3">Premium Accommodation</h4>
+                <p className="opacity-90">Stay in carefully selected hotels near the Haram, ensuring comfort and easy access to the holy sites.</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">✈️</span>
+                </div>
+                <h4 className="text-xl font-bold mb-3">Seamless Travel</h4>
+                <p className="opacity-90">Complete travel arrangements including flights, transfers, and documentation assistance for a hassle-free experience.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Spiritual Journey Timeline */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+            <h3 className="text-3xl font-bold text-center mb-12 golden-text">Your Spiritual Journey</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold">1</div>
+                <h4 className="font-bold mb-2">Arrival & Ihram</h4>
+                <p className="text-sm opacity-80">Don the sacred Ihram and begin your spiritual transformation</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold">2</div>
+                <h4 className="font-bold mb-2">Tawaf & Sa'i</h4>
+                <p className="text-sm opacity-80">Perform Tawaf around the Kaaba and Sa'i between Safa and Marwah</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold">3</div>
+                <h4 className="font-bold mb-2">Hair Cutting</h4>
+                <p className="text-sm opacity-80">Complete the Umrah with symbolic hair cutting or shaving</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold">4</div>
+                <h4 className="font-bold mb-2">Spiritual Reflection</h4>
+                <p className="text-sm opacity-80">Time for prayer, reflection, and spiritual renewal</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Section */}
+      <footer className="relative bg-gradient-to-br from-gray-900 to-black text-white py-16">
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=1920&h=1080&fit=crop&crop=center')`,
+          }}
+        />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div>
+              <h3 className="text-xl font-bold mb-4 golden-text">TripHabibi Umrah</h3>
+              <p className="text-gray-300 mb-4">
+                Your trusted partner for sacred journeys to the holy lands. We provide comprehensive Umrah services with spiritual guidance and exceptional care.
+              </p>
+              <div className="text-sm text-gray-400">
+                <p>🕌 Licensed Umrah Operator</p>
+                <p>✈️ IATA Certified Travel Agent</p>
+                <p>🛡️ Ministry of Hajj & Umrah Approved</p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="/umrah" className="hover:text-yellow-400 transition-colors">Umrah Packages</a></li>
+                <li><a href="/visa" className="hover:text-yellow-400 transition-colors">Visa Services</a></li>
+                <li><a href="/hotels" className="hover:text-yellow-400 transition-colors">Hotel Booking</a></li>
+                <li><a href="/flights" className="hover:text-yellow-400 transition-colors">Flight Booking</a></li>
+                <li><a href="/guides" className="hover:text-yellow-400 transition-colors">Umrah Guide</a></li>
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+              <div className="space-y-2 text-gray-300">
+                <p>📧 umrah@triphabibi.com</p>
+                <p>📞 +1 (555) 123-UMRAH</p>
+                <p>💬 WhatsApp: +1 (555) 123-4567</p>
+                <p>📍 123 Islamic Center Dr<br />   Sacred City, SC 12345</p>
+              </div>
+            </div>
+
+            {/* Islamic Quote */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Spiritual Inspiration</h4>
+              <div className="bg-gradient-to-br from-green-800/50 to-yellow-800/50 rounded-lg p-4 border border-yellow-600/30">
+                <p className="text-lg font-arabic mb-2" style={{ fontFamily: 'Amiri, serif' }}>
+                  رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ
+                </p>
+                <p className="text-sm italic text-gray-300">
+                  "Our Lord, give us good in this world and good in the next world, and save us from the punishment of the Fire." - Quran 2:201
+                </p>
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-yellow-400 font-semibold">May Allah accept your pilgrimage</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 TripHabibi. All rights reserved. | Made with ❤️ for the Ummah
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              السلام عليكم ورحمة الله وبركاته
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
