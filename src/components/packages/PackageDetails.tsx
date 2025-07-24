@@ -63,16 +63,59 @@ const PackageDetails = ({ pkg, isLoading }: PackageDetailsProps) => {
               <Skeleton className="h-4 w-full" />
             ) : pkg?.itinerary ? (
               <div>
-                {Object.entries(pkg.itinerary).map(([day, details]: [string, any]) => (
-                  <div key={day} className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">{details.title}</h3>
-                    <ul className="list-disc pl-5">
-                      {details.activities && details.activities.map((activity: string, index: number) => (
-                        <li key={index}>{activity}</li>
-                      ))}
-                    </ul>
+                {Array.isArray(pkg.itinerary) ? (
+                  pkg.itinerary.map((day: any, index: number) => (
+                    <div key={index} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-2 text-blue-600">
+                        Day {index + 1}: {day.title || day.day || `Day ${index + 1}`}
+                      </h3>
+                      {day.description && (
+                        <p className="text-gray-600 mb-3">{day.description}</p>
+                      )}
+                      {day.activities && Array.isArray(day.activities) && (
+                        <ul className="list-disc pl-5 space-y-1">
+                          {day.activities.map((activity: string, actIndex: number) => (
+                            <li key={actIndex} className="text-gray-700">{activity}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {day.meals && (
+                        <div className="mt-3">
+                          <span className="font-medium text-green-600">Meals: </span>
+                          <span className="text-gray-700">{day.meals}</span>
+                        </div>
+                      )}
+                      {day.accommodation && (
+                        <div className="mt-2">
+                          <span className="font-medium text-purple-600">Accommodation: </span>
+                          <span className="text-gray-700">{day.accommodation}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : typeof pkg.itinerary === 'object' ? (
+                  Object.entries(pkg.itinerary).map(([day, details]: [string, any]) => (
+                    <div key={day} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-2 text-blue-600">
+                        {details.title || day}
+                      </h3>
+                      {details.description && (
+                        <p className="text-gray-600 mb-3">{details.description}</p>
+                      )}
+                      {details.activities && Array.isArray(details.activities) && (
+                        <ul className="list-disc pl-5 space-y-1">
+                          {details.activities.map((activity: string, index: number) => (
+                            <li key={index} className="text-gray-700">{activity}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-gray-700">{JSON.stringify(pkg.itinerary, null, 2)}</pre>
                   </div>
-                ))}
+                )}
               </div>
             ) : (
               'Itinerary not available.'

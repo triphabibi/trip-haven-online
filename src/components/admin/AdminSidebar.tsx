@@ -32,6 +32,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: 'visas', label: 'Visas', icon: FileText },
     { id: 'tickets', label: 'Tickets', icon: Ticket },
     { id: 'transfers', label: 'Transfers', icon: Car },
+    { id: 'umrah', label: 'Umrah Packages', icon: PlaneIcon },
     { id: 'ok-to-board', label: 'Ok to Board', icon: PlaneIcon },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
     { id: 'trending', label: 'Trending Products', icon: TrendingUp },
