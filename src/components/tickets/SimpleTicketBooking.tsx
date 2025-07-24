@@ -115,8 +115,8 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <div className="w-full max-w-full space-y-3 sm:space-y-4 lg:space-y-6">
+    <div className="w-full max-w-full overflow-hidden">
+      <div className="w-full max-w-full space-y-4 px-1">
         {/* Total Price Display */}
         <div className="w-full">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl text-center border border-blue-100">
@@ -193,27 +193,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
           
           <div className="space-y-3 w-full">
             {/* Adults */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
-              <div className="flex-1 mr-4">
-                <div className="font-semibold text-base text-gray-900">Adults</div>
-                <div className="text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg w-full border border-gray-200">
+              <div className="flex-1 min-w-0 pr-3">
+                <div className="font-semibold text-sm text-gray-900">Adults</div>
+                <div className="text-xs text-gray-600">{formatPrice(ticket.price_adult)} each</div>
               </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   type="button"
-                  className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 disabled:opacity-50"
                   onClick={() => updateCount('adults', false)}
                   disabled={formData.adults <= 1}
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-3 w-3" />
                 </button>
-                <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.adults}</span>
+                <span className="font-bold text-sm min-w-[1.5rem] text-center">{formData.adults}</span>
                 <button
                   type="button"
-                  className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="w-8 h-8 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:border-blue-500"
                   onClick={() => updateCount('adults', true)}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </button>
               </div>
             </div>
