@@ -116,47 +116,107 @@ export const UmrahPage = () => {
         <div className="absolute bottom-32 left-20 text-yellow-400 opacity-60 text-xl animate-pulse delay-2000">✦</div>
       </div>
 
-      {/* Packages Grid */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Available Packages ({filteredPackages.length})
-          </h2>
-          <Button variant="outline" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+      {/* Packages Section - Prayer Theme */}
+      <div className="relative min-h-screen bg-gradient-to-br from-green-900/95 via-yellow-900/90 to-green-800/95">
+        {/* Prayer Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?w=1920&h=1080&fit=crop&crop=center')`,
+          }}
+        />
+        
+        {/* Islamic Pattern Overlay */}
+        <div 
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M40 40c0-22.091-17.909-40-40-40s-40 17.909-40 40 17.909 40 40 40 40-17.909 40-40zm-60 0c0-11.046 8.954-20 20-20s20 8.954 20 20-8.954 20-20 20-20-8.954-20-20z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        
+        {/* Audio Control */}
+        <div className="absolute top-8 right-8 z-20">
+          <button 
+            onClick={() => {
+              const audio = document.getElementById('umrah-audio') as HTMLAudioElement;
+              if (audio.paused) {
+                audio.volume = 0.3;
+                audio.play();
+              } else {
+                audio.pause();
+              }
+            }}
+            className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-3 rounded-full hover:bg-white/30 transition-all duration-300"
+          >
+            🔊
+          </button>
         </div>
+
+        {/* Background Audio */}
+        <audio id="umrah-audio" loop autoPlay muted={false}>
+          <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
+          <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Dt4Lh2KQU5jdny0YA6BRiAyO7ejEkLBWm98LGJQQ0UcbT" type="audio/wav" />
+        </audio>
+        
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          {/* Section Header with Islamic Theme */}
+          <div className="text-center mb-16">
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-arabic mb-4 text-white" style={{ fontFamily: 'Amiri, serif' }}>
+                ۞ حَجُّ مَبْرُورٌ لَيْسَ لَهُ جَزَاءٌ إِلَّا الْجَنَّةُ ۞
+              </h2>
+              <p className="text-lg text-yellow-200 italic mb-6">
+                "A blessed Hajj has no reward except Paradise"
+              </p>
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 golden-text drop-shadow-lg">
+              Sacred Umrah Packages ({filteredPackages.length})
+            </h2>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Choose from our carefully designed spiritual journeys to the holy lands. 
+              Each package includes everything you need for a peaceful and blessed pilgrimage.
+            </p>
+            
+            <div className="flex justify-center items-center gap-4 mb-8">
+              <div className="text-yellow-400 text-2xl animate-pulse">✦</div>
+              <p className="text-white/80 text-lg font-semibold">لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ</p>
+              <div className="text-yellow-400 text-2xl animate-pulse">✦</div>
+            </div>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredPackages.map((pkg) => (
-            <Card key={pkg.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-white/80 backdrop-blur-sm">
+            <Card key={pkg.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-0 bg-white/95 backdrop-blur-sm hover:bg-white/100 transform hover:scale-105">
               {/* Package Image */}
               <div className="relative h-64 overflow-hidden">
                 {pkg.featured_image && (
                   <img
                     src={pkg.featured_image}
                     alt={pkg.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter group-hover:brightness-110"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                 <div className="absolute top-4 left-4 flex gap-2">
                   {pkg.is_featured && (
-                    <Badge className="bg-yellow-500 text-white border-0">
-                      Featured
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border-0 shadow-lg">
+                      ⭐ Featured
                     </Badge>
                   )}
-                  <Badge className="bg-green-600 text-white border-0">
-                    {pkg.hotel_category}
+                  <Badge className="bg-gradient-to-r from-green-600 to-green-700 text-white border-0 shadow-lg">
+                    🏨 {pkg.hotel_category}
                   </Badge>
                 </div>
                 <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-xl font-bold mb-1">{pkg.title}</h3>
-                  <p className="text-sm opacity-90 flex items-center gap-1">
+                  <h3 className="text-xl font-bold mb-1 drop-shadow-lg">{pkg.title}</h3>
+                  <p className="text-sm opacity-90 flex items-center gap-1 drop-shadow-md">
                     <MapPin className="h-4 w-4" />
                     {pkg.departure_city}
                   </p>
+                  <div className="mt-2 text-xs text-yellow-200 font-semibold">
+                    🕌 Blessed Journey
+                  </div>
                 </div>
               </div>
 
@@ -213,8 +273,8 @@ export const UmrahPage = () => {
                     </div>
 
                     <Link to={`/umrah/${pkg.slug || pkg.id}`}>
-                      <Button className="bg-gradient-to-r from-green-600 to-yellow-600 text-white border-0 hover:from-green-700 hover:to-yellow-700">
-                        View Details
+                      <Button className="bg-gradient-to-r from-green-600 via-yellow-600 to-green-600 text-white border-0 hover:from-green-700 hover:via-yellow-700 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        🕌 View Sacred Journey
                       </Button>
                     </Link>
                   </div>
@@ -226,17 +286,21 @@ export const UmrahPage = () => {
 
         {filteredPackages.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
+            <div className="text-white/60 mb-4">
               <Search className="h-16 w-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No packages found
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No sacred packages found
             </h3>
-            <p className="text-gray-500">
-              Try adjusting your search terms or clear the search to see all packages.
+            <p className="text-white/80">
+              Try adjusting your search terms or clear the search to see all blessed journeys.
             </p>
+            <div className="mt-4 text-yellow-200">
+              <p className="text-sm italic">May Allah guide you to the right path</p>
+            </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Body Content - Umrah Features & Information */}
@@ -337,11 +401,6 @@ export const UmrahPage = () => {
               <p className="text-gray-300 mb-4">
                 Your trusted partner for sacred journeys to the holy lands. We provide comprehensive Umrah services with spiritual guidance and exceptional care.
               </p>
-              <div className="text-sm text-gray-400">
-                <p>🕌 Licensed Umrah Operator</p>
-                <p>✈️ IATA Certified Travel Agent</p>
-                <p>🛡️ Ministry of Hajj & Umrah Approved</p>
-              </div>
             </div>
 
             {/* Quick Links */}
