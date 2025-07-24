@@ -13,6 +13,15 @@ interface TicketDetailsTabsProps {
     rating?: number;
     total_reviews?: number;
     location?: string;
+    overview?: string;
+    whats_included?: string[];
+    highlights?: string[];
+    exclusions?: string[];
+    cancellation_policy?: string;
+    terms_conditions?: string;
+    free_cancellation?: boolean;
+    instant_confirmation?: boolean;
+    instant_delivery?: boolean;
   };
 }
 
@@ -62,25 +71,44 @@ export const TicketDetailsTabs: React.FC<TicketDetailsTabsProps> = ({ ticket }) 
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4 lg:p-6 pt-0">
                 <p className="text-gray-700 leading-relaxed text-xs sm:text-sm lg:text-base break-words">
-                  {ticket.description || 'Experience this amazing attraction with skip-the-line access and instant digital tickets delivered to your email.'}
+                  {ticket.overview || ticket.description || 'Experience this amazing attraction with skip-the-line access and instant digital tickets delivered to your email.'}
                 </p>
                 
+                {/* Highlights Section */}
+                {ticket.highlights && ticket.highlights.length > 0 && (
+                  <div className="mt-4 sm:mt-6">
+                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg mb-3">Highlights</h4>
+                    <div className="space-y-2">
+                      {ticket.highlights.map((highlight, index) => (
+                        <div key={index} className="flex items-start gap-2 sm:gap-3">
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                          <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">{highlight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-4 sm:mt-6">
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600 flex-shrink-0" />
-                      <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Instant Access</h4>
+                  {ticket.instant_confirmation && (
+                    <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600 flex-shrink-0" />
+                        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Instant Confirmation</h4>
+                      </div>
+                      <p className="text-gray-700 text-xs sm:text-sm">Get confirmation immediately after booking</p>
                     </div>
-                    <p className="text-gray-700 text-xs sm:text-sm">Get your tickets immediately after booking</p>
-                  </div>
+                  )}
                   
-                  <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-green-600 flex-shrink-0" />
-                      <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Skip the Line</h4>
+                  {ticket.instant_delivery && (
+                    <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-green-600 flex-shrink-0" />
+                        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Instant Delivery</h4>
+                      </div>
+                      <p className="text-gray-700 text-xs sm:text-sm">Receive your tickets instantly via email</p>
                     </div>
-                    <p className="text-gray-700 text-xs sm:text-sm">Bypass the queue with priority access</p>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -96,22 +124,46 @@ export const TicketDetailsTabs: React.FC<TicketDetailsTabsProps> = ({ ticket }) 
               </CardHeader>
               <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
                 <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
-                    <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Skip-the-line entry tickets</span>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
-                    <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Instant digital delivery</span>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
-                    <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Mobile voucher accepted</span>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
-                    <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">24/7 customer support</span>
-                  </div>
+                  {ticket.whats_included && ticket.whats_included.length > 0 ? (
+                    ticket.whats_included.map((item, index) => (
+                      <div key={index} className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                        <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">{item}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                        <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Skip-the-line entry tickets</span>
+                      </div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                        <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Instant digital delivery</span>
+                      </div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                        <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">Mobile voucher accepted</span>
+                      </div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                        <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">24/7 customer support</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Exclusions if any */}
+                  {ticket.exclusions && ticket.exclusions.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base mb-2">Not Included:</h4>
+                      {ticket.exclusions.map((item, index) => (
+                        <div key={index} className="flex items-start gap-2 sm:gap-3">
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full flex-shrink-0 mt-1.5 sm:mt-2"></div>
+                          <span className="text-gray-700 text-xs sm:text-sm lg:text-base break-words min-w-0">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -126,23 +178,41 @@ export const TicketDetailsTabs: React.FC<TicketDetailsTabsProps> = ({ ticket }) 
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4 lg:p-6 pt-0">
-                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-green-600 flex-shrink-0" />
-                    <h4 className="font-semibold text-green-800 text-xs sm:text-sm lg:text-base">Free Cancellation</h4>
+                {ticket.free_cancellation && (
+                  <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-green-600 flex-shrink-0" />
+                      <h4 className="font-semibold text-green-800 text-xs sm:text-sm lg:text-base">Free Cancellation</h4>
+                    </div>
+                    <p className="text-green-700 text-xs sm:text-sm break-words">Cancel up to 24 hours before your visit for a full refund</p>
                   </div>
-                  <p className="text-green-700 text-xs sm:text-sm break-words">Cancel up to 24 hours before your visit for a full refund</p>
-                </div>
+                )}
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Cancellation Terms:</h4>
-                  <ul className="space-y-1 sm:space-y-2 text-gray-700 text-xs sm:text-sm">
-                    <li className="break-words">• 24+ hours before visit: 100% refund</li>
-                    <li className="break-words">• 12-24 hours before visit: 50% refund</li>
-                    <li className="break-words">• Less than 12 hours: No refund</li>
-                    <li className="break-words">• Changes are subject to availability</li>
-                  </ul>
+                  <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Cancellation Policy:</h4>
+                  <div className="text-gray-700 text-xs sm:text-sm break-words">
+                    {ticket.cancellation_policy ? (
+                      <p>{ticket.cancellation_policy}</p>
+                    ) : (
+                      <ul className="space-y-1 sm:space-y-2">
+                        <li>• 24+ hours before visit: 100% refund</li>
+                        <li>• 12-24 hours before visit: 50% refund</li>
+                        <li>• Less than 12 hours: No refund</li>
+                        <li>• Changes are subject to availability</li>
+                      </ul>
+                    )}
+                  </div>
                 </div>
+                
+                {/* Terms and Conditions */}
+                {ticket.terms_conditions && (
+                  <div className="space-y-2 pt-4 border-t border-gray-200">
+                    <h4 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base">Terms & Conditions:</h4>
+                    <div className="text-gray-700 text-xs sm:text-sm break-words">
+                      <p>{ticket.terms_conditions}</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

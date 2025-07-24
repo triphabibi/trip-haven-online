@@ -115,27 +115,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
   };
 
   return (
-    <div className="w-full max-w-none overflow-x-hidden min-w-0">
-      <div className="w-full space-y-4 sm:space-y-6 min-w-0">
+    <div className="w-full overflow-x-hidden">
+      <div className="w-full space-y-3 sm:space-y-4 lg:space-y-6">
         {/* Total Price Display */}
-        <div className="w-full min-w-0">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 sm:p-4 rounded-lg text-center w-full">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 break-words">
+        <div className="w-full">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl text-center border border-blue-100">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mb-2">
               {formatPrice(totalPrice)}
             </div>
-            <div className="text-gray-600 text-xs sm:text-sm">
+            <div className="text-gray-600 text-sm sm:text-base">
               Total for {formData.adults + formData.children + formData.infants} people
             </div>
           </div>
         </div>
 
         {/* Date and Time Selection */}
-        <div className="w-full min-w-0">
-          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+        <div className="w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Date */}
-            <div className="w-full min-w-0">
-              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="w-full">
+              <Label className="flex items-center gap-2 font-medium mb-3 text-sm sm:text-base">
+                <Calendar className="h-4 w-4 text-primary" />
                 Select Date *
               </Label>
               <Input
@@ -143,19 +143,19 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.selectedDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, selectedDate: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
-                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.selectedDate ? 'border-red-500' : ''}`}
+                className={`w-full h-12 text-base ${errors.selectedDate ? 'border-red-500' : 'border-gray-300'}`}
               />
-              {errors.selectedDate && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.selectedDate}</p>}
+              {errors.selectedDate && <p className="text-red-500 text-sm mt-1">{errors.selectedDate}</p>}
             </div>
 
             {/* Time */}
-            <div className="w-full min-w-0">
-              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
-                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="w-full">
+              <Label className="flex items-center gap-2 font-medium mb-3 text-sm sm:text-base">
+                <Clock className="h-4 w-4 text-primary" />
                 Select Time *
               </Label>
               <Select value={formData.selectedTime} onValueChange={(value) => setFormData(prev => ({ ...prev, selectedTime: value }))}>
-                <SelectTrigger className={`w-full min-h-[48px] text-sm sm:text-base ${errors.selectedTime ? 'border-red-500' : ''}`}>
+                <SelectTrigger className={`w-full h-12 text-base ${errors.selectedTime ? 'border-red-500' : 'border-gray-300'}`}>
                   <SelectValue placeholder="Choose time" />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,83 +164,83 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.selectedTime && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.selectedTime}</p>}
+              {errors.selectedTime && <p className="text-red-500 text-sm mt-1">{errors.selectedTime}</p>}
             </div>
           </div>
         </div>
 
         {/* Lead Guest Name */}
-        <div className="w-full min-w-0">
-          <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
-            <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+        <div className="w-full">
+          <Label className="flex items-center gap-2 font-medium mb-3 text-sm sm:text-base">
+            <User className="h-4 w-4 text-primary" />
             Lead Guest Full Name *
           </Label>
           <Input
             value={formData.leadGuestName}
             onChange={(e) => setFormData(prev => ({ ...prev, leadGuestName: e.target.value }))}
             placeholder="Enter full name"
-            className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.leadGuestName ? 'border-red-500' : ''}`}
+            className={`w-full h-12 text-base ${errors.leadGuestName ? 'border-red-500' : 'border-gray-300'}`}
           />
-          {errors.leadGuestName && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.leadGuestName}</p>}
+          {errors.leadGuestName && <p className="text-red-500 text-sm mt-1">{errors.leadGuestName}</p>}
         </div>
 
         {/* Number of People */}
-        <div className="w-full min-w-0">
-          <Label className="flex items-center gap-2 font-medium mb-3 sm:mb-4 text-sm sm:text-base">
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+        <div className="w-full">
+          <Label className="flex items-center gap-2 font-medium mb-4 text-sm sm:text-base">
+            <Users className="h-4 w-4 text-primary" />
             Number of People
           </Label>
           
-          <div className="space-y-2 sm:space-y-3 w-full">
+          <div className="space-y-3 w-full">
             {/* Adults */}
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
-              <div className="flex-1 min-w-0 mr-3">
-                <div className="font-medium text-sm sm:text-base text-gray-900">Adults</div>
-                <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
+              <div className="flex-1 mr-4">
+                <div className="font-semibold text-base text-gray-900">Adults</div>
+                <div className="text-sm text-gray-600">{formatPrice(ticket.price_adult)} each</div>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <button
                   type="button"
-                  className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   onClick={() => updateCount('adults', false)}
                   disabled={formData.adults <= 1}
                 >
-                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <Minus className="h-4 w-4" />
                 </button>
-                <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.adults}</span>
+                <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.adults}</span>
                 <button
                   type="button"
-                  className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                   onClick={() => updateCount('adults', true)}
                 >
-                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
             {/* Children */}
             {ticket.price_child && ticket.price_child > 0 && (
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
-                <div className="flex-1 min-w-0 mr-3">
-                  <div className="font-medium text-sm sm:text-base text-gray-900">Children</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
+                <div className="flex-1 mr-4">
+                  <div className="font-semibold text-base text-gray-900">Children</div>
+                  <div className="text-sm text-gray-600">{formatPrice(ticket.price_child)} each</div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <button
                     type="button"
-                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     onClick={() => updateCount('children', false)}
                     disabled={formData.children <= 0}
                   >
-                    <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.children}</span>
+                  <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.children}</span>
                   <button
                     type="button"
-                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                     onClick={() => updateCount('children', true)}
                   >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -248,27 +248,27 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
 
             {/* Infants */}
             {ticket.price_infant && ticket.price_infant > 0 && (
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg w-full min-w-0">
-                <div className="flex-1 min-w-0 mr-3">
-                  <div className="font-medium text-sm sm:text-base text-gray-900">Infants</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{formatPrice(ticket.price_infant)} each</div>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl w-full border border-gray-200">
+                <div className="flex-1 mr-4">
+                  <div className="font-semibold text-base text-gray-900">Infants</div>
+                  <div className="text-sm text-gray-600">{formatPrice(ticket.price_infant)} each</div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <button
                     type="button"
-                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     onClick={() => updateCount('infants', false)}
                     disabled={formData.infants <= 0}
                   >
-                    <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <span className="font-bold text-base sm:text-lg min-w-[2rem] text-center">{formData.infants}</span>
+                  <span className="font-bold text-lg min-w-[2.5rem] text-center">{formData.infants}</span>
                   <button
                     type="button"
-                    className="w-8 h-8 sm:w-10 sm:h-10 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
                     onClick={() => updateCount('infants', true)}
                   >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -277,12 +277,12 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
         </div>
 
         {/* Contact Information */}
-        <div className="w-full min-w-0">
-          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+        <div className="w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Email */}
-            <div className="w-full min-w-0">
-              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
-                <Mail className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="w-full">
+              <Label className="flex items-center gap-2 font-medium mb-3 text-sm sm:text-base">
+                <Mail className="h-4 w-4 text-primary" />
                 Email Address *
               </Label>
               <Input
@@ -290,15 +290,15 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 placeholder="Enter email address"
-                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.email ? 'border-red-500' : ''}`}
+                className={`w-full h-12 text-base ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               />
-              {errors.email && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
 
             {/* Mobile */}
-            <div className="w-full min-w-0">
-              <Label className="flex items-center gap-2 font-medium mb-2 text-sm sm:text-base">
-                <Phone className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="w-full">
+              <Label className="flex items-center gap-2 font-medium mb-3 text-sm sm:text-base">
+                <Phone className="h-4 w-4 text-primary" />
                 Mobile Number *
               </Label>
               <Input
@@ -306,18 +306,18 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
                 value={formData.mobile}
                 onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
                 placeholder="Enter mobile number"
-                className={`w-full min-h-[48px] text-sm sm:text-base px-3 sm:px-4 ${errors.mobile ? 'border-red-500' : ''}`}
+                className={`w-full h-12 text-base ${errors.mobile ? 'border-red-500' : 'border-gray-300'}`}
               />
-              {errors.mobile && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile}</p>}
+              {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile}</p>}
             </div>
           </div>
         </div>
 
         {/* Book Now Button */}
-        <div className="w-full min-w-0">
+        <div className="w-full">
           <Button
             onClick={handleBookNow}
-            className="w-full min-h-[48px] sm:min-h-[56px] text-sm sm:text-lg font-semibold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+            className="w-full h-14 text-lg font-bold bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200"
           >
             Book Now - {formatPrice(totalPrice)}
           </Button>
