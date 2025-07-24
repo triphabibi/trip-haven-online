@@ -104,11 +104,15 @@ const Header = () => {
         <div className="flex flex-col h-full">
           <div className="p-6 border-b">
             <Link to="/" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
-              <img 
-                src="/src/assets/triphabibi-logo.png" 
-                alt="TripHabibi Logo" 
-                className="h-8 w-8"
-              />
+            <img 
+              src="/src/assets/triphabibi-logo.png" 
+              alt="TripHabibi Logo" 
+              className="h-8 w-8 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/src/assets/triphabibi-favicon.png';
+              }}
+            />
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 TripHabibi
               </span>
@@ -264,9 +268,13 @@ const Header = () => {
             <img 
               src="/src/assets/triphabibi-logo.png" 
               alt="TripHabibi Logo" 
-              className="h-10 w-10 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
+              className="h-10 w-10 object-contain transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
               style={{
                 filter: isScrolled ? 'brightness(1.1) drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))' : 'brightness(1) drop-shadow(0 2px 4px rgba(59, 130, 246, 0.2))',
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/src/assets/triphabibi-favicon.png';
               }}
             />
             <span 

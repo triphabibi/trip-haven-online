@@ -30,26 +30,90 @@ export const UmrahPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-green-600 via-green-700 to-yellow-600 text-white py-20">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-            Sacred Journey to Umrah
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-            Experience the spiritual journey of a lifetime with our carefully crafted Umrah packages
-          </p>
-          <div className="max-w-md mx-auto relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              placeholder="Search packages by city, features..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 py-3 rounded-full border-0 bg-white/90 backdrop-blur-sm"
-            />
+      {/* Hero Section - Mosque Theme */}
+      <div className="relative h-screen overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=1920&h=1080&fit=crop&crop=center')`,
+          }}
+        />
+        
+        {/* Video Background (optional) */}
+        <video 
+          className="absolute inset-0 w-full h-full object-cover opacity-80"
+          autoPlay 
+          muted 
+          loop
+          playsInline
+        >
+          <source src="https://player.vimeo.com/external/376677742.sd.mp4?s=c6c6b8b8b8b8b8b8b8b8b8b8b8b8b8b8&profile_id=165" type="video/mp4" />
+        </video>
+        
+        {/* Audio for Adhan */}
+        <audio autoPlay loop muted>
+          <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
+        </audio>
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60"></div>
+        
+        {/* Islamic Pattern Overlay */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm-30 0c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        
+        {/* Content */}
+        <div className="relative h-full flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl px-4">
+            {/* Arabic Calligraphy */}
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-arabic mb-4" style={{ fontFamily: 'Amiri, serif' }}>
+                ۞ لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ ۞
+              </h2>
+              <p className="text-lg opacity-90 italic">
+                "Here I am, O Allah, here I am"
+              </p>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 golden-text drop-shadow-2xl">
+              Sacred Journey to Umrah
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 leading-relaxed">
+              Experience the spiritual journey of a lifetime with our carefully crafted Umrah packages. 
+              Walk in the footsteps of the Prophet (PBUH) and find peace in the holy lands.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto relative mb-8">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                placeholder="Search packages by city, features..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 py-4 rounded-full border-0 bg-white/95 backdrop-blur-sm text-gray-800 placeholder-gray-500"
+              />
+            </div>
+            
+            {/* Islamic Greeting */}
+            <div className="text-lg opacity-80">
+              <p>السلام عليكم ورحمة الله وبركاته</p>
+              <p className="text-sm mt-1 italic">Peace be upon you and Allah's mercy and blessings</p>
+            </div>
           </div>
         </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-green-900/30 to-transparent"></div>
+        
+        {/* Floating Islamic Stars */}
+        <div className="absolute top-20 left-10 text-yellow-400 opacity-60 text-2xl animate-pulse">✦</div>
+        <div className="absolute top-40 right-16 text-yellow-400 opacity-60 text-3xl animate-pulse delay-1000">✧</div>
+        <div className="absolute bottom-32 left-20 text-yellow-400 opacity-60 text-xl animate-pulse delay-2000">✦</div>
       </div>
 
       {/* Packages Grid */}

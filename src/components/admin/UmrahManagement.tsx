@@ -181,7 +181,7 @@ export const UmrahManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Umrah Packages Management</h1>
@@ -194,7 +194,7 @@ export const UmrahManagement = () => {
               Add New Package
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle>
                 {editingPackage ? 'Edit Package' : 'Create New Package'}
@@ -355,6 +355,7 @@ export const UmrahManagement = () => {
                         id="featured_image"
                         value={formData.featured_image}
                         onChange={(e) => handleInputChange('featured_image', e.target.value)}
+                        placeholder="https://example.com/image.jpg"
                       />
                     </div>
                     <div className="space-y-2">
@@ -363,8 +364,19 @@ export const UmrahManagement = () => {
                         id="video_url"
                         value={formData.video_url}
                         onChange={(e) => handleInputChange('video_url', e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Package Location</Label>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      placeholder="Makkah, Saudi Arabia"
+                    />
                   </div>
 
                   <div className="flex items-center space-x-6">
