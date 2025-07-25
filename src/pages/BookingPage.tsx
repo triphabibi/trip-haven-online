@@ -132,10 +132,10 @@ const BookingPage = () => {
       <div className="min-h-screen bg-gray-50">
         <Header />
         
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
+        <div className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+              <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl">
@@ -195,8 +195,10 @@ const BookingPage = () => {
                 </Card>
               </div>
               
-              <div className="lg:col-span-1">
-                <SimpleTicketBooking ticket={ticket} />
+              <div className="lg:col-span-1 order-1 lg:order-2 w-full">
+                <div className="w-full max-w-full">
+                  <SimpleTicketBooking ticket={ticket} />
+                </div>
               </div>
             </div>
           </div>

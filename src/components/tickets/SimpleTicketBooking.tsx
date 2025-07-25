@@ -116,7 +116,7 @@ const SimpleTicketBooking = ({ ticket }: SimpleTicketBookingProps) => {
 
   return (
     <div className="w-full max-w-full overflow-hidden">
-      <div className="w-full max-w-full space-y-4 px-1">
+      <div className="w-full max-w-full space-y-4 px-2 sm:px-4">
         {/* Total Price Display */}
         <div className="w-full">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl text-center border border-blue-100">
