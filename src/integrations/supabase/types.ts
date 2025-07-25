@@ -1735,6 +1735,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_modify_user_privileges: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       extract_youtube_id: {
         Args: { url: string }
         Returns: string
@@ -1742,6 +1746,14 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      promote_user_to_admin: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
+      revoke_admin_access: {
+        Args: { user_email: string }
+        Returns: boolean
       }
       validate_youtube_url: {
         Args: { url: string }
