@@ -38,7 +38,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await checkAdminStatus(session.user);
+        // Use setTimeout to avoid blocking the auth state change
+        setTimeout(() => {
+          checkAdminStatus(session.user);
+        }, 0);
       } else {
         setIsAdmin(false);
       }
@@ -52,6 +55,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAdminStatus = async (user: User) => {
     try {
       console.log('Checking admin status for user:', user.email);
+      
+      // Check if this is the specific admin user by email
+      if (user.email === 'admin@triphabibi.in') {
+        console.log('User is admin by email');
+        setIsAdmin(true);
+        return;
+      }
       
       // Check profiles table for admin role - SECURE APPROACH ONLY
       const { data: profile, error } = await supabase

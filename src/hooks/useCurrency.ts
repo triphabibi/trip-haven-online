@@ -15,9 +15,15 @@ export const useCurrency = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadCurrencySettings();
-    loadExchangeRates();
-  }, []);
+    const initializeCurrency = async () => {
+      if (!isLoading) return; // Prevent re-running if already loaded
+      
+      await loadCurrencySettings();
+      await loadExchangeRates();
+    };
+    
+    initializeCurrency();
+  }, []); // Remove dependency on isLoading to prevent loops
 
   const loadCurrencySettings = async () => {
     try {
@@ -37,7 +43,6 @@ export const useCurrency = () => {
 
   const loadExchangeRates = async () => {
     try {
-      setIsLoading(true);
       
       // Get admin-configured USD to INR exchange rate
       const { data: exchangeRateData } = await supabase
