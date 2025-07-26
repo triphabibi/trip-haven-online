@@ -1,40 +1,23 @@
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { AlertTriangle, Shield } from 'lucide-react';
 
 const AdminCredentials = () => {
-  const { toast } = useToast();
-
-  const copyCredentials = () => {
-    navigator.clipboard.writeText('admin@triphabibi.in');
-    toast({
-      title: "Email copied!",
-      description: "Admin email copied to clipboard",
-    });
-  };
-
   return (
-    <Card className="mt-4 bg-blue-50 border-blue-200">
+    <Card className="mt-4 bg-amber-50 border-amber-200">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-2">
-          <User className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-800">Demo Admin Login</span>
+          <Shield className="h-4 w-4 text-amber-600" />
+          <span className="text-sm font-medium text-amber-800">Admin Access</span>
         </div>
-        <div className="text-sm text-blue-700 space-y-1">
-          <div className="flex items-center justify-between">
-            <span><strong>Email:</strong> admin@triphabibi.in</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={copyCredentials}
-              className="h-6 w-6 p-0"
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
+        <div className="text-sm text-amber-700 space-y-2">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Secure Admin Access</p>
+              <p>Admin accounts are now managed securely. Contact the system administrator to get admin privileges.</p>
+            </div>
           </div>
-        
         </div>
       </CardContent>
     </Card>

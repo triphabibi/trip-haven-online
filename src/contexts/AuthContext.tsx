@@ -53,14 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Checking admin status for user:', user.email);
       
-      // Check if this is the specific admin user by email first
-      if (user.email === 'admin@triphabibi.in') {
-        console.log('User is admin by email');
-        setIsAdmin(true);
-        return;
-      }
-
-      // Check profiles table for admin role
+      // Check profiles table for admin role - SECURE APPROACH ONLY
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role, is_admin')
@@ -79,8 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(false);
     } catch (error) {
       console.error('Error checking admin status:', error);
-      // Fallback: check if this is the specific admin user by email
-      setIsAdmin(user.email === 'admin@triphabibi.in');
+      // Secure fallback: default to non-admin
+      setIsAdmin(false);
     }
   };
 
@@ -101,10 +94,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         }

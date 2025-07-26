@@ -37,10 +37,37 @@ serve(async (req) => {
     let paymentReference = '';
 
     if (paymentMethod === 'razorpay' && paymentId) {
-      // For demo purposes, we'll accept any payment ID for Razorpay
-      // In production, you should verify the payment with Razorpay API
-      success = true;
-      paymentReference = paymentId;
+      // SECURITY: Proper Razorpay payment verification
+      const { data: gateway } = await supabase
+        .from('payment_gateways')
+        .select('api_secret')
+        .eq('name', 'Razorpay')
+        .eq('enabled', true)
+        .single();
+
+      if (gateway?.api_secret) {
+        try {
+          // Verify payment with Razorpay API
+          const response = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+            headers: {
+              'Authorization': `Basic ${btoa(gateway.api_secret + ':')}`
+            }
+          });
+          
+          if (response.ok) {
+            const paymentData = await response.json();
+            if (paymentData.status === 'captured') {
+              success = true;
+              paymentReference = paymentId;
+            }
+          }
+        } catch (error) {
+          logStep("Razorpay verification error", error);
+          throw new Error('Failed to verify Razorpay payment');
+        }
+      } else {
+        throw new Error('Razorpay gateway not configured');
+      }
     } else if (paymentMethod === 'stripe' && sessionId) {
       // Verify Stripe payment
       const { data: gateway } = await supabase
